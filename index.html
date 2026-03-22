@@ -8,7 +8,7 @@
 <meta property="og:title" content="S. Markakis — NOCTIS">
 <meta property="og:description" content="Cybersecurity researcher with expertise in vulnerability discovery, penetration testing, and software development.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://linktr.ee/S.Markakis">
+<meta property="og:url" content="https://sp1r4.github.io/noctis-linktree/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="S. Markakis — NOCTIS">
 <meta name="twitter:description" content="Cybersecurity researcher · Penetration testing · Software development">
@@ -32,15 +32,9 @@
     --avatar-border: #dddbd6;
     --avatar-bg: #e8e6e0;
     --divider: #ddd;
-    --add-btn-border: #ccc;
-    --add-btn-color: #bbb;
     --footer-sub: #ccc;
     --toggle-bg: #e0deda;
     --toggle-knob: #fff;
-    --edit-bar: #eceae5;
-    --edit-bar-border: #dddbd6;
-    --counter-bg: #f0efe9;
-    --counter-color: #bbb;
   }
 
   body.dark {
@@ -58,15 +52,9 @@
     --avatar-border: #2a2a2a;
     --avatar-bg: #1a1a1a;
     --divider: #222;
-    --add-btn-border: #222;
-    --add-btn-color: #444;
     --footer-sub: #333;
     --toggle-bg: #333;
     --toggle-knob: #f4f3ef;
-    --edit-bar: #111;
-    --edit-bar-border: #222;
-    --counter-bg: #111;
-    --counter-color: #444;
   }
 
   body {
@@ -76,7 +64,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 48px 20px 80px;
+    padding: 48px 20px 48px;
     font-family: 'Inter', sans-serif;
     position: relative;
     overflow-x: hidden;
@@ -117,21 +105,6 @@
   body.dark .toggle-knob { transform: translateX(18px); }
   .toggle-icon { font-size: 13px; user-select: none; }
 
-  /* ── EDIT BAR ── */
-  .edit-bar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: var(--edit-bar); border-top: 0.5px solid var(--edit-bar-border);
-    padding: 12px 20px; display: flex; justify-content: center; gap: 10px;
-    transition: background 0.3s;
-  }
-  .edit-btn {
-    padding: 8px 20px; font-size: 10px; font-family: 'Inter', sans-serif;
-    border-radius: 2px; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase;
-    border: 0.5px solid var(--card-border); background: transparent;
-    color: var(--text-muted); transition: all 0.18s;
-  }
-  .edit-btn:hover { color: var(--text-primary); border-color: var(--icon-stroke); }
-  .edit-btn.active { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
 
   /* ── AVATAR ── */
   .avatar-wrap {
@@ -139,19 +112,12 @@
     overflow: hidden; border: 1.5px solid var(--avatar-border);
     margin-bottom: 16px; background: var(--avatar-bg);
     display: flex; align-items: center; justify-content: center;
-    position: relative; cursor: pointer;
+    position: relative;
     opacity: 0; transform: scale(0.8);
     animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards;
   }
   .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
   .avatar-initials { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -1px; }
-  .avatar-overlay {
-    position: absolute; inset: 0; border-radius: 50%;
-    background: rgba(0,0,0,0.45);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.18s;
-  }
-  .avatar-wrap:hover .avatar-overlay { opacity: 1; }
 
   /* ── TYPOGRAPHY ── */
   .name {
@@ -197,25 +163,7 @@
   .link-card:hover .link-icon { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
   .link-card:hover .link-icon svg { stroke: var(--bg); }
   .link-card:hover .link-arrow { color: rgba(255,255,255,0.3); }
-  .link-card:hover .link-counter { opacity: 0; }
 
-  /* Drag handle (edit mode) */
-  .drag-handle {
-    display: none; cursor: grab; color: var(--text-muted);
-    font-size: 14px; padding-right: 4px; flex-shrink: 0;
-    user-select: none;
-  }
-  body.edit-mode .drag-handle { display: block; }
-  body.edit-mode .link-card { cursor: default; }
-
-  /* Delete button (edit mode) */
-  .delete-link {
-    display: none; background: none; border: none;
-    color: #e24b4a; font-size: 16px; cursor: pointer;
-    padding: 0 2px; flex-shrink: 0; line-height: 1;
-    transition: opacity 0.15s;
-  }
-  body.edit-mode .delete-link { display: block; }
 
   .link-icon {
     width: 36px; height: 36px; border-radius: 3px;
@@ -230,28 +178,7 @@
   .link-sub { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-top: 2px; transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .link-arrow { font-size: 14px; color: var(--divider); transition: color 0.18s; flex-shrink: 0; }
 
-  /* Click counter */
-  .link-counter {
-    position: absolute; top: 8px; right: 10px;
-    font-size: 9px; font-weight: 300; color: var(--counter-color);
-    background: var(--counter-bg); border-radius: 10px;
-    padding: 1px 6px; letter-spacing: 0.06em;
-    opacity: 0; transition: opacity 0.2s;
-    pointer-events: none;
-  }
-  .link-card:not(:hover) .link-counter.has-clicks { opacity: 1; }
 
-  /* ── ADD BUTTON ── */
-  .add-link-btn {
-    width: 100%; padding: 13px 18px; background: transparent;
-    border: 0.5px dashed var(--add-btn-border); border-radius: 4px;
-    font-size: 11px; font-weight: 300; color: var(--add-btn-color);
-    letter-spacing: 0.1em; text-transform: uppercase;
-    cursor: pointer; transition: all 0.18s;
-    font-family: 'Inter', sans-serif; margin-bottom: 32px;
-    opacity: 0; animation: fadeUp 0.4s ease 0.7s forwards;
-  }
-  .add-link-btn:hover { border-color: var(--icon-stroke); color: var(--text-secondary); }
 
   /* ── DIVIDER / FOOTER ── */
   .divider { width: 32px; height: 0.5px; background: var(--divider); margin-bottom: 32px; opacity: 0; animation: fadeUp 0.4s ease 0.75s forwards; }
@@ -259,36 +186,6 @@
   .footer-noctis { font-size: 18px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
   .footer-sub { font-size: 8px; color: var(--footer-sub); letter-spacing: 0.2em; text-transform: uppercase; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    display: none; align-items: center; justify-content: center; z-index: 100;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--card-bg); border-radius: 4px; padding: 28px;
-    width: 360px; display: flex; flex-direction: column; gap: 14px;
-    border: 0.5px solid var(--card-border);
-    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
-  }
-  .modal-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-  .modal input {
-    width: 100%; padding: 10px 14px; font-size: 12px; font-family: 'Inter', sans-serif;
-    background: var(--bg); border: 0.5px solid var(--card-border); border-radius: 3px;
-    outline: none; color: var(--text-primary); transition: border-color 0.15s;
-  }
-  .modal input:focus { border-color: var(--icon-stroke); }
-  .modal input::placeholder { color: var(--text-muted); }
-  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-  .modal-btn {
-    padding: 8px 18px; font-size: 11px; font-family: 'Inter', sans-serif;
-    border-radius: 2px; cursor: pointer; letter-spacing: 0.06em;
-    border: 0.5px solid var(--card-border); background: transparent;
-    color: var(--text-secondary); transition: all 0.15s;
-  }
-  .modal-btn:hover { background: rgba(0,0,0,0.04); }
-  .modal-btn.ok { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
-  .modal-btn.ok:hover { opacity: 0.85; }
 
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
@@ -300,14 +197,6 @@
     to   { opacity: 1; transform: scale(1); }
   }
 
-  [contenteditable] { outline: none; border-radius: 2px; transition: background 0.15s; }
-  [contenteditable]:hover { background: rgba(0,0,0,0.04); }
-  body.dark [contenteditable]:hover { background: rgba(255,255,255,0.05); }
-  [contenteditable]:focus { background: rgba(0,120,255,0.06); box-shadow: inset 0 0 0 1px rgba(0,120,255,0.2); }
-
-  /* Drag over state */
-  .link-card.drag-over { border-color: var(--icon-stroke); opacity: 0.6; }
-  .link-card.dragging { opacity: 0.3; }
 </style>
 </head>
 <body>
@@ -322,28 +211,19 @@
 <div class="container">
 
   <!-- Avatar -->
-  <div class="avatar-wrap" onclick="document.getElementById('avatar-input').click()" title="Click to change photo">
-    <img id="avatar-img" src="https://ugc.production.linktr.ee/5eaaf0e4-b62b-49a7-a81f-1e3fb4ad66c7_IMG-0447.jpeg" alt="S. Markakis"
+  <div class="avatar-wrap">
+    <img id="avatar-img" src="avatar.jpeg" alt="S. Markakis"
          onerror="this.style.display='none';document.getElementById('avatar-fallback').style.display='flex';">
     <div id="avatar-fallback" class="avatar-initials" style="display:none;">SM</div>
-    <div class="avatar-overlay">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-        <circle cx="12" cy="13" r="4"/>
-      </svg>
-    </div>
   </div>
-  <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="loadAvatar(this)">
 
-  <div class="name" contenteditable="true" onblur="saveText('name',this)" spellcheck="false">S. Markakis</div>
-  <div class="brand-tag" contenteditable="true" onblur="saveText('brand',this)" spellcheck="false">NOCTIS · Cybersecurity &amp; IT</div>
-  <div class="bio" contenteditable="true" onblur="saveText('bio',this)" spellcheck="false">Cybersecurity researcher with expertise in vulnerability discovery, penetration testing, and software development.</div>
+  <div class="name">S. Markakis</div>
+  <div class="brand-tag">NOCTIS · Cybersecurity &amp; IT</div>
+  <div class="bio">Cybersecurity researcher with expertise in vulnerability discovery, penetration testing, and software development.</div>
 
   <div class="section-label">Connect</div>
 
   <div class="links" id="links-container"></div>
-
-  <button class="add-link-btn" onclick="openModal()">+ Add link</button>
 
   <div class="divider"></div>
   <div class="footer-brand">
@@ -353,228 +233,62 @@
 
 </div>
 
-<!-- Edit bar -->
-<div class="edit-bar">
-  <button class="edit-btn" id="edit-toggle-btn" onclick="toggleEditMode()">Edit links</button>
-  <button class="edit-btn" onclick="openModal()">+ Add link</button>
-</div>
-
-<!-- Add/Edit modal -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-title" id="modal-title">Add a link</div>
-    <input type="text" id="new-title" placeholder="Title (e.g. LinkedIn)">
-    <input type="text" id="new-sub" placeholder="Subtitle (e.g. Professional profile)">
-    <input type="text" id="new-url" placeholder="URL (e.g. https://...)">
-    <div class="modal-btns">
-      <button class="modal-btn" onclick="closeModal()">Cancel</button>
-      <button class="modal-btn ok" id="modal-ok-btn" onclick="submitModal()">Add ↗</button>
-    </div>
-  </div>
-</div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────
-const DEFAULT_LINKS = [
-  { id: 'email', title: 'Email', sub: 'sp1r4.work@gmail.com', url: 'mailto:sp1r4.work@gmail.com', clicks: 0,
+const LINKS = [
+  { title: 'Email', sub: 'sp1r4.work@gmail.com', url: 'mailto:sp1r4.work@gmail.com',
     icon: `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>` },
-  { id: 'github', title: 'GitHub', sub: 'Software dev & cybersecurity projects', url: 'https://github.com/SP1R4', clicks: 0,
+  { title: 'GitHub', sub: 'Software dev & cybersecurity projects', url: 'https://github.com/SP1R4',
     icon: `<svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>` },
-  { id: 'htb', title: 'HackTheBox', sub: 'Penetration testing & ethical hacking', url: 'https://app.hackthebox.com/profile/332355', clicks: 0,
+  { title: 'HackTheBox', sub: 'Penetration testing & ethical hacking', url: 'https://app.hackthebox.com/profile/332355',
     icon: `<svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>` },
 ];
 
-let links = [];
-let editMode = false;
-let editingId = null;
-let dragSrc = null;
-
-function save() {
-  localStorage.setItem('noctis_links', JSON.stringify(links));
-}
-
-function load() {
-  const saved = localStorage.getItem('noctis_links');
-  links = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_LINKS));
-}
-
-// ── RENDER ────────────────────────────────────────────────────
 function render() {
   const container = document.getElementById('links-container');
-  container.innerHTML = '';
-  links.forEach((link, i) => {
+  LINKS.forEach((link, i) => {
     const a = document.createElement('a');
     a.className = 'link-card';
-    a.href = editMode ? '#' : link.url;
-    if (!editMode && !link.url.startsWith('mailto')) a.target = '_blank';
+    a.href = link.url;
+    if (!link.url.startsWith('mailto')) a.target = '_blank';
+    a.rel = 'noopener';
     a.style.setProperty('--i', i);
-    a.dataset.id = link.id;
-    a.draggable = editMode;
 
-    const counterClass = link.clicks > 0 ? 'link-counter has-clicks' : 'link-counter';
-    const counterText = link.clicks > 0 ? (link.clicks === 1 ? '1 click' : `${link.clicks} clicks`) : '';
+    const icon = document.createElement('div');
+    icon.className = 'link-icon';
+    icon.innerHTML = link.icon;
 
-    a.innerHTML = `
-      <span class="drag-handle" title="Drag to reorder">⠿</span>
-      <div class="link-icon">${link.icon}</div>
-      <div class="link-text">
-        <div class="link-title">${link.title}</div>
-        ${link.sub ? `<div class="link-sub">${link.sub}</div>` : ''}
-      </div>
-      <span class="link-arrow">↗</span>
-      <span class="${counterClass}">${counterText}</span>
-      <button class="delete-link" onclick="deleteLink(event,'${link.id}')" title="Remove">×</button>
-    `;
-
-    // Click counter (not in edit mode)
-    if (!editMode) {
-      a.addEventListener('click', (e) => {
-        if (editMode) { e.preventDefault(); openEditModal(link.id); return; }
-        link.clicks++;
-        save();
-        const counter = a.querySelector('.link-counter');
-        counter.textContent = link.clicks === 1 ? '1 click' : `${link.clicks} clicks`;
-        counter.classList.add('has-clicks');
-      });
-    } else {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        openEditModal(link.id);
-      });
+    const text = document.createElement('div');
+    text.className = 'link-text';
+    const title = document.createElement('div');
+    title.className = 'link-title';
+    title.textContent = link.title;
+    text.appendChild(title);
+    if (link.sub) {
+      const sub = document.createElement('div');
+      sub.className = 'link-sub';
+      sub.textContent = link.sub;
+      text.appendChild(sub);
     }
 
-    // Drag & drop
-    a.addEventListener('dragstart', (e) => { dragSrc = a; a.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
-    a.addEventListener('dragend', () => { a.classList.remove('dragging'); document.querySelectorAll('.link-card').forEach(c => c.classList.remove('drag-over')); });
-    a.addEventListener('dragover', (e) => { e.preventDefault(); if (a !== dragSrc) a.classList.add('drag-over'); });
-    a.addEventListener('dragleave', () => a.classList.remove('drag-over'));
-    a.addEventListener('drop', (e) => {
-      e.preventDefault();
-      if (!dragSrc || dragSrc === a) return;
-      a.classList.remove('drag-over');
-      const fromId = dragSrc.dataset.id;
-      const toId = a.dataset.id;
-      const fromIdx = links.findIndex(l => l.id === fromId);
-      const toIdx = links.findIndex(l => l.id === toId);
-      const [moved] = links.splice(fromIdx, 1);
-      links.splice(toIdx, 0, moved);
-      save(); render();
-    });
+    const arrow = document.createElement('span');
+    arrow.className = 'link-arrow';
+    arrow.textContent = '↗';
 
+    a.appendChild(icon);
+    a.appendChild(text);
+    a.appendChild(arrow);
     container.appendChild(a);
   });
 }
 
-// ── EDIT MODE ─────────────────────────────────────────────────
-function toggleEditMode() {
-  editMode = !editMode;
-  document.body.classList.toggle('edit-mode', editMode);
-  const btn = document.getElementById('edit-toggle-btn');
-  btn.textContent = editMode ? 'Done' : 'Edit links';
-  btn.classList.toggle('active', editMode);
-  render();
-}
-
-function deleteLink(e, id) {
-  e.preventDefault(); e.stopPropagation();
-  links = links.filter(l => l.id !== id);
-  save(); render();
-}
-
-// ── MODAL ─────────────────────────────────────────────────────
-function openModal() {
-  editingId = null;
-  document.getElementById('modal-title').textContent = 'Add a link';
-  document.getElementById('modal-ok-btn').textContent = 'Add ↗';
-  document.getElementById('new-title').value = '';
-  document.getElementById('new-sub').value = '';
-  document.getElementById('new-url').value = '';
-  document.getElementById('modal').classList.add('open');
-  document.getElementById('new-title').focus();
-}
-
-function openEditModal(id) {
-  const link = links.find(l => l.id === id);
-  if (!link) return;
-  editingId = id;
-  document.getElementById('modal-title').textContent = 'Edit link';
-  document.getElementById('modal-ok-btn').textContent = 'Save ↗';
-  document.getElementById('new-title').value = link.title;
-  document.getElementById('new-sub').value = link.sub || '';
-  document.getElementById('new-url').value = link.url;
-  document.getElementById('modal').classList.add('open');
-  document.getElementById('new-title').focus();
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  editingId = null;
-}
-
-function submitModal() {
-  const title = document.getElementById('new-title').value.trim();
-  const sub = document.getElementById('new-sub').value.trim();
-  const url = document.getElementById('new-url').value.trim();
-  if (!title || !url) return;
-
-  const genericIcon = `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
-
-  if (editingId) {
-    const link = links.find(l => l.id === editingId);
-    if (link) { link.title = title; link.sub = sub; link.url = url; }
-  } else {
-    links.push({ id: 'link_' + Date.now(), title, sub, url, clicks: 0, icon: genericIcon });
-  }
-  save(); closeModal(); render();
-}
-
-document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); if (e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) submitModal(); });
-
-// ── THEME ─────────────────────────────────────────────────────
 function toggleTheme() {
   document.body.classList.toggle('dark');
   localStorage.setItem('noctis_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 }
 if (localStorage.getItem('noctis_theme') === 'dark') document.body.classList.add('dark');
 
-// ── AVATAR ────────────────────────────────────────────────────
-function loadAvatar(input) {
-  if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = document.getElementById('avatar-img');
-    img.src = e.target.result;
-    img.style.display = 'block';
-    document.getElementById('avatar-fallback').style.display = 'none';
-    localStorage.setItem('noctis_avatar', e.target.result);
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-const savedAvatar = localStorage.getItem('noctis_avatar');
-if (savedAvatar) {
-  const img = document.getElementById('avatar-img');
-  img.src = savedAvatar;
-}
-
-// ── TEXT FIELDS ───────────────────────────────────────────────
-function saveText(key, el) {
-  localStorage.setItem('noctis_text_' + key, el.innerHTML);
-}
-function loadTexts() {
-  ['name','brand','bio'].forEach(key => {
-    const saved = localStorage.getItem('noctis_text_' + key);
-    if (saved) {
-      const el = document.querySelector(key === 'name' ? '.name' : key === 'brand' ? '.brand-tag' : '.bio');
-      if (el) el.innerHTML = saved;
-    }
-  });
-}
-
-// ── INIT ──────────────────────────────────────────────────────
-load();
 render();
-loadTexts();
 </script>
 </body>
 </html>
