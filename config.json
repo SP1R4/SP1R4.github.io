@@ -30,6 +30,12 @@
       "sub": "Penetration testing & ethical hacking",
       "url": "https://app.hackthebox.com/profile/332355",
       "icon": "box"
+    },
+    {
+      "title": "Blog",
+      "sub": "Research, writeups & development notes",
+      "url": "blog.html",
+      "icon": "blog"
     }
   ]
 }
