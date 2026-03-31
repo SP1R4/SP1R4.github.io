@@ -306,7 +306,7 @@ let config = null;
 
 // ── AUTH ──
 // Default password hash (SHA-256 of "noctis")
-const DEFAULT_HASH = '7e5796fd3ef09a5eb41e34567e76a2387a0cd48fd438ea1e3c3a3e2e7e39d498';
+const DEFAULT_HASH = 'bb28344e7bddf4195876c24c0eba2a26282c3512df18c0414635f52f162689a8';
 
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
