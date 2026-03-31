@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
 <title>S. Markakis — NOCTIS</title>
 <meta name="description" content="Cybersecurity researcher · Penetration testing · Software development · Crete, Greece">
 <meta property="og:title" content="S. Markakis — NOCTIS">
@@ -276,9 +277,11 @@ if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-s
   document.body.classList.add('dark');
 }
 
-const cfgUrl = new URLSearchParams(location.search).get('config') || 'config.json';
-fetch(cfgUrl)
-  .then(r => r.json())
+const isPreview = new URLSearchParams(location.search).get('preview') === '1';
+const cfgPromise = isPreview && localStorage.getItem('noctis_preview')
+  ? Promise.resolve(JSON.parse(localStorage.getItem('noctis_preview')))
+  : fetch('config.json').then(r => r.json());
+cfgPromise
   .then(cfg => {
     // Avatar
     const aw = document.getElementById('avatar-wrap');
@@ -327,7 +330,7 @@ fetch(cfgUrl)
 
       const icon = document.createElement('div');
       icon.className = 'link-icon';
-      icon.innerHTML = ICONS[link.icon] || ICONS.link;
+      icon.innerHTML = Object.prototype.hasOwnProperty.call(ICONS, link.icon) ? ICONS[link.icon] : ICONS.link;
 
       const text = document.createElement('div');
       text.className = 'link-text';

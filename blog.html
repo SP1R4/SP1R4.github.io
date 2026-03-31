@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';">
 <title>Blog — NOCTIS</title>
 <meta name="description" content="Cybersecurity research, CTF writeups, and development notes by S. Markakis.">
 <meta property="og:title" content="Blog — NOCTIS">
@@ -12,7 +13,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@17.0.5/marked.min.js" integrity="sha384-tkjnnf9Tzhv5ZFrDroGvUExw9C3EVFo0RFRkzKR8ZX4b5Psoec4yb1PlD8Jh4j4H" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.3/dist/purify.min.js" integrity="sha384-pcBjnGbkyKeOXaoFkmJiuR9E08/6gkmus6/Strimnxtl3uk0Hx23v345pWyC/MMr" crossorigin="anonymous"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
 
@@ -340,6 +342,7 @@ function renderList() {
 }
 
 async function showPost(slug) {
+  if (!slug || /[\/\\]|\.\./.test(slug)) return;
   const post = posts.find(p => p.slug === slug);
   if (!post) return;
 
@@ -362,7 +365,7 @@ async function showPost(slug) {
       });
     }
 
-    document.getElementById('pv-content').innerHTML = marked.parse(md);
+    document.getElementById('pv-content').innerHTML = DOMPurify.sanitize(marked.parse(md));
 
     document.getElementById('list-view').style.display = 'none';
     document.getElementById('post-view').classList.add('active');

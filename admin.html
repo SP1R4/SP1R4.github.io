@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NOCTIS Admin</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+<meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -191,7 +193,8 @@
     <input type="password" id="pw" placeholder="Password" autofocus>
     <button class="btn primary" onclick="tryLogin()">Enter</button>
   </div>
-  <div class="login-error" id="login-error">Wrong password</div>
+  <div class="login-error" id="login-error"></div>
+  <p id="login-setup" style="display:none;font-size:11px;color:var(--text2);">First time? Set your admin password above.</p>
 </div>
 
 <!-- ADMIN -->
@@ -320,28 +323,56 @@ const ICON_NAMES = Object.keys(ICONS);
 let config = null;
 
 // ── AUTH ──
-// Default password hash (SHA-256 of "noctis")
-const DEFAULT_HASH = 'bb28344e7bddf4195876c24c0eba2a26282c3512df18c0414635f52f162689a8';
+// NOTE: Client-side auth is a convenience barrier, not a security control.
+// The admin panel cannot modify the live site -- it only generates JSON for manual download.
 
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function isFirstUse() {
+  return !localStorage.getItem('noctis_admin_hash');
+}
+
+function showSetup() {
+  document.getElementById('pw').placeholder = 'Choose a password';
+  document.getElementById('login-setup').style.display = 'block';
+}
+
 async function tryLogin() {
   const pw = document.getElementById('pw').value;
+  if (!pw) return;
+
+  if (isFirstUse()) {
+    if (pw.length < 6) {
+      document.getElementById('login-error').textContent = 'Password must be at least 6 characters';
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    const hash = await sha256(pw);
+    localStorage.setItem('noctis_admin_hash', hash);
+    sessionStorage.setItem('noctis_auth', '1');
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('admin').classList.add('active');
+    loadConfig();
+    return;
+  }
+
   const hash = await sha256(pw);
-  const stored = localStorage.getItem('noctis_admin_hash') || DEFAULT_HASH;
+  const stored = localStorage.getItem('noctis_admin_hash');
   if (hash === stored) {
     sessionStorage.setItem('noctis_auth', '1');
     document.getElementById('login').style.display = 'none';
     document.getElementById('admin').classList.add('active');
     loadConfig();
   } else {
+    document.getElementById('login-error').textContent = 'Wrong password';
     document.getElementById('login-error').style.display = 'block';
   }
 }
 
+if (isFirstUse()) showSetup();
 document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
 async function changePassword() {
@@ -548,10 +579,8 @@ async function copyConfig() {
 }
 
 function loadPreview() {
-  const json = getJSON();
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  window.open(`index.html?config=${encodeURIComponent(url)}`, '_blank', 'width=500,height=800');
+  localStorage.setItem('noctis_preview', getJSON());
+  window.open('index.html?preview=1', '_blank', 'width=500,height=800');
   toast('Preview opened');
 }
 
