@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOCTIS Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222;
+    --border: #2a2a2a;
+    --border-focus: #555;
+    --text: #f4f3ef;
+    --text2: #888;
+    --text3: #555;
+    --accent: #34d399;
+    --danger: #e24b4a;
+    --danger-bg: rgba(226,75,74,0.1);
+  }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; min-height: 100vh;
+  }
+
+  /* ── LOGIN ── */
+  .login-wrap {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+  }
+  .login-wrap h1 { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+  .login-wrap p { font-size: 12px; color: var(--text2); }
+  .login-box { display: flex; gap: 8px; }
+  .login-box input {
+    padding: 10px 16px; font-size: 13px; font-family: 'Inter', sans-serif;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text); outline: none; width: 240px;
+  }
+  .login-box input:focus { border-color: var(--border-focus); }
+  .login-error { font-size: 11px; color: var(--danger); display: none; }
+
+  /* ── LAYOUT ── */
+  .admin { display: none; max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+  .admin.active { display: block; }
+
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  }
+  .admin-header h1 { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
+  .admin-header .actions { display: flex; gap: 8px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 8px 18px; font-size: 11px; font-family: 'Inter', sans-serif;
+    border-radius: 3px; cursor: pointer; letter-spacing: 0.06em;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text2); transition: all 0.15s; text-transform: uppercase;
+  }
+  .btn:hover { border-color: var(--border-focus); color: var(--text); }
+  .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn.primary:hover { opacity: 0.85; }
+  .btn.danger { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
+  .btn.danger:hover { background: var(--danger); color: #fff; }
+  .btn.small { padding: 5px 12px; font-size: 10px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 9px; color: var(--text3); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+
+  /* ── FIELDS ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 10px; color: var(--text2);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 10px 14px; font-size: 13px; font-family: 'Inter', sans-serif;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--border-focus); }
+  .field textarea { resize: vertical; min-height: 60px; line-height: 1.6; }
+  .field select option { background: var(--surface); color: var(--text); }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+
+  .field-inline {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .field-inline label { margin-bottom: 0; white-space: nowrap; }
+
+  /* ── TOGGLE ── */
+  .toggle {
+    width: 36px; height: 20px; background: var(--surface2); border-radius: 10px;
+    position: relative; cursor: pointer; border: 1px solid var(--border);
+    flex-shrink: 0; transition: background 0.2s;
+  }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after {
+    content: ''; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); position: absolute; top: 2px; left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* ── COLOR PICKER ── */
+  .color-pick {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .color-pick input[type="color"] {
+    width: 32px; height: 32px; border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px; cursor: pointer; background: var(--surface);
+  }
+  .color-pick input[type="text"] { width: 100px; }
+
+  /* ── LINK ITEMS ── */
+  .link-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    padding: 16px; margin-bottom: 10px; position: relative;
+    transition: border-color 0.15s;
+  }
+  .link-item:hover { border-color: var(--border-focus); }
+  .link-item-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .link-item-header .grip {
+    cursor: grab; color: var(--text3); font-size: 16px; user-select: none;
+    padding: 4px; margin-right: 8px;
+  }
+  .link-item-header .left { display: flex; align-items: center; }
+  .link-item-header .link-preview {
+    font-size: 13px; font-weight: 500;
+  }
+  .link-item-actions { display: flex; gap: 6px; }
+
+  .link-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .link-fields .full { grid-column: 1 / -1; }
+
+  /* ── ICON SELECTOR ── */
+  .icon-grid {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0;
+  }
+  .icon-opt {
+    width: 36px; height: 36px; border-radius: 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .icon-opt:hover { border-color: var(--border-focus); }
+  .icon-opt.selected { border-color: var(--accent); background: rgba(52,211,153,0.1); }
+  .icon-opt svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-opt.selected svg { stroke: var(--accent); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: var(--bg); padding: 10px 24px;
+    border-radius: 4px; font-size: 12px; font-weight: 500;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100; pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── PREVIEW ── */
+  .preview-frame {
+    position: fixed; top: 0; right: 0; width: 400px; height: 100vh;
+    border: none; border-left: 1px solid var(--border);
+    display: none; z-index: 50; background: var(--bg);
+  }
+  .preview-frame.open { display: block; }
+  body.previewing .admin { max-width: 500px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login">
+  <h1>NOCTIS</h1>
+  <p>Admin Panel</p>
+  <div class="login-box">
+    <input type="password" id="pw" placeholder="Password" autofocus>
+    <button class="btn primary" onclick="tryLogin()">Enter</button>
+  </div>
+  <div class="login-error" id="login-error">Wrong password</div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin" id="admin">
+  <div class="admin-header">
+    <h1>NOCTIS Admin</h1>
+    <div class="actions">
+      <button class="btn" onclick="loadPreview()">Preview</button>
+      <button class="btn" onclick="downloadConfig()">Download config.json</button>
+      <button class="btn primary" onclick="copyConfig()">Copy JSON</button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="section">
+    <div class="section-title">Profile</div>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="cfg-name">
+    </div>
+    <div class="field">
+      <label>Brand Tag</label>
+      <input type="text" id="cfg-brand">
+    </div>
+    <div class="field">
+      <label>Bio</label>
+      <textarea id="cfg-bio"></textarea>
+    </div>
+    <div class="field">
+      <label>Avatar Filename</label>
+      <input type="text" id="cfg-avatar" placeholder="avatar.jpeg">
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="section">
+    <div class="section-title">Status</div>
+    <div class="field-inline">
+      <label>Visible</label>
+      <div class="toggle" id="status-toggle" onclick="toggleStatus()"></div>
+    </div>
+    <div class="field">
+      <label>Status Text</label>
+      <input type="text" id="cfg-status-text">
+    </div>
+    <div class="field">
+      <label>Dot Color</label>
+      <div class="color-pick">
+        <input type="color" id="cfg-status-color" oninput="document.getElementById('cfg-status-color-hex').value=this.value">
+        <input type="text" id="cfg-status-color-hex" placeholder="#34d399" oninput="document.getElementById('cfg-status-color').value=this.value">
+      </div>
+    </div>
+  </div>
+
+  <!-- LINKS -->
+  <div class="section">
+    <div class="section-title">Links</div>
+    <div id="links-list"></div>
+    <button class="btn" onclick="addLink()" style="margin-top:10px;">+ Add Link</button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="section">
+    <div class="section-title">Footer</div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="cfg-footer-title">
+    </div>
+    <div class="field">
+      <label>Subtitle</label>
+      <input type="text" id="cfg-footer-sub">
+    </div>
+  </div>
+
+  <!-- PASSWORD -->
+  <div class="section">
+    <div class="section-title">Security</div>
+    <div class="field">
+      <label>Change Admin Password</label>
+      <div class="field-row">
+        <div class="field">
+          <input type="password" id="new-pw" placeholder="New password">
+        </div>
+        <div class="field" style="flex:0;">
+          <button class="btn" onclick="changePassword()">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ICONS = {
+  email: `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>`,
+  github: `<svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+  box: `<svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>`,
+  link: `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
+  twitter: `<svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>`,
+  globe: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  shield: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  terminal: `<svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
+  code: `<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  discord: `<svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>`,
+};
+
+const ICON_NAMES = Object.keys(ICONS);
+let config = null;
+
+// ── AUTH ──
+// Default password hash (SHA-256 of "noctis")
+const DEFAULT_HASH = '7e5796fd3ef09a5eb41e34567e76a2387a0cd48fd438ea1e3c3a3e2e7e39d498';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tryLogin() {
+  const pw = document.getElementById('pw').value;
+  const hash = await sha256(pw);
+  const stored = localStorage.getItem('noctis_admin_hash') || DEFAULT_HASH;
+  if (hash === stored) {
+    sessionStorage.setItem('noctis_auth', '1');
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('admin').classList.add('active');
+    loadConfig();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+async function changePassword() {
+  const pw = document.getElementById('new-pw').value;
+  if (pw.length < 4) { toast('Password too short'); return; }
+  const hash = await sha256(pw);
+  localStorage.setItem('noctis_admin_hash', hash);
+  document.getElementById('new-pw').value = '';
+  toast('Password updated');
+}
+
+// ── CONFIG ──
+async function loadConfig() {
+  try {
+    const r = await fetch('config.json');
+    config = await r.json();
+  } catch {
+    config = {
+      name: '', brand: '', bio: '', avatar: 'avatar.jpeg',
+      status: { text: 'Available for work', color: '#34d399', visible: true },
+      links: [], footer: { title: 'NOCTIS', sub: '' }
+    };
+  }
+  populateFields();
+}
+
+function populateFields() {
+  document.getElementById('cfg-name').value = config.name;
+  document.getElementById('cfg-brand').value = config.brand;
+  document.getElementById('cfg-bio').value = config.bio;
+  document.getElementById('cfg-avatar').value = config.avatar;
+  document.getElementById('cfg-status-text').value = config.status.text;
+  document.getElementById('cfg-status-color').value = config.status.color;
+  document.getElementById('cfg-status-color-hex').value = config.status.color;
+  document.getElementById('cfg-footer-title').value = config.footer.title;
+  document.getElementById('cfg-footer-sub').value = config.footer.sub;
+
+  const toggle = document.getElementById('status-toggle');
+  toggle.classList.toggle('on', config.status.visible);
+
+  renderLinks();
+}
+
+function gatherConfig() {
+  config.name = document.getElementById('cfg-name').value;
+  config.brand = document.getElementById('cfg-brand').value;
+  config.bio = document.getElementById('cfg-bio').value;
+  config.avatar = document.getElementById('cfg-avatar').value;
+  config.status.text = document.getElementById('cfg-status-text').value;
+  config.status.color = document.getElementById('cfg-status-color').value;
+  config.status.visible = document.getElementById('status-toggle').classList.contains('on');
+  config.footer.title = document.getElementById('cfg-footer-title').value;
+  config.footer.sub = document.getElementById('cfg-footer-sub').value;
+
+  // Gather link fields
+  document.querySelectorAll('.link-item').forEach((el, i) => {
+    if (config.links[i]) {
+      config.links[i].title = el.querySelector('.lf-title').value;
+      config.links[i].sub = el.querySelector('.lf-sub').value;
+      config.links[i].url = el.querySelector('.lf-url').value;
+      const selected = el.querySelector('.icon-opt.selected');
+      if (selected) config.links[i].icon = selected.dataset.icon;
+    }
+  });
+
+  return config;
+}
+
+function toggleStatus() {
+  document.getElementById('status-toggle').classList.toggle('on');
+}
+
+// ── LINKS ──
+function renderLinks() {
+  const list = document.getElementById('links-list');
+  list.innerHTML = '';
+  config.links.forEach((link, i) => {
+    const el = document.createElement('div');
+    el.className = 'link-item';
+    el.draggable = true;
+    el.dataset.index = i;
+
+    el.innerHTML = `
+      <div class="link-item-header">
+        <div class="left">
+          <span class="grip" title="Drag to reorder">&#x2807;</span>
+          <span class="link-preview">${escapeHtml(link.title || 'New Link')}</span>
+        </div>
+        <div class="link-item-actions">
+          <button class="btn small" onclick="moveLink(${i},-1)">&#x2191;</button>
+          <button class="btn small" onclick="moveLink(${i},1)">&#x2193;</button>
+          <button class="btn small danger" onclick="removeLink(${i})">&#x2715;</button>
+        </div>
+      </div>
+      <div class="link-fields">
+        <div class="field">
+          <label>Title</label>
+          <input class="lf-title" type="text" value="${escapeAttr(link.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'New Link'">
+        </div>
+        <div class="field">
+          <label>Subtitle</label>
+          <input class="lf-sub" type="text" value="${escapeAttr(link.sub || '')}">
+        </div>
+        <div class="field full">
+          <label>URL</label>
+          <input class="lf-url" type="text" value="${escapeAttr(link.url)}">
+        </div>
+        <div class="field full">
+          <label>Icon</label>
+          <div class="icon-grid">
+            ${ICON_NAMES.map(name => `
+              <div class="icon-opt ${link.icon === name ? 'selected' : ''}" data-icon="${name}" title="${name}" onclick="selectIcon(this)">
+                ${ICONS[name]}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Drag events
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.effectAllowed = 'move';
+      el.style.opacity = '0.4';
+      el.dataset.dragging = '1';
+    });
+    el.addEventListener('dragend', () => {
+      el.style.opacity = '1';
+      delete el.dataset.dragging;
+      document.querySelectorAll('.link-item').forEach(c => c.style.borderColor = '');
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!el.dataset.dragging) el.style.borderColor = 'var(--accent)';
+    });
+    el.addEventListener('dragleave', () => {
+      if (!el.dataset.dragging) el.style.borderColor = '';
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.style.borderColor = '';
+      const from = document.querySelector('[data-dragging="1"]');
+      if (!from || from === el) return;
+      const fromIdx = parseInt(from.dataset.index);
+      const toIdx = parseInt(el.dataset.index);
+      gatherConfig();
+      const [moved] = config.links.splice(fromIdx, 1);
+      config.links.splice(toIdx, 0, moved);
+      renderLinks();
+    });
+
+    list.appendChild(el);
+  });
+}
+
+function selectIcon(el) {
+  el.closest('.icon-grid').querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function addLink() {
+  gatherConfig();
+  config.links.push({ title: '', sub: '', url: '', icon: 'link' });
+  renderLinks();
+  // Scroll to new link
+  const items = document.querySelectorAll('.link-item');
+  items[items.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function removeLink(i) {
+  gatherConfig();
+  config.links.splice(i, 1);
+  renderLinks();
+}
+
+function moveLink(i, dir) {
+  gatherConfig();
+  const j = i + dir;
+  if (j < 0 || j >= config.links.length) return;
+  [config.links[i], config.links[j]] = [config.links[j], config.links[i]];
+  renderLinks();
+}
+
+// ── OUTPUT ──
+function getJSON() {
+  gatherConfig();
+  return JSON.stringify(config, null, 2);
+}
+
+function downloadConfig() {
+  const blob = new Blob([getJSON()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'config.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Downloaded config.json');
+}
+
+async function copyConfig() {
+  await navigator.clipboard.writeText(getJSON());
+  toast('Copied to clipboard');
+}
+
+function loadPreview() {
+  const json = getJSON();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  window.open(`index.html?config=${encodeURIComponent(url)}`, '_blank', 'width=500,height=800');
+  toast('Preview opened');
+}
+
+// ── UTILS ──
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function escapeAttr(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Auto-login if already authenticated this session
+if (sessionStorage.getItem('noctis_auth') === '1') {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('admin').classList.add('active');
+  loadConfig();
+}
+</script>
+</body>
+</html>
