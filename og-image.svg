@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f0f0f"/>
+  <!-- Subtle grid -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1a1a" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <!-- Watermark -->
+  <text x="600" y="580" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="900" font-size="180" fill="none" stroke="#1a1a1a" stroke-width="1.5" letter-spacing="-6">NOCTIS</text>
+  <!-- Status dot -->
+  <circle cx="440" cy="268" r="5" fill="#34d399"/>
+  <circle cx="440" cy="268" r="10" fill="#34d399" opacity="0.2"/>
+  <!-- Name -->
+  <text x="600" y="240" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="48" fill="#f4f3ef" letter-spacing="-1">S. Markakis</text>
+  <!-- Brand -->
+  <text x="600" y="280" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="14" fill="#555" letter-spacing="4" text-transform="uppercase">NOCTIS  &#183;  CYBERSECURITY &amp; IT</text>
+  <!-- Bio -->
+  <text x="600" y="330" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="300" font-size="18" fill="#888">Cybersecurity researcher &#183; Penetration testing &#183; Software development</text>
+  <!-- Divider -->
+  <line x1="570" y1="365" x2="630" y2="365" stroke="#2a2a2a" stroke-width="1"/>
+  <!-- URL -->
+  <text x="600" y="400" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="13" fill="#444" letter-spacing="2">sp1r4.github.io/noctis-linktree</text>
+</svg>

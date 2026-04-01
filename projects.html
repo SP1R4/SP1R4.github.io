@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com;">
+<title>Projects — NOCTIS</title>
+<meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
+<meta property="og:title" content="Projects — NOCTIS">
+<meta property="og:description" content="Open source projects — cybersecurity tools, research, and development.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sp1r4.github.io/noctis-linktree/projects.html">
+<meta property="og:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
+
+  :root {
+    --bg: #f0efe9;
+    --card-bg: #fff;
+    --card-border: #e0deda;
+    --text-primary: #0f0f0f;
+    --text-secondary: #888;
+    --text-muted: #bbb;
+    --icon-bg: #f0efe9;
+    --icon-border: #e0deda;
+    --icon-stroke: #555;
+    --wm-stroke: #e4e2dc;
+    --divider: #ddd;
+    --toggle-bg: #e0deda;
+    --toggle-knob: #fff;
+    --tag-bg: #e8e6e0;
+    --tag-color: #666;
+  }
+
+  body.dark {
+    --bg: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --card-border: #2a2a2a;
+    --text-primary: #f4f3ef;
+    --text-secondary: #666;
+    --text-muted: #444;
+    --icon-bg: #111;
+    --icon-border: #2a2a2a;
+    --icon-stroke: #888;
+    --wm-stroke: #1a1a1a;
+    --divider: #222;
+    --toggle-bg: #333;
+    --toggle-knob: #f4f3ef;
+    --tag-bg: #1e1e1e;
+    --tag-color: #888;
+  }
+
+  body {
+    background: var(--bg); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 48px 20px 80px; font-family: 'Inter', sans-serif;
+    position: relative; overflow-x: hidden;
+  }
+
+  body::before {
+    content: 'NOCTIS'; position: fixed; bottom: -40px; left: 50%;
+    transform: translateX(-50%); font-size: 160px; font-weight: 900;
+    color: transparent; -webkit-text-stroke: 1.5px var(--wm-stroke);
+    letter-spacing: -6px; pointer-events: none; user-select: none;
+    white-space: nowrap; z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 680px; }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 50;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .toggle-track {
+    width: 40px; height: 22px; background: var(--toggle-bg);
+    border-radius: 11px; position: relative; transition: background 0.25s;
+    border: 0.5px solid var(--card-border);
+  }
+  .toggle-knob {
+    width: 16px; height: 16px; background: var(--toggle-knob);
+    border-radius: 50%; position: absolute; top: 2px; left: 2px;
+    transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  body.dark .toggle-knob { transform: translateX(18px); }
+  .toggle-icon { font-size: 13px; user-select: none; }
+
+  /* ── HEADER ── */
+  .page-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 40px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.1s forwards;
+  }
+  .back-link {
+    width: 36px; height: 36px; border-radius: 3px;
+    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.18s; flex-shrink: 0;
+  }
+  .back-link:hover { background: var(--text-primary); border-color: var(--text-primary); }
+  .back-link svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.18s; }
+  .back-link:hover svg { stroke: var(--bg); }
+  .page-title { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+
+  /* ── PROJECTS GRID ── */
+  .projects { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .projects { grid-template-columns: 1fr; } }
+
+  .project-card {
+    display: flex; flex-direction: column; padding: 20px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border);
+    border-radius: 4px; text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.18s, border-color 0.18s;
+    opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.06s + 0.2s) forwards;
+  }
+  .project-card:hover {
+    background: var(--text-primary); border-color: var(--text-primary);
+    transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  }
+  .project-card:hover .proj-name { color: var(--bg); }
+  .project-card:hover .proj-desc { color: var(--text-secondary); }
+  .project-card:hover .proj-meta { color: var(--text-secondary); }
+  .project-card:hover .proj-lang-dot { box-shadow: 0 0 6px currentColor; }
+  .project-card:hover .proj-tag { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+  .proj-name {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 8px; transition: color 0.18s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .proj-name svg { width: 15px; height: 15px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; transition: stroke 0.18s; }
+  .project-card:hover .proj-name svg { stroke: var(--bg); }
+
+  .proj-desc {
+    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.6; flex: 1; margin-bottom: 14px; transition: color 0.18s;
+  }
+
+  .proj-meta {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: 10px; color: var(--text-muted); transition: color 0.18s;
+  }
+  .proj-stat { display: flex; align-items: center; gap: 4px; }
+  .proj-stat svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .proj-lang { display: flex; align-items: center; gap: 5px; }
+  .proj-lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: box-shadow 0.18s; }
+  .proj-tag {
+    font-size: 9px; padding: 2px 8px; border-radius: 2px;
+    background: var(--tag-bg); color: var(--tag-color);
+    letter-spacing: 0.04em; transition: all 0.18s;
+  }
+
+  .loading {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-muted); font-size: 12px; font-weight: 300;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="theme-toggle" onclick="toggleTheme()">
+  <span class="toggle-icon">&#9728;&#65039;</span>
+  <div class="toggle-track"><div class="toggle-knob"></div></div>
+  <span class="toggle-icon">&#127769;</span>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <a href="index.html" class="back-link" title="Back to home">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div>
+      <div class="page-title">Projects</div>
+      <div class="page-subtitle">Open Source &amp; Research</div>
+    </div>
+  </div>
+  <div class="projects" id="projects">
+    <div class="loading">Loading repositories...</div>
+  </div>
+</div>
+
+<script>
+const LANG_COLORS = {
+  Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
+  Go: '#00ADD8', Rust: '#dea584', C: '#555555', 'C++': '#f34b7d',
+  'C#': '#178600', Java: '#b07219', Ruby: '#701516', PHP: '#4F5D95',
+  Shell: '#89e051', HTML: '#e34c26', CSS: '#563d7c', Lua: '#000080',
+  Nix: '#7e7eff', Dart: '#00B4AB', Kotlin: '#A97BFF', Swift: '#F05138',
+};
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('noctis_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+const savedTheme = localStorage.getItem('noctis_theme');
+if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  document.body.classList.add('dark');
+}
+
+fetch('https://api.github.com/users/SP1R4/repos?sort=updated&per_page=30')
+  .then(r => r.json())
+  .then(repos => {
+    const container = document.getElementById('projects');
+    container.innerHTML = '';
+
+    const filtered = repos
+      .filter(r => !r.fork && !r.private)
+      .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at) - new Date(a.updated_at));
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="loading">No public repositories found.</div>';
+      return;
+    }
+
+    filtered.forEach((repo, i) => {
+      const a = document.createElement('a');
+      a.className = 'project-card';
+      a.href = repo.html_url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.style.setProperty('--i', i);
+
+      const name = document.createElement('div');
+      name.className = 'proj-name';
+      name.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+      const nameText = document.createElement('span');
+      nameText.textContent = repo.name;
+      name.appendChild(nameText);
+
+      const desc = document.createElement('div');
+      desc.className = 'proj-desc';
+      desc.textContent = repo.description || 'No description';
+
+      const meta = document.createElement('div');
+      meta.className = 'proj-meta';
+
+      if (repo.language) {
+        const lang = document.createElement('span');
+        lang.className = 'proj-lang';
+        const dot = document.createElement('span');
+        dot.className = 'proj-lang-dot';
+        dot.style.background = LANG_COLORS[repo.language] || '#888';
+        const langName = document.createElement('span');
+        langName.textContent = repo.language;
+        lang.appendChild(dot);
+        lang.appendChild(langName);
+        meta.appendChild(lang);
+      }
+
+      if (repo.stargazers_count > 0) {
+        const stars = document.createElement('span');
+        stars.className = 'proj-stat';
+        stars.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+        const count = document.createElement('span');
+        count.textContent = repo.stargazers_count;
+        stars.appendChild(count);
+        meta.appendChild(stars);
+      }
+
+      if (repo.forks_count > 0) {
+        const forks = document.createElement('span');
+        forks.className = 'proj-stat';
+        forks.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><line x1="12" y1="12" x2="12" y2="15"/></svg>`;
+        const count = document.createElement('span');
+        count.textContent = repo.forks_count;
+        forks.appendChild(count);
+        meta.appendChild(forks);
+      }
+
+      if (repo.topics && repo.topics.length > 0) {
+        repo.topics.slice(0, 3).forEach(t => {
+          const tag = document.createElement('span');
+          tag.className = 'proj-tag';
+          tag.textContent = t;
+          meta.appendChild(tag);
+        });
+      }
+
+      a.appendChild(name);
+      a.appendChild(desc);
+      a.appendChild(meta);
+      container.appendChild(a);
+    });
+  })
+  .catch(() => {
+    document.getElementById('projects').innerHTML = '<div class="loading">Could not load repositories.</div>';
+  });
+</script>
+</body>
+</html>

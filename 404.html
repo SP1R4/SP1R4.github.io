@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
+<title>404 — NOCTIS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg: #f0efe9;
+    --text-primary: #0f0f0f;
+    --text-secondary: #888;
+    --text-muted: #bbb;
+    --wm-stroke: #e4e2dc;
+    --card-bg: #fff;
+    --card-border: #e0deda;
+    --icon-stroke: #555;
+  }
+
+  body.dark {
+    --bg: #0f0f0f;
+    --text-primary: #f4f3ef;
+    --text-secondary: #666;
+    --text-muted: #444;
+    --wm-stroke: #1a1a1a;
+    --card-bg: #1a1a1a;
+    --card-border: #2a2a2a;
+    --icon-stroke: #888;
+  }
+
+  body {
+    background: var(--bg); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; position: relative; overflow: hidden;
+    padding: 40px 20px;
+  }
+
+  body::before {
+    content: '404';
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 280px; font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--wm-stroke);
+    letter-spacing: -10px;
+    pointer-events: none; user-select: none; z-index: 0;
+  }
+
+  .content {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    text-align: center;
+    opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+  }
+
+  .glitch {
+    font-size: 64px; font-weight: 900; color: var(--text-primary);
+    letter-spacing: -3px;
+  }
+
+  .message {
+    font-size: 13px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.7; max-width: 320px;
+  }
+
+  .divider {
+    width: 32px; height: 0.5px; background: var(--text-muted);
+    margin: 8px 0;
+  }
+
+  .home-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border);
+    border-radius: 4px; text-decoration: none;
+    font-size: 11px; font-weight: 500; color: var(--text-primary);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: all 0.18s;
+  }
+  .home-link:hover {
+    background: var(--text-primary); color: var(--bg);
+    border-color: var(--text-primary);
+    transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+  .home-link svg {
+    width: 14px; height: 14px; stroke: currentColor; fill: none;
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .footer-noctis {
+    margin-top: 40px;
+    font-size: 10px; font-weight: 900; color: var(--text-muted);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="content">
+  <div class="glitch">404</div>
+  <div class="message">
+    The page you're looking for doesn't exist or has been moved.
+  </div>
+  <div class="divider"></div>
+  <a href="index.html" class="home-link">
+    <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to home
+  </a>
+  <div class="footer-noctis">NOCTIS</div>
+</div>
+
+<script>
+const savedTheme = localStorage.getItem('noctis_theme');
+if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  document.body.classList.add('dark');
+}
+</script>
+</body>
+</html>
