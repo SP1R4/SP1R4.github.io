@@ -266,6 +266,7 @@
     <button class="btn" onclick="addPost()" style="margin-top:10px;">+ Add Post</button>
     <div style="margin-top:14px; display:flex; gap:8px;">
       <button class="btn" onclick="downloadPosts()">Download posts.json</button>
+      <button class="btn" onclick="downloadRSS()">Download feed.xml</button>
       <button class="btn primary" onclick="copyPosts()">Copy JSON</button>
     </div>
   </div>
@@ -719,6 +720,45 @@ function downloadPosts() {
 async function copyPosts() {
   await navigator.clipboard.writeText(getPostsJSON());
   toast('Copied posts.json to clipboard');
+}
+
+function generateRSS() {
+  gatherPosts();
+  const base = 'https://sp1r4.github.io/noctis-linktree';
+  const items = postsData.map(p => {
+    const d = new Date(p.date + 'T00:00:00Z');
+    const cats = (p.tags || []).map(t => `      <category>${escapeHtml(t)}</category>`).join('\n');
+    return `    <item>
+      <title>${escapeHtml(p.title)}</title>
+      <link>${base}/blog.html#${p.slug}</link>
+      <guid>${base}/blog.html#${p.slug}</guid>
+      <pubDate>${d.toUTCString()}</pubDate>
+      <description>${escapeHtml(p.description)}</description>
+${cats}
+    </item>`;
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NOCTIS Blog</title>
+    <link>${base}/blog.html</link>
+    <description>Cybersecurity research, CTF writeups, and development notes by S. Markakis.</description>
+    <language>en</language>
+    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
+</rss>`;
+}
+
+function downloadRSS() {
+  const blob = new Blob([generateRSS()], { type: 'application/xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'feed.xml';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Downloaded feed.xml');
 }
 
 // Auto-login if already authenticated this session

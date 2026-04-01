@@ -10,6 +10,10 @@
 <meta property="og:description" content="Cybersecurity research, CTF writeups, and development notes.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sp1r4.github.io/noctis-linktree/blog.html">
+<meta property="og:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -273,6 +277,7 @@
       <div class="post-view-meta">
         <span id="pv-date"></span>
         <span id="pv-tags"></span>
+        <span id="pv-reading-time"></span>
       </div>
     </div>
     <div class="md-content" id="pv-content"></div>
@@ -364,6 +369,10 @@ async function showPost(slug) {
         tagsEl.appendChild(tag);
       });
     }
+
+    const words = md.replace(/```[\s\S]*?```/g, '').replace(/[#*`>\-\[\]()!]/g, '').split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.round(words / 200));
+    document.getElementById('pv-reading-time').textContent = minutes + ' min read';
 
     document.getElementById('pv-content').innerHTML = DOMPurify.sanitize(marked.parse(md));
 

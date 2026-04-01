@@ -32,6 +32,12 @@
       "icon": "box"
     },
     {
+      "title": "Projects",
+      "sub": "Open source tools & research",
+      "url": "projects.html",
+      "icon": "code"
+    },
+    {
       "title": "Blog",
       "sub": "Research, writeups & development notes",
       "url": "blog.html",
