@@ -819,8 +819,16 @@ async function changePassword() {
 }
 
 function resetAll() {
-  if (!confirm('This will clear your admin password and all local settings. Continue?')) return;
+  if (!confirm('This will clear your admin password and all saved settings. Continue?')) return;
   localStorage.removeItem('noctis_admin_hash');
+  localStorage.removeItem('noctis_admin_config');
+  localStorage.removeItem('noctis_admin_posts');
+  localStorage.removeItem('noctis_admin_services');
+  localStorage.removeItem('noctis_admin_seo');
+  localStorage.removeItem('noctis_admin_projects');
+  localStorage.removeItem('noctis_admin_theme');
+  localStorage.removeItem('noctis_admin_blog_categories');
+  localStorage.removeItem('noctis_preview');
   sessionStorage.removeItem('noctis_auth');
   location.reload();
 }
@@ -848,19 +856,28 @@ function clearDirty() {
 
 // ── CONFIG ──
 async function loadConfig() {
-  try {
-    const r = await fetch('config.json');
-    config = await r.json();
-  } catch {
-    config = {
-      name: '', brand: '', bio: '', avatar: 'avatar.jpeg',
-      status: { text: 'Available for work', color: '#34d399', visible: true },
-      links: [], footer: { title: 'NOCTIS', sub: '' }
-    };
+  // Check localStorage first (saved edits), fall back to config.json on disk
+  const saved = localStorage.getItem('noctis_admin_config');
+  if (saved) {
+    try { config = JSON.parse(saved); } catch { config = null; }
+  }
+  if (!config) {
+    try {
+      const r = await fetch('config.json');
+      config = await r.json();
+    } catch {
+      config = {
+        name: '', brand: '', bio: '', avatar: 'avatar.jpeg',
+        status: { text: 'Available for work', color: '#34d399', visible: true },
+        links: [], footer: { title: 'NOCTIS', sub: '' }
+      };
+    }
   }
   populateFields();
   loadPosts();
   loadServicesFromDOM();
+  loadSavedSEO();
+  loadSavedProjects();
   renderThemeVars();
   updateDashboard();
 }
@@ -965,7 +982,12 @@ function moveLink(i, dir) { gatherConfig(); const j = i + dir; if (j < 0 || j >=
 
 // ── POSTS ──
 async function loadPosts() {
-  try { postsData = await (await fetch('posts.json')).json(); } catch { postsData = []; }
+  const saved = localStorage.getItem('noctis_admin_posts');
+  if (saved) {
+    try { postsData = JSON.parse(saved); } catch { postsData = []; }
+  } else {
+    try { postsData = await (await fetch('posts.json')).json(); } catch { postsData = []; }
+  }
   renderPosts();
 }
 
@@ -1038,13 +1060,18 @@ function downloadRSS() { downloadFile('feed.xml', generateRSS(), 'application/xm
 
 // ── SERVICES ──
 function loadServicesFromDOM() {
-  // Default services
-  servicesData = [
-    { title: 'Penetration Testing', desc: 'Simulated attacks against your web applications, networks, and infrastructure to find vulnerabilities before real attackers do.', icon: 'shield', items: ['Web application testing', 'Network pentesting', 'API security', 'Wireless assessments', 'Social engineering'] },
-    { title: 'Security Audits', desc: 'Comprehensive review of your security posture, configurations, policies, and code to identify risks and compliance gaps.', icon: 'alert', items: ['Configuration review', 'Code audit', 'Cloud security', 'Compliance checks', 'Risk assessment'] },
-    { title: 'IT Infrastructure & Automation', desc: 'Design and implementation of backup systems, monitoring, deployment pipelines, and custom automation tools.', icon: 'terminal', items: ['Backup & disaster recovery', 'Server hardening', 'CI/CD pipelines', 'Monitoring & alerting', 'Custom tooling'] },
-    { title: 'IT Consulting', desc: 'Technical guidance on architecture decisions, technology selection, network design, and security strategy for your organization.', icon: 'monitor', items: ['Architecture review', 'Network design', 'Technology selection', 'Security strategy', 'Incident response planning'] },
-  ];
+  const saved = localStorage.getItem('noctis_admin_services');
+  if (saved) {
+    try { servicesData = JSON.parse(saved); } catch { servicesData = []; }
+  } else {
+    // Default services
+    servicesData = [
+      { title: 'Penetration Testing', desc: 'Simulated attacks against your web applications, networks, and infrastructure to find vulnerabilities before real attackers do.', icon: 'shield', items: ['Web application testing', 'Network pentesting', 'API security', 'Wireless assessments', 'Social engineering'] },
+      { title: 'Security Audits', desc: 'Comprehensive review of your security posture, configurations, policies, and code to identify risks and compliance gaps.', icon: 'alert', items: ['Configuration review', 'Code audit', 'Cloud security', 'Compliance checks', 'Risk assessment'] },
+      { title: 'IT Infrastructure & Automation', desc: 'Design and implementation of backup systems, monitoring, deployment pipelines, and custom automation tools.', icon: 'terminal', items: ['Backup & disaster recovery', 'Server hardening', 'CI/CD pipelines', 'Monitoring & alerting', 'Custom tooling'] },
+      { title: 'IT Consulting', desc: 'Technical guidance on architecture decisions, technology selection, network design, and security strategy for your organization.', icon: 'monitor', items: ['Architecture review', 'Network design', 'Technology selection', 'Security strategy', 'Incident response planning'] },
+    ];
+  }
   renderServices();
 }
 
@@ -1117,6 +1144,43 @@ function downloadServices() {
 }
 
 // ── THEME VARS ──
+function loadSavedSEO() {
+  const saved = localStorage.getItem('noctis_admin_seo');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      document.getElementById('seo-og-title').value = s.ogTitle || '';
+      document.getElementById('seo-og-desc').value = s.ogDesc || '';
+      document.getElementById('seo-og-image').value = s.ogImage || '';
+      document.getElementById('seo-base-url').value = s.baseUrl || '';
+      document.getElementById('seo-twitter').value = s.twitter || '';
+      document.getElementById('seo-index-toggle').classList.toggle('on', s.indexable !== false);
+    } catch {}
+  }
+}
+
+function loadSavedProjects() {
+  const saved = localStorage.getItem('noctis_admin_projects');
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      document.getElementById('proj-featured').value = p.featured || '';
+      document.getElementById('proj-excluded').value = p.excluded || '';
+    } catch {}
+  }
+  const cats = localStorage.getItem('noctis_admin_blog_categories');
+  if (cats) document.getElementById('blog-categories').value = cats;
+
+  const themeSaved = localStorage.getItem('noctis_admin_theme');
+  if (themeSaved) {
+    try {
+      const t = JSON.parse(themeSaved);
+      if (t.light) themeLight = { ...THEME_LIGHT_DEFAULTS, ...t.light };
+      if (t.dark) themeDark = { ...THEME_DARK_DEFAULTS, ...t.dark };
+    } catch {}
+  }
+}
+
 function renderThemeVars() {
   renderColorGroup('theme-light-vars', themeLight);
   renderColorGroup('theme-dark-vars', themeDark);
@@ -1186,10 +1250,30 @@ function saveAll() {
   gatherPosts();
   gatherServices();
   gatherThemeVars();
+
+  // Persist everything to localStorage
+  localStorage.setItem('noctis_admin_config', JSON.stringify(config));
+  localStorage.setItem('noctis_admin_posts', JSON.stringify(postsData));
+  localStorage.setItem('noctis_admin_services', JSON.stringify(servicesData));
+  localStorage.setItem('noctis_admin_seo', JSON.stringify({
+    ogTitle: document.getElementById('seo-og-title').value,
+    ogDesc: document.getElementById('seo-og-desc').value,
+    ogImage: document.getElementById('seo-og-image').value,
+    baseUrl: document.getElementById('seo-base-url').value,
+    twitter: document.getElementById('seo-twitter').value,
+    indexable: document.getElementById('seo-index-toggle').classList.contains('on'),
+  }));
+  localStorage.setItem('noctis_admin_projects', JSON.stringify({
+    featured: document.getElementById('proj-featured').value,
+    excluded: document.getElementById('proj-excluded').value,
+  }));
+  localStorage.setItem('noctis_admin_theme', JSON.stringify({ light: themeLight, dark: themeDark }));
+  localStorage.setItem('noctis_admin_blog_categories', document.getElementById('blog-categories').value);
+
   updateDashboard();
   clearDirty();
   logChange('All changes saved');
-  toast('Changes saved locally');
+  toast('Saved — use Export All to download files for deployment');
 }
 
 function downloadFile(name, content, type) {
@@ -1227,6 +1311,7 @@ function importConfig() {
     if (!json) return;
     try {
       config = JSON.parse(json);
+      localStorage.setItem('noctis_admin_config', JSON.stringify(config));
       populateFields();
       updateDashboard();
       markDirty();
@@ -1243,6 +1328,7 @@ function handleImport(event) {
   reader.onload = e => {
     try {
       config = JSON.parse(e.target.result);
+      localStorage.setItem('noctis_admin_config', JSON.stringify(config));
       populateFields();
       updateDashboard();
       markDirty();
