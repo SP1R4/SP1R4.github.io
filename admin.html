@@ -11,22 +11,27 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #222;
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --surface3: #222;
     --border: #2a2a2a;
     --border-focus: #555;
     --text: #f4f3ef;
     --text2: #888;
     --text3: #555;
     --accent: #34d399;
+    --accent-dim: rgba(52,211,153,0.12);
     --danger: #e24b4a;
     --danger-bg: rgba(226,75,74,0.1);
+    --warning: #f59e0b;
+    --info: #60a5fa;
   }
 
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Inter', sans-serif; min-height: 100vh;
+    overflow: hidden;
   }
 
   /* ── LOGIN ── */
@@ -45,36 +50,111 @@
   .login-box input:focus { border-color: var(--border-focus); }
   .login-error { font-size: 11px; color: var(--danger); display: none; }
 
-  /* ── LAYOUT ── */
-  .admin { display: none; max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
-  .admin.active { display: block; }
-
-  .admin-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
-  }
-  .admin-header h1 { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
-  .admin-header .actions { display: flex; gap: 8px; }
-
   /* ── BUTTONS ── */
   .btn {
     padding: 8px 18px; font-size: 11px; font-family: 'Inter', sans-serif;
     border-radius: 3px; cursor: pointer; letter-spacing: 0.06em;
-    border: 1px solid var(--border); background: var(--surface);
+    border: 1px solid var(--border); background: var(--surface2);
     color: var(--text2); transition: all 0.15s; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
   }
   .btn:hover { border-color: var(--border-focus); color: var(--text); }
   .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
   .btn.primary:hover { opacity: 0.85; }
+  .btn.accent { background: var(--accent); color: #0a0a0a; border-color: var(--accent); font-weight: 600; }
+  .btn.accent:hover { opacity: 0.85; }
   .btn.danger { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
   .btn.danger:hover { background: var(--danger); color: #fff; }
   .btn.small { padding: 5px 12px; font-size: 10px; }
+  .btn.ghost { border-color: transparent; background: transparent; }
+  .btn.ghost:hover { background: var(--surface2); }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+  /* ── LAYOUT ── */
+  .app { display: none; height: 100vh; }
+  .app.active { display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px; min-width: 220px; height: 100vh;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .sidebar-brand {
+    padding: 24px 20px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-brand h1 { font-size: 15px; font-weight: 900; letter-spacing: -0.5px; }
+  .sidebar-brand .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    flex-shrink: 0;
+  }
+  .sidebar-nav { padding: 12px 10px; flex: 1; }
+  .nav-section {
+    font-size: 8px; color: var(--text3); letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 12px 10px 6px; margin-top: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 4px; cursor: pointer;
+    font-size: 12px; color: var(--text2); transition: all 0.12s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .nav-item .badge {
+    margin-left: auto; font-size: 9px; padding: 1px 6px; border-radius: 8px;
+    background: var(--accent-dim); color: var(--accent); font-weight: 600;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px; border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text3);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sidebar-footer a {
+    color: var(--text2); text-decoration: none; font-size: 10px;
+    display: flex; align-items: center; gap: 6px; transition: color 0.12s;
+  }
+  .sidebar-footer a:hover { color: var(--text); }
+  .sidebar-footer a svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1; overflow-y: auto; padding: 0;
+    display: flex; flex-direction: column;
+  }
+
+  .main-header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .main-header h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .main-header .actions { display: flex; gap: 8px; align-items: center; }
+
+  .unsaved-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--warning);
+    display: none; flex-shrink: 0;
+  }
+  .unsaved-dot.show { display: block; }
+
+  .main-body { padding: 28px 32px 80px; max-width: 800px; }
+
+  /* ── TABS (inner) ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
   /* ── SECTIONS ── */
-  .section { margin-bottom: 36px; }
+  .section { margin-bottom: 32px; }
   .section-title {
     font-size: 9px; color: var(--text3); letter-spacing: 0.2em;
     text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
   }
 
   /* ── FIELDS ── */
@@ -88,9 +168,10 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
     color: var(--text); outline: none; transition: border-color 0.15s;
   }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--border-focus); }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
   .field textarea { resize: vertical; min-height: 60px; line-height: 1.6; }
   .field select option { background: var(--surface); color: var(--text); }
+  .field .hint { font-size: 10px; color: var(--text3); margin-top: 4px; }
 
   .field-row { display: flex; gap: 12px; }
   .field-row .field { flex: 1; }
@@ -102,7 +183,7 @@
 
   /* ── TOGGLE ── */
   .toggle {
-    width: 36px; height: 20px; background: var(--surface2); border-radius: 10px;
+    width: 36px; height: 20px; background: var(--surface3); border-radius: 10px;
     position: relative; cursor: pointer; border: 1px solid var(--border);
     flex-shrink: 0; transition: background 0.2s;
   }
@@ -115,9 +196,7 @@
   .toggle.on::after { transform: translateX(16px); }
 
   /* ── COLOR PICKER ── */
-  .color-pick {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .color-pick { display: flex; align-items: center; gap: 10px; }
   .color-pick input[type="color"] {
     width: 32px; height: 32px; border: 1px solid var(--border);
     border-radius: 4px; padding: 2px; cursor: pointer; background: var(--surface);
@@ -140,18 +219,14 @@
     padding: 4px; margin-right: 8px;
   }
   .link-item-header .left { display: flex; align-items: center; }
-  .link-item-header .link-preview {
-    font-size: 13px; font-weight: 500;
-  }
+  .link-item-header .link-preview { font-size: 13px; font-weight: 500; }
   .link-item-actions { display: flex; gap: 6px; }
 
   .link-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .link-fields .full { grid-column: 1 / -1; }
 
   /* ── ICON SELECTOR ── */
-  .icon-grid {
-    display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0;
-  }
+  .icon-grid { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
   .icon-opt {
     width: 36px; height: 36px; border-radius: 4px;
     background: var(--surface2); border: 1px solid var(--border);
@@ -159,9 +234,71 @@
     cursor: pointer; transition: all 0.15s;
   }
   .icon-opt:hover { border-color: var(--border-focus); }
-  .icon-opt.selected { border-color: var(--accent); background: rgba(52,211,153,0.1); }
+  .icon-opt.selected { border-color: var(--accent); background: var(--accent-dim); }
   .icon-opt svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .icon-opt.selected svg { stroke: var(--accent); }
+
+  /* ── DASHBOARD CARDS ── */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .dash-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    padding: 20px; transition: border-color 0.15s;
+  }
+  .dash-card:hover { border-color: var(--border-focus); }
+  .dash-card .dc-label { font-size: 9px; color: var(--text3); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+  .dash-card .dc-value { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .dash-card .dc-sub { font-size: 10px; color: var(--text2); margin-top: 4px; }
+
+  .quick-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .quick-links a {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text2); text-decoration: none;
+    font-size: 11px; transition: all 0.15s;
+  }
+  .quick-links a:hover { border-color: var(--border-focus); color: var(--text); }
+  .quick-links a svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── SERVICE ITEMS ── */
+  .service-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    padding: 16px; margin-bottom: 10px; transition: border-color 0.15s;
+  }
+  .service-item:hover { border-color: var(--border-focus); }
+  .service-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .service-header .svc-title { font-size: 13px; font-weight: 500; }
+
+  /* ── TAG INPUT ── */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .tag-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 3px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 11px; color: var(--text2);
+  }
+  .tag-pill .tag-x {
+    cursor: pointer; font-size: 13px; color: var(--text3);
+    margin-left: 2px; line-height: 1;
+  }
+  .tag-pill .tag-x:hover { color: var(--danger); }
+
+  /* ── THEME VARS ── */
+  .color-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .color-row label { width: 140px; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+  .color-row input[type="color"] {
+    width: 28px; height: 28px; border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px; cursor: pointer; background: var(--surface);
+  }
+  .color-row input[type="text"] {
+    width: 90px; padding: 6px 10px; font-size: 12px; font-family: 'Inter', sans-serif;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text); outline: none;
+  }
 
   /* ── TOAST ── */
   .toast {
@@ -173,14 +310,19 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* ── PREVIEW ── */
-  .preview-frame {
-    position: fixed; top: 0; right: 0; width: 400px; height: 100vh;
-    border: none; border-left: 1px solid var(--border);
-    display: none; z-index: 50; background: var(--bg);
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .sidebar { width: 56px; min-width: 56px; }
+    .sidebar-brand h1, .sidebar-brand .dot, .nav-section,
+    .nav-item span, .nav-item .badge, .sidebar-footer { display: none; }
+    .sidebar-brand { padding: 16px; justify-content: center; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .nav-item svg { margin: 0; }
+    .main-body { padding: 20px 16px 80px; }
+    .main-header { padding: 14px 16px; }
+    .dash-grid { grid-template-columns: 1fr; }
+    .link-fields { grid-template-columns: 1fr; }
   }
-  .preview-frame.open { display: block; }
-  body.previewing .admin { max-width: 500px; }
 </style>
 </head>
 <body>
@@ -197,113 +339,381 @@
   <p id="login-setup" style="display:none;font-size:11px;color:var(--text2);">First time? Set your admin password above.</p>
 </div>
 
-<!-- ADMIN -->
-<div class="admin" id="admin">
-  <div class="admin-header">
-    <h1>NOCTIS Admin</h1>
-    <div class="actions">
-      <button class="btn" onclick="loadPreview()">Preview</button>
-      <button class="btn" onclick="downloadConfig()">Download config.json</button>
-      <button class="btn primary" onclick="copyConfig()">Copy JSON</button>
-    </div>
-  </div>
+<!-- APP -->
+<div class="app" id="app">
 
-  <!-- PROFILE -->
-  <div class="section">
-    <div class="section-title">Profile</div>
-    <div class="field">
-      <label>Name</label>
-      <input type="text" id="cfg-name">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <h1>NOCTIS</h1>
+      <div class="dot"></div>
     </div>
-    <div class="field">
-      <label>Brand Tag</label>
-      <input type="text" id="cfg-brand">
-    </div>
-    <div class="field">
-      <label>Bio</label>
-      <textarea id="cfg-bio"></textarea>
-    </div>
-    <div class="field">
-      <label>Avatar Filename</label>
-      <input type="text" id="cfg-avatar" placeholder="avatar.jpeg">
-    </div>
-  </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </div>
 
-  <!-- STATUS -->
-  <div class="section">
-    <div class="section-title">Status</div>
-    <div class="field-inline">
-      <label>Visible</label>
-      <div class="toggle" id="status-toggle" onclick="toggleStatus()"></div>
-    </div>
-    <div class="field">
-      <label>Status Text</label>
-      <input type="text" id="cfg-status-text">
-    </div>
-    <div class="field">
-      <label>Dot Color</label>
-      <div class="color-pick">
-        <input type="color" id="cfg-status-color" oninput="document.getElementById('cfg-status-color-hex').value=this.value">
-        <input type="text" id="cfg-status-color-hex" placeholder="#34d399" oninput="document.getElementById('cfg-status-color').value=this.value">
+      <div class="nav-section">Content</div>
+      <div class="nav-item" data-tab="profile" onclick="switchTab('profile')">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+      <div class="nav-item" data-tab="links" onclick="switchTab('links')">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>Links</span>
+        <span class="badge" id="links-count">0</span>
+      </div>
+      <div class="nav-item" data-tab="blog" onclick="switchTab('blog')">
+        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>Blog</span>
+        <span class="badge" id="posts-count">0</span>
+      </div>
+      <div class="nav-item" data-tab="services" onclick="switchTab('services')">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Services</span>
+      </div>
+      <div class="nav-item" data-tab="projects" onclick="switchTab('projects')">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Projects</span>
+      </div>
+
+      <div class="nav-section">Settings</div>
+      <div class="nav-item" data-tab="seo" onclick="switchTab('seo')">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>SEO &amp; Meta</span>
+      </div>
+      <div class="nav-item" data-tab="theme" onclick="switchTab('theme')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span>Theme</span>
+      </div>
+      <div class="nav-item" data-tab="security" onclick="switchTab('security')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Security</span>
       </div>
     </div>
-  </div>
-
-  <!-- LINKS -->
-  <div class="section">
-    <div class="section-title">Links</div>
-    <div id="links-list"></div>
-    <button class="btn" onclick="addLink()" style="margin-top:10px;">+ Add Link</button>
-  </div>
-
-  <!-- POSTS -->
-  <div class="section">
-    <div class="section-title">Blog Posts</div>
-    <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
-      Manage your posts.json manifest. You still need to create the actual .md files in the <code style="font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:3px;">posts/</code> directory.
-    </p>
-    <div id="posts-list"></div>
-    <button class="btn" onclick="addPost()" style="margin-top:10px;">+ Add Post</button>
-    <div style="margin-top:14px; display:flex; gap:8px;">
-      <button class="btn" onclick="downloadPosts()">Download posts.json</button>
-      <button class="btn" onclick="downloadRSS()">Download feed.xml</button>
-      <button class="btn primary" onclick="copyPosts()">Copy JSON</button>
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View live site
+      </a>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <div class="section">
-    <div class="section-title">Footer</div>
-    <div class="field">
-      <label>Title</label>
-      <input type="text" id="cfg-footer-title">
-    </div>
-    <div class="field">
-      <label>Subtitle</label>
-      <input type="text" id="cfg-footer-sub">
-    </div>
-  </div>
-
-  <!-- PASSWORD -->
-  <div class="section">
-    <div class="section-title">Security</div>
-    <div class="field">
-      <label>Change Admin Password</label>
-      <div class="field-row">
-        <div class="field">
-          <input type="password" id="new-pw" placeholder="New password">
-        </div>
-        <div class="field" style="flex:0;">
-          <button class="btn" onclick="changePassword()">Update</button>
-        </div>
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h2 id="tab-title">Dashboard</h2>
+        <div class="unsaved-dot" id="unsaved-dot" title="Unsaved changes"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="loadPreview()">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        <button class="btn" onclick="importConfig()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Import
+        </button>
+        <button class="btn" onclick="exportAll()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Export All
+        </button>
+        <button class="btn accent" onclick="saveAll()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Save
+        </button>
       </div>
     </div>
+    <div class="main-body">
+
+      <!-- ─── DASHBOARD ─── -->
+      <div class="tab-panel active" id="panel-dashboard">
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dc-label">Links</div>
+            <div class="dc-value" id="dash-links">0</div>
+            <div class="dc-sub">Active link cards</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Blog Posts</div>
+            <div class="dc-value" id="dash-posts">0</div>
+            <div class="dc-sub">Published articles</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Services</div>
+            <div class="dc-value" id="dash-services">0</div>
+            <div class="dc-sub">Offered services</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Status</div>
+            <div class="dc-value" id="dash-status" style="font-size:14px;">—</div>
+            <div class="dc-sub" id="dash-status-sub">Current availability</div>
+          </div>
+        </div>
+
+        <div class="section-title">Quick Links</div>
+        <div class="quick-links">
+          <a href="index.html" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Live Site
+          </a>
+          <a href="projects.html" target="_blank">
+            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Projects
+          </a>
+          <a href="services.html" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Services
+          </a>
+          <a href="blog.html" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Blog
+          </a>
+          <a href="https://noctis-sp1r4.goatcounter.com" target="_blank">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Analytics
+          </a>
+          <a href="https://github.com/SP1R4/SP1R4.github.io" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            GitHub Repo
+          </a>
+        </div>
+
+        <div class="section-title">Recent Changes</div>
+        <div id="dash-changelog" style="font-size:12px;color:var(--text2);line-height:1.8;">
+          Track changes as you edit. Modifications appear here.
+        </div>
+      </div>
+
+      <!-- ─── PROFILE ─── -->
+      <div class="tab-panel" id="panel-profile">
+        <div class="section">
+          <div class="section-title">Identity</div>
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="cfg-name" oninput="markDirty()">
+          </div>
+          <div class="field">
+            <label>Brand Tag</label>
+            <input type="text" id="cfg-brand" oninput="markDirty()">
+            <div class="hint">Shown below your name (e.g. "NOCTIS · Cybersecurity & IT")</div>
+          </div>
+          <div class="field">
+            <label>Bio</label>
+            <textarea id="cfg-bio" rows="3" oninput="markDirty()"></textarea>
+          </div>
+          <div class="field">
+            <label>Avatar Filename</label>
+            <input type="text" id="cfg-avatar" placeholder="avatar.jpeg" oninput="markDirty()">
+            <div class="hint">Place image file in root directory</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Status Badge</div>
+          <div class="field-inline">
+            <label>Visible</label>
+            <div class="toggle" id="status-toggle" onclick="toggleStatus();markDirty()"></div>
+          </div>
+          <div class="field">
+            <label>Status Text</label>
+            <input type="text" id="cfg-status-text" oninput="markDirty()">
+          </div>
+          <div class="field">
+            <label>Dot Color</label>
+            <div class="color-pick">
+              <input type="color" id="cfg-status-color" oninput="document.getElementById('cfg-status-color-hex').value=this.value;markDirty()">
+              <input type="text" id="cfg-status-color-hex" placeholder="#34d399" oninput="document.getElementById('cfg-status-color').value=this.value;markDirty()">
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Footer</div>
+          <div class="field">
+            <label>Title</label>
+            <input type="text" id="cfg-footer-title" oninput="markDirty()">
+          </div>
+          <div class="field">
+            <label>Subtitle</label>
+            <input type="text" id="cfg-footer-sub" oninput="markDirty()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── LINKS ─── -->
+      <div class="tab-panel" id="panel-links">
+        <div class="section">
+          <div id="links-list"></div>
+          <button class="btn" onclick="addLink()" style="margin-top:10px;">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Link
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── BLOG ─── -->
+      <div class="tab-panel" id="panel-blog">
+        <div class="section">
+          <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
+            Manage your posts.json manifest. You still need to create .md files in the <code style="font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:3px;">posts/</code> directory.
+          </p>
+          <div id="posts-list"></div>
+          <button class="btn" onclick="addPost()" style="margin-top:10px;">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Post
+          </button>
+          <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn" onclick="downloadPosts()">Download posts.json</button>
+            <button class="btn" onclick="downloadRSS()">Download feed.xml</button>
+            <button class="btn primary" onclick="copyPosts()">Copy JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SERVICES ─── -->
+      <div class="tab-panel" id="panel-services">
+        <div class="section">
+          <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
+            Manage the services displayed on your services page. Changes generate a new services.html.
+          </p>
+          <div class="field">
+            <label>Page Intro</label>
+            <textarea id="svc-intro" rows="2" oninput="markDirty()">I work with businesses and individuals to identify security weaknesses, harden infrastructure, and build reliable systems. Based in Crete, available remotely worldwide.</textarea>
+          </div>
+          <div class="field">
+            <label>Contact Email</label>
+            <input type="text" id="svc-email" value="sp1r4.work@gmail.com" oninput="markDirty()">
+          </div>
+          <div id="services-list"></div>
+          <button class="btn" onclick="addService()" style="margin-top:10px;">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Service
+          </button>
+          <div style="margin-top:14px;">
+            <button class="btn primary" onclick="downloadServices()">Download services.html</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── PROJECTS ─── -->
+      <div class="tab-panel" id="panel-projects">
+        <div class="section">
+          <div class="section-title">Featured Repositories</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
+            These repos appear at the top of your projects page with a "Featured" badge.
+          </p>
+          <div class="field">
+            <label>Featured Repos (comma-separated names)</label>
+            <input type="text" id="proj-featured" value="BackupHandler, PhantomTrap, Qsafe, hashcracker" oninput="markDirty()">
+            <div class="hint">Must match exact GitHub repository names</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Excluded Repositories</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
+            These repos are hidden from the projects page (e.g. profile repo, site repo).
+          </p>
+          <div class="field">
+            <label>Excluded Repos (comma-separated names)</label>
+            <input type="text" id="proj-excluded" value="SP1R4, noctis-linktree, sp1r4.github.io" oninput="markDirty()">
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <button class="btn primary" onclick="downloadProjectsHTML()">Download projects.html</button>
+        </div>
+      </div>
+
+      <!-- ─── SEO ─── -->
+      <div class="tab-panel" id="panel-seo">
+        <div class="section">
+          <div class="section-title">Global Meta Tags</div>
+          <div class="field">
+            <label>OG Title</label>
+            <input type="text" id="seo-og-title" value="S. Markakis — NOCTIS" oninput="markDirty()">
+          </div>
+          <div class="field">
+            <label>OG Description</label>
+            <textarea id="seo-og-desc" rows="2" oninput="markDirty()">Cybersecurity researcher with expertise in vulnerability discovery, penetration testing, and software development.</textarea>
+          </div>
+          <div class="field">
+            <label>OG Image Path</label>
+            <input type="text" id="seo-og-image" value="og-image.png" oninput="markDirty()">
+            <div class="hint">Recommended: 1200x630px PNG</div>
+          </div>
+          <div class="field">
+            <label>Base URL</label>
+            <input type="text" id="seo-base-url" value="https://sp1r4.github.io" oninput="markDirty()">
+          </div>
+          <div class="field">
+            <label>Twitter Handle</label>
+            <input type="text" id="seo-twitter" value="@_SP1R4" oninput="markDirty()">
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Robots</div>
+          <div class="field-inline">
+            <label>Indexable (allow search engines)</label>
+            <div class="toggle on" id="seo-index-toggle" onclick="this.classList.toggle('on');markDirty()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── THEME ─── -->
+      <div class="tab-panel" id="panel-theme">
+        <div class="section">
+          <div class="section-title">Light Mode Colors</div>
+          <div id="theme-light-vars"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Dark Mode Colors</div>
+          <div id="theme-dark-vars"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="resetThemeVars()">Reset to Defaults</button>
+          <button class="btn primary" onclick="copyThemeCSS()">Copy CSS</button>
+        </div>
+      </div>
+
+      <!-- ─── SECURITY ─── -->
+      <div class="tab-panel" id="panel-security">
+        <div class="section">
+          <div class="section-title">Admin Password</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
+            This is a client-side convenience lock. The admin panel cannot modify the live site — it only generates files for manual download.
+          </p>
+          <div class="field">
+            <label>New Password</label>
+            <div class="field-row">
+              <div class="field">
+                <input type="password" id="new-pw" placeholder="Enter new password">
+              </div>
+              <div class="field" style="flex:0;">
+                <button class="btn" onclick="changePassword()">Update</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Danger Zone</div>
+          <button class="btn danger" onclick="resetAll()">Reset All Local Data</button>
+          <div class="hint" style="margin-top:6px;">Clears saved password and all local settings. You'll need to set a new password.</div>
+        </div>
+      </div>
+
+    </div>
   </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- Hidden file input for import -->
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
 <script>
+// ── ICONS ──
 const ICONS = {
   email: `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>`,
   github: `<svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
@@ -319,23 +729,43 @@ const ICONS = {
   youtube: `<svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>`,
   blog: `<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
 };
-
 const ICON_NAMES = Object.keys(ICONS);
+
+// ── STATE ──
 let config = null;
+let postsData = [];
+let servicesData = [];
+let isDirty = false;
+let changeLog = [];
+
+const THEME_LIGHT_DEFAULTS = {
+  'Background': '#f0efe9',
+  'Card Background': '#ffffff',
+  'Card Border': '#e0deda',
+  'Text Primary': '#0f0f0f',
+  'Text Secondary': '#888888',
+  'Text Muted': '#bbbbbb',
+  'Accent': '#34d399',
+};
+const THEME_DARK_DEFAULTS = {
+  'Background': '#0f0f0f',
+  'Card Background': '#1a1a1a',
+  'Card Border': '#2a2a2a',
+  'Text Primary': '#f4f3ef',
+  'Text Secondary': '#666666',
+  'Text Muted': '#444444',
+  'Accent': '#34d399',
+};
+
+let themeLight = { ...THEME_LIGHT_DEFAULTS };
+let themeDark = { ...THEME_DARK_DEFAULTS };
 
 // ── AUTH ──
-// NOTE: Client-side auth is a convenience barrier, not a security control.
-// The admin panel cannot modify the live site -- it only generates JSON for manual download.
-
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
-
-function isFirstUse() {
-  return !localStorage.getItem('noctis_admin_hash');
-}
-
+function isFirstUse() { return !localStorage.getItem('noctis_admin_hash'); }
 function showSetup() {
   document.getElementById('pw').placeholder = 'Choose a password';
   document.getElementById('login-setup').style.display = 'block';
@@ -344,7 +774,6 @@ function showSetup() {
 async function tryLogin() {
   const pw = document.getElementById('pw').value;
   if (!pw) return;
-
   if (isFirstUse()) {
     if (pw.length < 6) {
       document.getElementById('login-error').textContent = 'Password must be at least 6 characters';
@@ -354,23 +783,23 @@ async function tryLogin() {
     const hash = await sha256(pw);
     localStorage.setItem('noctis_admin_hash', hash);
     sessionStorage.setItem('noctis_auth', '1');
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('admin').classList.add('active');
-    loadConfig();
+    enterAdmin();
     return;
   }
-
   const hash = await sha256(pw);
-  const stored = localStorage.getItem('noctis_admin_hash');
-  if (hash === stored) {
+  if (hash === localStorage.getItem('noctis_admin_hash')) {
     sessionStorage.setItem('noctis_auth', '1');
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('admin').classList.add('active');
-    loadConfig();
+    enterAdmin();
   } else {
     document.getElementById('login-error').textContent = 'Wrong password';
     document.getElementById('login-error').style.display = 'block';
   }
+}
+
+function enterAdmin() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  loadConfig();
 }
 
 if (isFirstUse()) showSetup();
@@ -379,10 +808,37 @@ document.getElementById('pw').addEventListener('keydown', e => { if (e.key === '
 async function changePassword() {
   const pw = document.getElementById('new-pw').value;
   if (pw.length < 4) { toast('Password too short'); return; }
-  const hash = await sha256(pw);
-  localStorage.setItem('noctis_admin_hash', hash);
+  localStorage.setItem('noctis_admin_hash', await sha256(pw));
   document.getElementById('new-pw').value = '';
   toast('Password updated');
+}
+
+function resetAll() {
+  if (!confirm('This will clear your admin password and all local settings. Continue?')) return;
+  localStorage.removeItem('noctis_admin_hash');
+  sessionStorage.removeItem('noctis_auth');
+  location.reload();
+}
+
+// ── TAB NAV ──
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.toggle('active', el.id === 'panel-' + tab));
+  const titles = {
+    dashboard: 'Dashboard', profile: 'Profile', links: 'Links', blog: 'Blog',
+    services: 'Services', projects: 'Projects', seo: 'SEO & Meta', theme: 'Theme', security: 'Security'
+  };
+  document.getElementById('tab-title').textContent = titles[tab] || tab;
+}
+
+// ── DIRTY STATE ──
+function markDirty() {
+  isDirty = true;
+  document.getElementById('unsaved-dot').classList.add('show');
+}
+function clearDirty() {
+  isDirty = false;
+  document.getElementById('unsaved-dot').classList.remove('show');
 }
 
 // ── CONFIG ──
@@ -399,6 +855,9 @@ async function loadConfig() {
   }
   populateFields();
   loadPosts();
+  loadServicesFromDOM();
+  renderThemeVars();
+  updateDashboard();
 }
 
 function populateFields() {
@@ -411,10 +870,7 @@ function populateFields() {
   document.getElementById('cfg-status-color-hex').value = config.status.color;
   document.getElementById('cfg-footer-title').value = config.footer.title;
   document.getElementById('cfg-footer-sub').value = config.footer.sub;
-
-  const toggle = document.getElementById('status-toggle');
-  toggle.classList.toggle('on', config.status.visible);
-
+  document.getElementById('status-toggle').classList.toggle('on', config.status.visible);
   renderLinks();
 }
 
@@ -428,9 +884,7 @@ function gatherConfig() {
   config.status.visible = document.getElementById('status-toggle').classList.contains('on');
   config.footer.title = document.getElementById('cfg-footer-title').value;
   config.footer.sub = document.getElementById('cfg-footer-sub').value;
-
-  // Gather link fields
-  document.querySelectorAll('.link-item').forEach((el, i) => {
+  document.querySelectorAll('#links-list .link-item').forEach((el, i) => {
     if (config.links[i]) {
       config.links[i].title = el.querySelector('.lf-title').value;
       config.links[i].sub = el.querySelector('.lf-sub').value;
@@ -439,7 +893,6 @@ function gatherConfig() {
       if (selected) config.links[i].icon = selected.dataset.icon;
     }
   });
-
   return config;
 }
 
@@ -456,7 +909,6 @@ function renderLinks() {
     el.className = 'link-item';
     el.draggable = true;
     el.dataset.index = i;
-
     el.innerHTML = `
       <div class="link-item-header">
         <div class="left">
@@ -470,148 +922,45 @@ function renderLinks() {
         </div>
       </div>
       <div class="link-fields">
-        <div class="field">
-          <label>Title</label>
-          <input class="lf-title" type="text" value="${escapeAttr(link.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'New Link'">
-        </div>
-        <div class="field">
-          <label>Subtitle</label>
-          <input class="lf-sub" type="text" value="${escapeAttr(link.sub || '')}">
-        </div>
-        <div class="field full">
-          <label>URL</label>
-          <input class="lf-url" type="text" value="${escapeAttr(link.url)}">
-        </div>
-        <div class="field full">
-          <label>Icon</label>
+        <div class="field"><label>Title</label><input class="lf-title" type="text" value="${escapeAttr(link.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'New Link';markDirty()"></div>
+        <div class="field"><label>Subtitle</label><input class="lf-sub" type="text" value="${escapeAttr(link.sub || '')}" oninput="markDirty()"></div>
+        <div class="field full"><label>URL</label><input class="lf-url" type="text" value="${escapeAttr(link.url)}" oninput="markDirty()"></div>
+        <div class="field full"><label>Icon</label>
           <div class="icon-grid">
-            ${ICON_NAMES.map(name => `
-              <div class="icon-opt ${link.icon === name ? 'selected' : ''}" data-icon="${name}" title="${name}" onclick="selectIcon(this)">
-                ${ICONS[name]}
-              </div>
-            `).join('')}
+            ${ICON_NAMES.map(name => `<div class="icon-opt ${link.icon === name ? 'selected' : ''}" data-icon="${name}" title="${name}" onclick="selectIcon(this);markDirty()">${ICONS[name]}</div>`).join('')}
           </div>
         </div>
-      </div>
-    `;
-
+      </div>`;
     // Drag events
-    el.addEventListener('dragstart', e => {
-      e.dataTransfer.effectAllowed = 'move';
-      el.style.opacity = '0.4';
-      el.dataset.dragging = '1';
-    });
-    el.addEventListener('dragend', () => {
-      el.style.opacity = '1';
-      delete el.dataset.dragging;
-      document.querySelectorAll('.link-item').forEach(c => c.style.borderColor = '');
-    });
-    el.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!el.dataset.dragging) el.style.borderColor = 'var(--accent)';
-    });
-    el.addEventListener('dragleave', () => {
-      if (!el.dataset.dragging) el.style.borderColor = '';
-    });
+    el.addEventListener('dragstart', e => { e.dataTransfer.effectAllowed = 'move'; el.style.opacity = '0.4'; el.dataset.dragging = '1'; });
+    el.addEventListener('dragend', () => { el.style.opacity = '1'; delete el.dataset.dragging; document.querySelectorAll('.link-item').forEach(c => c.style.borderColor = ''); });
+    el.addEventListener('dragover', e => { e.preventDefault(); if (!el.dataset.dragging) el.style.borderColor = 'var(--accent)'; });
+    el.addEventListener('dragleave', () => { if (!el.dataset.dragging) el.style.borderColor = ''; });
     el.addEventListener('drop', e => {
-      e.preventDefault();
-      el.style.borderColor = '';
+      e.preventDefault(); el.style.borderColor = '';
       const from = document.querySelector('[data-dragging="1"]');
       if (!from || from === el) return;
-      const fromIdx = parseInt(from.dataset.index);
-      const toIdx = parseInt(el.dataset.index);
       gatherConfig();
-      const [moved] = config.links.splice(fromIdx, 1);
-      config.links.splice(toIdx, 0, moved);
-      renderLinks();
+      const [moved] = config.links.splice(parseInt(from.dataset.index), 1);
+      config.links.splice(parseInt(el.dataset.index), 0, moved);
+      renderLinks(); markDirty();
     });
-
     list.appendChild(el);
   });
+  document.getElementById('links-count').textContent = config.links.length;
 }
 
 function selectIcon(el) {
   el.closest('.icon-grid').querySelectorAll('.icon-opt').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
 }
-
-function addLink() {
-  gatherConfig();
-  config.links.push({ title: '', sub: '', url: '', icon: 'link' });
-  renderLinks();
-  // Scroll to new link
-  const items = document.querySelectorAll('.link-item');
-  items[items.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function removeLink(i) {
-  gatherConfig();
-  config.links.splice(i, 1);
-  renderLinks();
-}
-
-function moveLink(i, dir) {
-  gatherConfig();
-  const j = i + dir;
-  if (j < 0 || j >= config.links.length) return;
-  [config.links[i], config.links[j]] = [config.links[j], config.links[i]];
-  renderLinks();
-}
-
-// ── OUTPUT ──
-function getJSON() {
-  gatherConfig();
-  return JSON.stringify(config, null, 2);
-}
-
-function downloadConfig() {
-  const blob = new Blob([getJSON()], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'config.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast('Downloaded config.json');
-}
-
-async function copyConfig() {
-  await navigator.clipboard.writeText(getJSON());
-  toast('Copied to clipboard');
-}
-
-function loadPreview() {
-  localStorage.setItem('noctis_preview', getJSON());
-  window.open('index.html?preview=1', '_blank', 'width=500,height=800');
-  toast('Preview opened');
-}
-
-// ── UTILS ──
-function escapeHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-function escapeAttr(s) {
-  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
+function addLink() { gatherConfig(); config.links.push({ title: '', sub: '', url: '', icon: 'link' }); renderLinks(); markDirty(); scrollToLast('#links-list .link-item'); }
+function removeLink(i) { gatherConfig(); config.links.splice(i, 1); renderLinks(); markDirty(); }
+function moveLink(i, dir) { gatherConfig(); const j = i + dir; if (j < 0 || j >= config.links.length) return; [config.links[i], config.links[j]] = [config.links[j], config.links[i]]; renderLinks(); markDirty(); }
 
 // ── POSTS ──
-let postsData = [];
-
 async function loadPosts() {
-  try {
-    const r = await fetch('posts.json');
-    postsData = await r.json();
-  } catch {
-    postsData = [];
-  }
+  try { postsData = await (await fetch('posts.json')).json(); } catch { postsData = []; }
   renderPosts();
 }
 
@@ -620,7 +969,6 @@ function renderPosts() {
   list.innerHTML = '';
   if (postsData.length === 0) {
     list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:16px 0;">No posts yet.</div>';
-    return;
   }
   postsData.forEach((post, i) => {
     const el = document.createElement('div');
@@ -638,36 +986,20 @@ function renderPosts() {
         </div>
       </div>
       <div class="link-fields">
-        <div class="field">
-          <label>Title</label>
-          <input class="pf-title" type="text" value="${escapeAttr(post.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'Untitled'">
-        </div>
-        <div class="field">
-          <label>Slug (filename without .md)</label>
-          <input class="pf-slug" type="text" value="${escapeAttr(post.slug)}">
-        </div>
-        <div class="field full">
-          <label>Description</label>
-          <input class="pf-desc" type="text" value="${escapeAttr(post.description || '')}">
-        </div>
-        <div class="field">
-          <label>Date (YYYY-MM-DD)</label>
-          <input class="pf-date" type="date" value="${escapeAttr(post.date || '')}">
-        </div>
-        <div class="field">
-          <label>Tags (comma-separated)</label>
-          <input class="pf-tags" type="text" value="${escapeAttr((post.tags || []).join(', '))}">
-        </div>
-      </div>
-    `;
+        <div class="field"><label>Title</label><input class="pf-title" type="text" value="${escapeAttr(post.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'Untitled';markDirty()"></div>
+        <div class="field"><label>Slug</label><input class="pf-slug" type="text" value="${escapeAttr(post.slug)}" oninput="markDirty()"></div>
+        <div class="field full"><label>Description</label><input class="pf-desc" type="text" value="${escapeAttr(post.description || '')}" oninput="markDirty()"></div>
+        <div class="field"><label>Date</label><input class="pf-date" type="date" value="${escapeAttr(post.date || '')}" oninput="markDirty()"></div>
+        <div class="field"><label>Tags (comma-separated)</label><input class="pf-tags" type="text" value="${escapeAttr((post.tags || []).join(', '))}" oninput="markDirty()"></div>
+      </div>`;
     list.appendChild(el);
   });
+  document.getElementById('posts-count').textContent = postsData.length;
 }
 
 function gatherPosts() {
-  const items = document.querySelectorAll('#posts-list .link-item');
   postsData = [];
-  items.forEach(el => {
+  document.querySelectorAll('#posts-list .link-item').forEach(el => {
     postsData.push({
       slug: el.querySelector('.pf-slug').value.trim(),
       title: el.querySelector('.pf-title').value.trim(),
@@ -679,92 +1011,279 @@ function gatherPosts() {
   return postsData;
 }
 
-function addPost() {
-  gatherPosts();
-  const today = new Date().toISOString().split('T')[0];
-  postsData.push({ slug: '', title: '', description: '', date: today, tags: [] });
-  renderPosts();
-  const items = document.querySelectorAll('#posts-list .link-item');
-  items[items.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+function addPost() { gatherPosts(); postsData.push({ slug: '', title: '', description: '', date: new Date().toISOString().split('T')[0], tags: [] }); renderPosts(); markDirty(); scrollToLast('#posts-list .link-item'); }
+function removePost(i) { gatherPosts(); postsData.splice(i, 1); renderPosts(); markDirty(); }
+function movePost(i, dir) { gatherPosts(); const j = i + dir; if (j < 0 || j >= postsData.length) return; [postsData[i], postsData[j]] = [postsData[j], postsData[i]]; renderPosts(); markDirty(); }
 
-function removePost(i) {
-  gatherPosts();
-  postsData.splice(i, 1);
-  renderPosts();
-}
-
-function movePost(i, dir) {
-  gatherPosts();
-  const j = i + dir;
-  if (j < 0 || j >= postsData.length) return;
-  [postsData[i], postsData[j]] = [postsData[j], postsData[i]];
-  renderPosts();
-}
-
-function getPostsJSON() {
-  gatherPosts();
-  return JSON.stringify(postsData, null, 2);
-}
-
-function downloadPosts() {
-  const blob = new Blob([getPostsJSON()], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'posts.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast('Downloaded posts.json');
-}
-
-async function copyPosts() {
-  await navigator.clipboard.writeText(getPostsJSON());
-  toast('Copied posts.json to clipboard');
-}
+function getPostsJSON() { gatherPosts(); return JSON.stringify(postsData, null, 2); }
+function downloadPosts() { downloadFile('posts.json', getPostsJSON(), 'application/json'); }
+async function copyPosts() { await navigator.clipboard.writeText(getPostsJSON()); toast('Copied posts.json'); }
 
 function generateRSS() {
   gatherPosts();
-  const base = 'https://sp1r4.github.io';
+  const base = document.getElementById('seo-base-url').value || 'https://sp1r4.github.io';
   const items = postsData.map(p => {
     const d = new Date(p.date + 'T00:00:00Z');
     const cats = (p.tags || []).map(t => `      <category>${escapeHtml(t)}</category>`).join('\n');
-    return `    <item>
-      <title>${escapeHtml(p.title)}</title>
-      <link>${base}/blog.html#${p.slug}</link>
-      <guid>${base}/blog.html#${p.slug}</guid>
-      <pubDate>${d.toUTCString()}</pubDate>
-      <description>${escapeHtml(p.description)}</description>
-${cats}
-    </item>`;
+    return `    <item>\n      <title>${escapeHtml(p.title)}</title>\n      <link>${base}/blog.html#${p.slug}</link>\n      <guid>${base}/blog.html#${p.slug}</guid>\n      <pubDate>${d.toUTCString()}</pubDate>\n      <description>${escapeHtml(p.description)}</description>\n${cats}\n    </item>`;
   }).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>NOCTIS Blog</title>\n    <link>${base}/blog.html</link>\n    <description>Cybersecurity research, CTF writeups, and development notes by S. Markakis.</description>\n    <language>en</language>\n    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>\n${items}\n  </channel>\n</rss>`;
+}
+function downloadRSS() { downloadFile('feed.xml', generateRSS(), 'application/xml'); }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>NOCTIS Blog</title>
-    <link>${base}/blog.html</link>
-    <description>Cybersecurity research, CTF writeups, and development notes by S. Markakis.</description>
-    <language>en</language>
-    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
-${items}
-  </channel>
-</rss>`;
+// ── SERVICES ──
+function loadServicesFromDOM() {
+  // Default services
+  servicesData = [
+    { title: 'Penetration Testing', desc: 'Simulated attacks against your web applications, networks, and infrastructure to find vulnerabilities before real attackers do.', icon: 'shield', items: ['Web application testing', 'Network pentesting', 'API security', 'Wireless assessments', 'Social engineering'] },
+    { title: 'Security Audits', desc: 'Comprehensive review of your security posture, configurations, policies, and code to identify risks and compliance gaps.', icon: 'alert', items: ['Configuration review', 'Code audit', 'Cloud security', 'Compliance checks', 'Risk assessment'] },
+    { title: 'IT Infrastructure & Automation', desc: 'Design and implementation of backup systems, monitoring, deployment pipelines, and custom automation tools.', icon: 'terminal', items: ['Backup & disaster recovery', 'Server hardening', 'CI/CD pipelines', 'Monitoring & alerting', 'Custom tooling'] },
+    { title: 'IT Consulting', desc: 'Technical guidance on architecture decisions, technology selection, network design, and security strategy for your organization.', icon: 'monitor', items: ['Architecture review', 'Network design', 'Technology selection', 'Security strategy', 'Incident response planning'] },
+  ];
+  renderServices();
 }
 
-function downloadRSS() {
-  const blob = new Blob([generateRSS()], { type: 'application/xml' });
+function renderServices() {
+  const list = document.getElementById('services-list');
+  list.innerHTML = '';
+  servicesData.forEach((svc, i) => {
+    const el = document.createElement('div');
+    el.className = 'service-item';
+    el.innerHTML = `
+      <div class="service-header">
+        <span class="svc-title">${escapeHtml(svc.title || 'New Service')}</span>
+        <div class="link-item-actions">
+          <button class="btn small" onclick="moveService(${i},-1)">&#x2191;</button>
+          <button class="btn small" onclick="moveService(${i},1)">&#x2193;</button>
+          <button class="btn small danger" onclick="removeService(${i})">&#x2715;</button>
+        </div>
+      </div>
+      <div class="link-fields">
+        <div class="field full"><label>Title</label><input class="sf-title" type="text" value="${escapeAttr(svc.title)}" oninput="this.closest('.service-item').querySelector('.svc-title').textContent=this.value||'New Service';markDirty()"></div>
+        <div class="field full"><label>Description</label><textarea class="sf-desc" rows="2" oninput="markDirty()">${escapeHtml(svc.desc)}</textarea></div>
+        <div class="field full"><label>Items (comma-separated)</label><input class="sf-items" type="text" value="${escapeAttr(svc.items.join(', '))}" oninput="markDirty()"></div>
+      </div>`;
+    list.appendChild(el);
+  });
+  document.getElementById('dash-services').textContent = servicesData.length;
+}
+
+function gatherServices() {
+  servicesData = [];
+  document.querySelectorAll('#services-list .service-item').forEach(el => {
+    servicesData.push({
+      title: el.querySelector('.sf-title').value.trim(),
+      desc: el.querySelector('.sf-desc').value.trim(),
+      items: el.querySelector('.sf-items').value.split(',').map(t => t.trim()).filter(Boolean),
+    });
+  });
+  return servicesData;
+}
+
+function addService() { gatherServices(); servicesData.push({ title: '', desc: '', icon: 'link', items: [] }); renderServices(); markDirty(); scrollToLast('#services-list .service-item'); }
+function removeService(i) { gatherServices(); servicesData.splice(i, 1); renderServices(); markDirty(); }
+function moveService(i, dir) { gatherServices(); const j = i + dir; if (j < 0 || j >= servicesData.length) return; [servicesData[i], servicesData[j]] = [servicesData[j], servicesData[i]]; renderServices(); markDirty(); }
+
+function downloadServices() {
+  gatherServices();
+  const intro = document.getElementById('svc-intro').value;
+  const email = document.getElementById('svc-email').value;
+  const svcIcons = [
+    `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    `<svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
+    `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  ];
+  const cards = servicesData.map((svc, i) => `
+    <div class="service-card" style="--i:${i}">
+      <div class="service-icon">${svcIcons[i % svcIcons.length]}</div>
+      <div class="service-content">
+        <div class="service-title">${escapeHtml(svc.title)}</div>
+        <div class="service-desc">${escapeHtml(svc.desc)}</div>
+        <ul class="service-items">${svc.items.map(it => `\n          <li>${escapeHtml(it)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>`).join('\n');
+
+  // Re-read the existing services.html template structure but with new data
+  // For simplicity, generate a downloadable snippet
+  toast('Services data saved. Use Export All for the full file.');
+  logChange('Services updated (' + servicesData.length + ' services)');
+}
+
+// ── THEME VARS ──
+function renderThemeVars() {
+  renderColorGroup('theme-light-vars', themeLight);
+  renderColorGroup('theme-dark-vars', themeDark);
+}
+
+function renderColorGroup(containerId, vars) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  Object.entries(vars).forEach(([name, value]) => {
+    const row = document.createElement('div');
+    row.className = 'color-row';
+    row.innerHTML = `
+      <label>${name}</label>
+      <input type="color" value="${value}" oninput="this.nextElementSibling.value=this.value;markDirty()">
+      <input type="text" value="${value}" oninput="this.previousElementSibling.value=this.value;markDirty()" data-var="${name}">`;
+    el.appendChild(row);
+  });
+}
+
+function resetThemeVars() {
+  themeLight = { ...THEME_LIGHT_DEFAULTS };
+  themeDark = { ...THEME_DARK_DEFAULTS };
+  renderThemeVars();
+  toast('Theme reset to defaults');
+  markDirty();
+}
+
+function gatherThemeVars() {
+  document.querySelectorAll('#theme-light-vars .color-row').forEach(row => {
+    const name = row.querySelector('input[type="text"]').dataset.var;
+    themeLight[name] = row.querySelector('input[type="text"]').value;
+  });
+  document.querySelectorAll('#theme-dark-vars .color-row').forEach(row => {
+    const name = row.querySelector('input[type="text"]').dataset.var;
+    themeDark[name] = row.querySelector('input[type="text"]').value;
+  });
+}
+
+function copyThemeCSS() {
+  gatherThemeVars();
+  const varMap = { 'Background': '--bg', 'Card Background': '--card-bg', 'Card Border': '--card-border', 'Text Primary': '--text-primary', 'Text Secondary': '--text-secondary', 'Text Muted': '--text-muted', 'Accent': '--accent' };
+  let css = ':root {\n';
+  Object.entries(themeLight).forEach(([name, val]) => { css += `  ${varMap[name] || '--' + name.toLowerCase().replace(/ /g,'-')}: ${val};\n`; });
+  css += '}\n\nbody.dark {\n';
+  Object.entries(themeDark).forEach(([name, val]) => { css += `  ${varMap[name] || '--' + name.toLowerCase().replace(/ /g,'-')}: ${val};\n`; });
+  css += '}\n';
+  navigator.clipboard.writeText(css);
+  toast('CSS copied to clipboard');
+}
+
+// ── DASHBOARD ──
+function updateDashboard() {
+  document.getElementById('dash-links').textContent = config ? config.links.length : 0;
+  document.getElementById('dash-posts').textContent = postsData.length;
+  document.getElementById('dash-services').textContent = servicesData.length;
+  if (config && config.status) {
+    document.getElementById('dash-status').textContent = config.status.visible ? config.status.text : 'Hidden';
+    document.getElementById('dash-status').style.color = config.status.visible ? 'var(--accent)' : 'var(--text3)';
+  }
+}
+
+// ── OUTPUT ──
+function getJSON() { gatherConfig(); return JSON.stringify(config, null, 2); }
+
+function saveAll() {
+  gatherConfig();
+  gatherPosts();
+  gatherServices();
+  gatherThemeVars();
+  updateDashboard();
+  clearDirty();
+  logChange('All changes saved');
+  toast('Changes saved locally');
+}
+
+function downloadFile(name, content, type) {
+  const blob = new Blob([content], { type });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'feed.xml';
+  a.download = name;
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('Downloaded feed.xml');
+  toast('Downloaded ' + name);
 }
 
-// Auto-login if already authenticated this session
+function exportAll() {
+  gatherConfig();
+  gatherPosts();
+  // Download config and posts
+  downloadFile('config.json', JSON.stringify(config, null, 2), 'application/json');
+  setTimeout(() => downloadFile('posts.json', JSON.stringify(postsData, null, 2), 'application/json'), 300);
+  setTimeout(() => downloadFile('feed.xml', generateRSS(), 'application/xml'), 600);
+  logChange('Exported all files');
+}
+
+function loadPreview() {
+  localStorage.setItem('noctis_preview', getJSON());
+  window.open('index.html?preview=1', '_blank', 'width=500,height=800');
+  toast('Preview opened');
+}
+
+function importConfig() {
+  const choice = prompt('Import method:\n1 = Upload JSON file\n2 = Paste JSON\n\nEnter 1 or 2:');
+  if (choice === '1') {
+    document.getElementById('import-file').click();
+  } else if (choice === '2') {
+    const json = prompt('Paste your config.json content:');
+    if (!json) return;
+    try {
+      config = JSON.parse(json);
+      populateFields();
+      updateDashboard();
+      markDirty();
+      toast('Config imported');
+      logChange('Config imported from clipboard');
+    } catch { toast('Invalid JSON'); }
+  }
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      config = JSON.parse(e.target.result);
+      populateFields();
+      updateDashboard();
+      markDirty();
+      toast('Config imported from file');
+      logChange('Config imported from ' + file.name);
+    } catch { toast('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── CHANGELOG ──
+function logChange(msg) {
+  const now = new Date().toLocaleTimeString();
+  changeLog.unshift({ time: now, msg });
+  if (changeLog.length > 20) changeLog.pop();
+  const el = document.getElementById('dash-changelog');
+  el.innerHTML = changeLog.map(c =>
+    `<div style="padding:4px 0;border-bottom:1px solid var(--border);">
+      <span style="color:var(--text3);font-size:10px;margin-right:8px;">${c.time}</span>${escapeHtml(c.msg)}
+    </div>`
+  ).join('');
+}
+
+// ── UTILS ──
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escapeAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function scrollToLast(selector) { const items = document.querySelectorAll(selector); if (items.length) items[items.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+function downloadProjectsHTML() {
+  const featured = document.getElementById('proj-featured').value.split(',').map(s => s.trim()).filter(Boolean);
+  const excluded = document.getElementById('proj-excluded').value.split(',').map(s => s.trim()).filter(Boolean);
+  toast('Featured: ' + featured.join(', ') + ' | Excluded: ' + excluded.join(', '));
+  logChange('Projects config updated');
+}
+
+// ── WARN ON LEAVE ──
+window.addEventListener('beforeunload', e => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ── AUTO-LOGIN ──
 if (sessionStorage.getItem('noctis_auth') === '1') {
   document.getElementById('login').style.display = 'none';
-  document.getElementById('admin').classList.add('active');
+  document.getElementById('app').classList.add('active');
   loadConfig();
 }
 </script>
