@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NOCTIS Admin</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.github.com;">
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -421,9 +421,9 @@
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Export All
         </button>
-        <button class="btn accent" onclick="saveAll()">
+        <button class="btn accent" onclick="saveAll()" id="save-btn">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Save
+          Save &amp; Deploy
         </button>
       </div>
     </div>
@@ -684,10 +684,38 @@
       <!-- ─── SECURITY ─── -->
       <div class="tab-panel" id="panel-security">
         <div class="section">
-          <div class="section-title">Admin Password</div>
+          <div class="section-title">GitHub Deploy</div>
           <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
-            This is a client-side convenience lock. The admin panel cannot modify the live site — it only generates files for manual download.
+            Connect a GitHub Personal Access Token so Save pushes changes directly to your repo and deploys via GitHub Pages.
+            Create a fine-grained token at GitHub &rarr; Settings &rarr; Developer Settings &rarr; Personal Access Tokens with <strong>Contents: Read &amp; Write</strong> permission on this repo.
           </p>
+          <div class="field">
+            <label>GitHub Token</label>
+            <div class="field-row">
+              <div class="field">
+                <input type="password" id="gh-token" placeholder="github_pat_..." oninput="markDirty()">
+              </div>
+              <div class="field" style="flex:0;">
+                <button class="btn" onclick="saveGHToken()">Save Token</button>
+              </div>
+            </div>
+            <div class="hint">Stored in localStorage. Never sent anywhere except api.github.com.</div>
+          </div>
+          <div class="field">
+            <label>Repository</label>
+            <div class="field-row">
+              <div class="field">
+                <input type="text" id="gh-repo" placeholder="SP1R4/SP1R4.github.io" value="SP1R4/SP1R4.github.io">
+              </div>
+              <div class="field" style="flex:0;">
+                <button class="btn" onclick="testGHConnection()">Test</button>
+              </div>
+            </div>
+          </div>
+          <div id="gh-status" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Admin Password</div>
           <div class="field">
             <label>New Password</label>
             <div class="field-row">
@@ -703,7 +731,7 @@
         <div class="section">
           <div class="section-title">Danger Zone</div>
           <button class="btn danger" onclick="resetAll()">Reset All Local Data</button>
-          <div class="hint" style="margin-top:6px;">Clears saved password and all local settings. You'll need to set a new password.</div>
+          <div class="hint" style="margin-top:6px;">Clears saved password, token, and all local settings.</div>
         </div>
       </div>
 
@@ -828,6 +856,8 @@ function resetAll() {
   localStorage.removeItem('noctis_admin_projects');
   localStorage.removeItem('noctis_admin_theme');
   localStorage.removeItem('noctis_admin_blog_categories');
+  localStorage.removeItem('noctis_gh_token');
+  localStorage.removeItem('noctis_gh_repo');
   localStorage.removeItem('noctis_preview');
   sessionStorage.removeItem('noctis_auth');
   location.reload();
@@ -878,6 +908,7 @@ async function loadConfig() {
   loadServicesFromDOM();
   loadSavedSEO();
   loadSavedProjects();
+  loadGHSettings();
   renderThemeVars();
   updateDashboard();
 }
@@ -1245,13 +1276,13 @@ function updateDashboard() {
 // ── OUTPUT ──
 function getJSON() { gatherConfig(); return JSON.stringify(config, null, 2); }
 
-function saveAll() {
+async function saveAll() {
   gatherConfig();
   gatherPosts();
   gatherServices();
   gatherThemeVars();
 
-  // Persist everything to localStorage
+  // Always persist to localStorage as backup
   localStorage.setItem('noctis_admin_config', JSON.stringify(config));
   localStorage.setItem('noctis_admin_posts', JSON.stringify(postsData));
   localStorage.setItem('noctis_admin_services', JSON.stringify(servicesData));
@@ -1271,9 +1302,109 @@ function saveAll() {
   localStorage.setItem('noctis_admin_blog_categories', document.getElementById('blog-categories').value);
 
   updateDashboard();
-  clearDirty();
-  logChange('All changes saved');
-  toast('Saved — use Export All to download files for deployment');
+
+  // If GitHub token is set, push to repo
+  const token = localStorage.getItem('noctis_gh_token');
+  const repo = (document.getElementById('gh-repo') || {}).value || localStorage.getItem('noctis_gh_repo') || '';
+  if (token && repo) {
+    toast('Deploying to GitHub...');
+    try {
+      const files = {
+        'config.json': JSON.stringify(config, null, 2),
+        'posts.json': JSON.stringify(postsData, null, 2),
+        'feed.xml': generateRSS(),
+      };
+      let committed = 0;
+      for (const [path, content] of Object.entries(files)) {
+        await ghPutFile(token, repo, path, content);
+        committed++;
+      }
+      clearDirty();
+      logChange('Deployed ' + committed + ' files to GitHub');
+      toast('Deployed — changes are live!');
+    } catch (err) {
+      toast('Deploy failed: ' + err.message);
+      logChange('Deploy failed: ' + err.message);
+    }
+  } else {
+    clearDirty();
+    logChange('Saved locally (no GitHub token — set one in Security to auto-deploy)');
+    toast('Saved locally — add a GitHub token in Security to auto-deploy');
+  }
+}
+
+// ── GITHUB API ──
+function saveGHToken() {
+  const token = document.getElementById('gh-token').value.trim();
+  const repo = document.getElementById('gh-repo').value.trim();
+  if (!token) { toast('Enter a token first'); return; }
+  localStorage.setItem('noctis_gh_token', token);
+  localStorage.setItem('noctis_gh_repo', repo);
+  document.getElementById('gh-status').textContent = 'Token saved.';
+  document.getElementById('gh-status').style.color = 'var(--accent)';
+  toast('GitHub token saved');
+}
+
+async function testGHConnection() {
+  const token = document.getElementById('gh-token').value.trim() || localStorage.getItem('noctis_gh_token');
+  const repo = document.getElementById('gh-repo').value.trim();
+  const status = document.getElementById('gh-status');
+  if (!token) { status.textContent = 'No token set.'; status.style.color = 'var(--danger)'; return; }
+  status.textContent = 'Testing...'; status.style.color = 'var(--text2)';
+  try {
+    const r = await fetch('https://api.github.com/repos/' + repo, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (r.ok) {
+      const data = await r.json();
+      status.textContent = 'Connected to ' + data.full_name + ' — push permission ' + (data.permissions && data.permissions.push ? 'OK' : 'MISSING');
+      status.style.color = (data.permissions && data.permissions.push) ? 'var(--accent)' : 'var(--warning)';
+    } else {
+      const err = await r.json().catch(() => ({}));
+      status.textContent = 'Error ' + r.status + ': ' + (err.message || 'Unknown');
+      status.style.color = 'var(--danger)';
+    }
+  } catch (e) {
+    status.textContent = 'Network error: ' + e.message;
+    status.style.color = 'var(--danger)';
+  }
+}
+
+async function ghPutFile(token, repo, path, content) {
+  const apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + path;
+  const headers = {
+    'Authorization': 'Bearer ' + token,
+    'Accept': 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+  };
+  // Get current file SHA (needed for updates)
+  let sha = null;
+  try {
+    const existing = await fetch(apiUrl, { headers });
+    if (existing.ok) {
+      const data = await existing.json();
+      sha = data.sha;
+    }
+  } catch {}
+  // Commit the file
+  const body = {
+    message: 'Update ' + path + ' via NOCTIS admin',
+    content: btoa(unescape(encodeURIComponent(content))),
+  };
+  if (sha) body.sha = sha;
+  const r = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(path + ': ' + (err.message || r.status));
+  }
+  return r.json();
+}
+
+function loadGHSettings() {
+  const token = localStorage.getItem('noctis_gh_token');
+  const repo = localStorage.getItem('noctis_gh_repo');
+  if (token) document.getElementById('gh-token').value = token;
+  if (repo) document.getElementById('gh-repo').value = repo;
 }
 
 function downloadFile(name, content, type) {
