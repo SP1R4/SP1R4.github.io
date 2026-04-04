@@ -242,7 +242,7 @@ const FEATURED = ['BackupHandler', 'PhantomTrap', 'Qsafe', 'hashcracker'];
 function buildCard(repo, i, featured) {
   const a = document.createElement('a');
   a.className = 'project-card';
-  a.href = repo.html_url;
+  a.href = /^https:\/\/github\.com\//i.test(repo.html_url) ? repo.html_url : '#';
   a.target = '_blank';
   a.rel = 'noopener';
   a.style.setProperty('--i', i);

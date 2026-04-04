@@ -412,7 +412,7 @@ function renderList() {
 }
 
 async function showPost(slug) {
-  if (!slug || /[\/\\]|\.\./.test(slug)) return;
+  if (!slug || !/^[a-zA-Z0-9_-]+$/.test(slug)) return;
   const post = posts.find(p => p.slug === slug);
   if (!post) return;
 
