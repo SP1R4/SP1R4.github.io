@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://noctis-sp1r4.goatcounter.com;">
+<title>Services — NOCTIS</title>
+<meta name="description" content="Cybersecurity consulting services by S. Markakis — penetration testing, security audits, and IT consulting in Crete, Greece.">
+<meta property="og:title" content="Services — NOCTIS">
+<meta property="og:description" content="Penetration testing, security audits, and IT consulting.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sp1r4.github.io/services.html">
+<meta property="og:image" content="https://sp1r4.github.io/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
+
+  :root {
+    --bg: #f0efe9;
+    --card-bg: #fff;
+    --card-border: #e0deda;
+    --text-primary: #0f0f0f;
+    --text-secondary: #888;
+    --text-muted: #bbb;
+    --icon-bg: #f0efe9;
+    --icon-border: #e0deda;
+    --icon-stroke: #555;
+    --wm-stroke: #e4e2dc;
+    --divider: #ddd;
+    --toggle-bg: #e0deda;
+    --toggle-knob: #fff;
+    --accent: #34d399;
+  }
+
+  body.dark {
+    --bg: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --card-border: #2a2a2a;
+    --text-primary: #f4f3ef;
+    --text-secondary: #666;
+    --text-muted: #444;
+    --icon-bg: #111;
+    --icon-border: #2a2a2a;
+    --icon-stroke: #888;
+    --wm-stroke: #1a1a1a;
+    --divider: #222;
+    --toggle-bg: #333;
+    --toggle-knob: #f4f3ef;
+    --accent: #34d399;
+  }
+
+  body {
+    background: var(--bg); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 48px 20px 80px; font-family: 'Inter', sans-serif;
+    position: relative; overflow-x: hidden;
+  }
+
+  body::before {
+    content: 'NOCTIS'; position: fixed; bottom: -40px; left: 50%;
+    transform: translateX(-50%); font-size: 160px; font-weight: 900;
+    color: transparent; -webkit-text-stroke: 1.5px var(--wm-stroke);
+    letter-spacing: -6px; pointer-events: none; user-select: none;
+    white-space: nowrap; z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 680px; }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 50;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .toggle-track {
+    width: 40px; height: 22px; background: var(--toggle-bg);
+    border-radius: 11px; position: relative; transition: background 0.25s;
+    border: 0.5px solid var(--card-border);
+  }
+  .toggle-knob {
+    width: 16px; height: 16px; background: var(--toggle-knob);
+    border-radius: 50%; position: absolute; top: 2px; left: 2px;
+    transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  body.dark .toggle-knob { transform: translateX(18px); }
+  .toggle-icon { font-size: 13px; user-select: none; }
+
+  /* ── HEADER ── */
+  .page-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 40px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.1s forwards;
+  }
+  .back-link {
+    width: 36px; height: 36px; border-radius: 3px;
+    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.18s; flex-shrink: 0;
+  }
+  .back-link:hover { background: var(--text-primary); border-color: var(--text-primary); }
+  .back-link svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.18s; }
+  .back-link:hover svg { stroke: var(--bg); }
+  .page-title { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+
+  /* ── INTRO ── */
+  .intro {
+    font-size: 13px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.8; margin-bottom: 36px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 14px; padding-left: 2px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
+  }
+
+  /* ── SERVICE CARDS ── */
+  .services { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+
+  .service-card {
+    display: flex; gap: 16px; padding: 22px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border);
+    border-radius: 4px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.18s, border-color 0.18s;
+    opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.07s + 0.25s) forwards;
+  }
+  .service-card:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+  }
+
+  .service-icon {
+    width: 40px; height: 40px; border-radius: 3px;
+    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .service-icon svg { width: 18px; height: 18px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .service-content { flex: 1; min-width: 0; }
+  .service-title {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .service-desc {
+    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .service-items {
+    list-style: none; margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .service-items li {
+    font-size: 10px; padding: 3px 10px; border-radius: 2px;
+    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
+    color: var(--text-secondary); letter-spacing: 0.02em;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    text-align: center; padding: 40px 20px;
+    border-top: 0.5px solid var(--divider);
+    opacity: 0; animation: fadeUp 0.4s ease 0.7s forwards;
+  }
+  .cta-title {
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .cta-desc {
+    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.7; margin-bottom: 20px;
+  }
+  .cta-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; background: var(--text-primary);
+    color: var(--bg); font-size: 12px; font-weight: 500;
+    text-decoration: none; border-radius: 4px;
+    letter-spacing: 0.04em;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .cta-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .cta-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="theme-toggle" onclick="toggleTheme()">
+  <span class="toggle-icon">&#9728;&#65039;</span>
+  <div class="toggle-track"><div class="toggle-knob"></div></div>
+  <span class="toggle-icon">&#127769;</span>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <a href="index.html" class="back-link" title="Back to home">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div>
+      <div class="page-title">Services</div>
+      <div class="page-subtitle">Cybersecurity &amp; IT Consulting</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    I work with businesses and individuals to identify security weaknesses, harden infrastructure, and build reliable systems. Based in Crete, available remotely worldwide.
+  </div>
+
+  <div class="section-label">What I offer</div>
+  <div class="services">
+
+    <div class="service-card" style="--i:0">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="service-content">
+        <div class="service-title">Penetration Testing</div>
+        <div class="service-desc">Simulated attacks against your web applications, networks, and infrastructure to find vulnerabilities before real attackers do.</div>
+        <ul class="service-items">
+          <li>Web application testing</li>
+          <li>Network pentesting</li>
+          <li>API security</li>
+          <li>Wireless assessments</li>
+          <li>Social engineering</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="service-card" style="--i:1">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="service-content">
+        <div class="service-title">Security Audits</div>
+        <div class="service-desc">Comprehensive review of your security posture, configurations, policies, and code to identify risks and compliance gaps.</div>
+        <ul class="service-items">
+          <li>Configuration review</li>
+          <li>Code audit</li>
+          <li>Cloud security</li>
+          <li>Compliance checks</li>
+          <li>Risk assessment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="service-card" style="--i:2">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      <div class="service-content">
+        <div class="service-title">IT Infrastructure &amp; Automation</div>
+        <div class="service-desc">Design and implementation of backup systems, monitoring, deployment pipelines, and custom automation tools.</div>
+        <ul class="service-items">
+          <li>Backup &amp; disaster recovery</li>
+          <li>Server hardening</li>
+          <li>CI/CD pipelines</li>
+          <li>Monitoring &amp; alerting</li>
+          <li>Custom tooling</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="service-card" style="--i:3">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div class="service-content">
+        <div class="service-title">IT Consulting</div>
+        <div class="service-desc">Technical guidance on architecture decisions, technology selection, network design, and security strategy for your organization.</div>
+        <ul class="service-items">
+          <li>Architecture review</li>
+          <li>Network design</li>
+          <li>Technology selection</li>
+          <li>Security strategy</li>
+          <li>Incident response planning</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta">
+    <div class="cta-title">Let's work together</div>
+    <div class="cta-desc">Have a project in mind or need a security assessment? Get in touch to discuss how I can help.</div>
+    <a href="mailto:sp1r4.work@gmail.com" class="cta-link">
+      <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+      Get in touch
+    </a>
+  </div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('noctis_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+const savedTheme = localStorage.getItem('noctis_theme');
+if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  document.body.classList.add('dark');
+}
+</script>
+<!-- Analytics: GoatCounter (privacy-friendly, no cookies) -->
+<script data-goatcounter="https://noctis-sp1r4.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

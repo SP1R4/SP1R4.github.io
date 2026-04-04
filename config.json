@@ -1,9 +1,9 @@
 {
   "name": "S. Markakis",
   "brand": "NOCTIS \u00b7 Cybersecurity & IT",
-  "bio": "Cybersecurity researcher with expertise in vulnerability discovery, penetration testing, and software development.",
+  "bio": "I build security tools, backup systems, and automation that solve real problems. From honeypots and post-quantum encryption to full infrastructure backup suites \u2014 I write the tools I wish existed.",
   "status": {
-    "text": "Available for work",
+    "text": "Open for freelance & consulting",
     "color": "#34d399",
     "visible": true
   },
@@ -21,15 +21,27 @@
     },
     {
       "title": "GitHub",
-      "sub": "Software dev & cybersecurity projects",
+      "sub": "Open source security & automation tools",
       "url": "https://github.com/SP1R4",
       "icon": "github"
+    },
+    {
+      "title": "X / Twitter",
+      "sub": "@_SP1R4",
+      "url": "https://x.com/_SP1R4",
+      "icon": "twitter"
     },
     {
       "title": "HackTheBox",
       "sub": "Penetration testing & ethical hacking",
       "url": "https://app.hackthebox.com/profile/332355",
       "icon": "box"
+    },
+    {
+      "title": "Services",
+      "sub": "Pentesting, security audits & IT consulting",
+      "url": "services.html",
+      "icon": "shield"
     },
     {
       "title": "Projects",
