@@ -6,7 +6,7 @@
 <title>NOCTIS Admin</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.github.com;">
 <meta name="robots" content="noindex, nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -300,6 +300,57 @@
     color: var(--text); outline: none;
   }
 
+  /* ── POST EDITOR ── */
+  .editor-wrap { margin-top: 10px; }
+  .editor-toolbar {
+    display: flex; gap: 4px; padding: 6px 8px; flex-wrap: wrap;
+    background: var(--surface3); border: 1px solid var(--border);
+    border-bottom: none; border-radius: 4px 4px 0 0;
+  }
+  .editor-toolbar button {
+    width: 30px; height: 28px; border: none; border-radius: 3px;
+    background: transparent; color: var(--text2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 600;
+    transition: all 0.1s;
+  }
+  .editor-toolbar button:hover { background: var(--surface); color: var(--text); }
+  .editor-toolbar .sep { width: 1px; background: var(--border); margin: 2px 4px; }
+  .editor-toolbar button svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .editor-textarea {
+    width: 100%; min-height: 300px; padding: 16px; font-size: 13px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace; line-height: 1.7;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0 0 4px 4px; color: var(--text); outline: none;
+    resize: vertical; tab-size: 2;
+  }
+  .editor-textarea:focus { border-color: var(--accent); }
+  .editor-preview {
+    width: 100%; min-height: 300px; padding: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0 0 4px 4px; color: var(--text);
+    font-size: 13px; line-height: 1.8; display: none; overflow-y: auto;
+  }
+  .editor-preview h1 { font-size: 22px; font-weight: 800; margin: 20px 0 10px; color: var(--text); }
+  .editor-preview h2 { font-size: 18px; font-weight: 700; margin: 18px 0 8px; color: var(--text); }
+  .editor-preview h3 { font-size: 15px; font-weight: 600; margin: 14px 0 6px; color: var(--text); }
+  .editor-preview p { margin-bottom: 12px; color: var(--text2); }
+  .editor-preview code { background: var(--surface3); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  .editor-preview pre { background: var(--surface3); padding: 14px; border-radius: 4px; margin: 12px 0; overflow-x: auto; }
+  .editor-preview pre code { background: none; padding: 0; }
+  .editor-preview ul, .editor-preview ol { margin: 0 0 12px 20px; color: var(--text2); }
+  .editor-preview blockquote { border-left: 3px solid var(--border); padding: 8px 14px; margin: 12px 0; color: var(--text3); }
+  .editor-preview a { color: var(--accent); }
+  .editor-preview img { max-width: 100%; border-radius: 4px; }
+  .editor-status {
+    display: flex; justify-content: space-between; padding: 6px 8px;
+    font-size: 10px; color: var(--text3);
+  }
+  .post-collapsed .link-fields, .post-collapsed .editor-wrap { display: none; }
+  .post-collapsed .link-item-header { margin-bottom: 0; }
+  .toggle-collapse { cursor: pointer; transition: transform 0.15s; display: inline-block; }
+  .post-collapsed .toggle-collapse { transform: rotate(-90deg); }
+
   /* ── TOAST ── */
   .toast {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -553,17 +604,17 @@
       <div class="tab-panel" id="panel-blog">
         <div class="section">
           <p style="font-size:11px;color:var(--text2);margin-bottom:14px;">
-            Manage your posts.json manifest. You still need to create .md files in the <code style="font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:3px;">posts/</code> directory.
+            Write and manage blog posts. Content is written in Markdown. Hit <strong>Save &amp; Deploy</strong> to push everything live.
           </p>
           <div class="field" style="margin-bottom:20px;">
             <label>Categories (comma-separated)</label>
             <input type="text" id="blog-categories" value="general, cybersecurity, ctf, development, tools, research" oninput="markDirty()">
-            <div class="hint">Define your blog categories. Use these as tags when adding posts. The blog page shows a filter bar based on tags used.</div>
+            <div class="hint">Use these as tags when adding posts. The blog page auto-generates a filter bar from them.</div>
           </div>
           <div id="posts-list"></div>
           <button class="btn" onclick="addPost()" style="margin-top:10px;">
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Post
+            New Post
           </button>
           <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn" onclick="downloadPosts()">Download posts.json</button>
@@ -848,6 +899,7 @@ function resetAll() {
   localStorage.removeItem('noctis_admin_config');
   localStorage.removeItem('noctis_admin_posts');
   localStorage.removeItem('noctis_admin_services');
+  localStorage.removeItem('noctis_admin_post_contents');
   localStorage.removeItem('noctis_admin_seo');
   localStorage.removeItem('noctis_admin_projects');
   localStorage.removeItem('noctis_admin_theme');
@@ -1008,6 +1060,9 @@ function removeLink(i) { gatherConfig(); config.links.splice(i, 1); renderLinks(
 function moveLink(i, dir) { gatherConfig(); const j = i + dir; if (j < 0 || j >= config.links.length) return; [config.links[i], config.links[j]] = [config.links[j], config.links[i]]; renderLinks(); markDirty(); }
 
 // ── POSTS ──
+// postContents: slug -> markdown string
+let postContents = {};
+
 async function loadPosts() {
   const saved = localStorage.getItem('noctis_admin_posts');
   if (saved) {
@@ -1015,23 +1070,46 @@ async function loadPosts() {
   } else {
     try { postsData = await (await fetch('posts.json')).json(); } catch { postsData = []; }
   }
+  // Load saved post contents from localStorage
+  const savedContents = localStorage.getItem('noctis_admin_post_contents');
+  if (savedContents) {
+    try { postContents = JSON.parse(savedContents); } catch { postContents = {}; }
+  }
+  // Try to fetch existing .md files for posts that don't have content yet
+  for (const post of postsData) {
+    if (post.slug && !postContents[post.slug]) {
+      try {
+        const r = await fetch('posts/' + post.slug + '.md');
+        if (r.ok) postContents[post.slug] = await r.text();
+      } catch {}
+    }
+  }
   renderPosts();
+}
+
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 function renderPosts() {
   const list = document.getElementById('posts-list');
   list.innerHTML = '';
   if (postsData.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:16px 0;">No posts yet.</div>';
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:16px 0;">No posts yet. Click "New Post" to get started.</div>';
   }
   postsData.forEach((post, i) => {
+    const content = postContents[post.slug] || '';
+    const wordCount = content.replace(/```[\s\S]*?```/g, '').replace(/[#*`>\-\[\]()!]/g, '').split(/\s+/).filter(Boolean).length;
+
     const el = document.createElement('div');
     el.className = 'link-item';
     el.innerHTML = `
       <div class="link-item-header">
         <div class="left">
-          <span class="link-preview">${escapeHtml(post.title || 'Untitled')}</span>
+          <span class="toggle-collapse" onclick="this.closest('.link-item').classList.toggle('post-collapsed')">&#x25BE;</span>
+          <span class="link-preview" style="margin-left:6px;">${escapeHtml(post.title || 'Untitled')}</span>
           <span style="font-size:10px;color:var(--text3);margin-left:10px;">${escapeHtml(post.date || '')}</span>
+          <span style="font-size:9px;color:${content ? 'var(--accent)' : 'var(--danger)'};margin-left:8px;">${content ? wordCount + ' words' : 'NO CONTENT'}</span>
         </div>
         <div class="link-item-actions">
           <button class="btn small" onclick="movePost(${i},-1)">&#x2191;</button>
@@ -1040,34 +1118,192 @@ function renderPosts() {
         </div>
       </div>
       <div class="link-fields">
-        <div class="field"><label>Title</label><input class="pf-title" type="text" value="${escapeAttr(post.title)}" oninput="this.closest('.link-item').querySelector('.link-preview').textContent=this.value||'Untitled';markDirty()"></div>
-        <div class="field"><label>Slug</label><input class="pf-slug" type="text" value="${escapeAttr(post.slug)}" oninput="markDirty()"></div>
+        <div class="field"><label>Title</label><input class="pf-title" type="text" value="${escapeAttr(post.title)}" oninput="autoSlug(this);markDirty()"></div>
+        <div class="field"><label>Slug</label><input class="pf-slug" type="text" value="${escapeAttr(post.slug)}" oninput="markDirty()" data-manual="0"></div>
         <div class="field full"><label>Description</label><input class="pf-desc" type="text" value="${escapeAttr(post.description || '')}" oninput="markDirty()"></div>
         <div class="field"><label>Date</label><input class="pf-date" type="date" value="${escapeAttr(post.date || '')}" oninput="markDirty()"></div>
         <div class="field"><label>Tags (comma-separated)</label><input class="pf-tags" type="text" value="${escapeAttr((post.tags || []).join(', '))}" oninput="markDirty()"></div>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-toolbar">
+          <button title="Bold" onclick="editorInsert(this,'**','**')"><strong>B</strong></button>
+          <button title="Italic" onclick="editorInsert(this,'_','_')"><em>I</em></button>
+          <button title="Code" onclick="editorInsert(this,'\`','\`')"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+          <button title="Code block" onclick="editorInsert(this,'\\n\`\`\`\\n','\\n\`\`\`\\n')">{ }</button>
+          <div class="sep"></div>
+          <button title="Heading 2" onclick="editorInsert(this,'\\n## ','')">H2</button>
+          <button title="Heading 3" onclick="editorInsert(this,'\\n### ','')">H3</button>
+          <div class="sep"></div>
+          <button title="Link" onclick="editorInsertLink(this)"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+          <button title="Image" onclick="editorInsertImage(this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+          <button title="Bullet list" onclick="editorInsert(this,'\\n- ','')"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+          <button title="Blockquote" onclick="editorInsert(this,'\\n> ','')"><svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg></button>
+          <button title="Horizontal rule" onclick="editorInsert(this,'\\n---\\n','')">—</button>
+          <div class="sep"></div>
+          <button title="Preview" onclick="togglePreview(this)" style="margin-left:auto;font-size:10px;letter-spacing:0.05em;">PREVIEW</button>
+        </div>
+        <textarea class="editor-textarea pf-content" placeholder="Write your post content in Markdown..." oninput="markDirty()">${escapeHtml(content)}</textarea>
+        <div class="editor-preview pf-preview"></div>
+        <div class="editor-status">
+          <span>${wordCount} words</span>
+          <span>Markdown</span>
+        </div>
       </div>`;
+
+    // Mark slug field as manual if it already has a value
+    if (post.slug) {
+      const slugInput = el.querySelector('.pf-slug');
+      if (slugInput) slugInput.dataset.manual = '1';
+    }
+
     list.appendChild(el);
   });
   document.getElementById('posts-count').textContent = postsData.length;
 }
 
+function autoSlug(titleInput) {
+  const item = titleInput.closest('.link-item');
+  const slugInput = item.querySelector('.pf-slug');
+  const preview = item.querySelector('.link-preview');
+  preview.textContent = titleInput.value || 'Untitled';
+  // Only auto-generate if slug hasn't been manually edited
+  if (slugInput.dataset.manual === '0' || slugInput.value === '' || slugInput.value === slugify(titleInput.defaultValue || '')) {
+    slugInput.value = slugify(titleInput.value);
+  }
+}
+
+function editorInsert(btn, before, after) {
+  const ta = btn.closest('.editor-wrap').querySelector('.editor-textarea');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end) || 'text';
+  const b = before.replace(/\\n/g, '\n');
+  const a = after.replace(/\\n/g, '\n');
+  ta.value = ta.value.substring(0, start) + b + selected + a + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = start + b.length;
+  ta.selectionEnd = start + b.length + selected.length;
+  markDirty();
+}
+
+function editorInsertLink(btn) {
+  const ta = btn.closest('.editor-wrap').querySelector('.editor-textarea');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end) || 'link text';
+  ta.value = ta.value.substring(0, start) + '[' + selected + '](url)' + ta.value.substring(end);
+  ta.focus();
+  // Select "url" for easy replacement
+  ta.selectionStart = start + selected.length + 3;
+  ta.selectionEnd = start + selected.length + 6;
+  markDirty();
+}
+
+function editorInsertImage(btn) {
+  const ta = btn.closest('.editor-wrap').querySelector('.editor-textarea');
+  const pos = ta.selectionStart;
+  ta.value = ta.value.substring(0, pos) + '\n![alt text](image-url)\n' + ta.value.substring(pos);
+  ta.focus();
+  ta.selectionStart = pos + 13;
+  ta.selectionEnd = pos + 22;
+  markDirty();
+}
+
+function togglePreview(btn) {
+  const wrap = btn.closest('.editor-wrap');
+  const ta = wrap.querySelector('.editor-textarea');
+  const preview = wrap.querySelector('.pf-preview');
+  if (preview.style.display === 'block') {
+    preview.style.display = 'none';
+    ta.style.display = 'block';
+    btn.textContent = 'PREVIEW';
+  } else {
+    // Simple markdown to HTML (basic conversion)
+    preview.innerHTML = simpleMarkdown(ta.value);
+    preview.style.display = 'block';
+    ta.style.display = 'none';
+    btn.textContent = 'EDIT';
+  }
+}
+
+function simpleMarkdown(md) {
+  let html = escapeHtml(md);
+  // Code blocks
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Headings
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // Bold/italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+  // Links and images
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Blockquotes
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  // Lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+  // Horizontal rules
+  html = html.replace(/^---$/gm, '<hr>');
+  // Paragraphs (lines that aren't already wrapped)
+  html = html.replace(/^(?!<[hupob]|<li|<hr|<img|<pre|<blockquote)(.+)$/gm, '<p>$1</p>');
+  return html;
+}
+
 function gatherPosts() {
+  const oldContents = { ...postContents };
   postsData = [];
+  postContents = {};
   document.querySelectorAll('#posts-list .link-item').forEach(el => {
+    const slug = el.querySelector('.pf-slug').value.trim();
     postsData.push({
-      slug: el.querySelector('.pf-slug').value.trim(),
+      slug,
       title: el.querySelector('.pf-title').value.trim(),
       description: el.querySelector('.pf-desc').value.trim(),
       date: el.querySelector('.pf-date').value,
       tags: el.querySelector('.pf-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     });
+    const content = el.querySelector('.pf-content');
+    if (content && slug) {
+      postContents[slug] = content.value;
+    }
   });
   return postsData;
 }
 
-function addPost() { gatherPosts(); postsData.push({ slug: '', title: '', description: '', date: new Date().toISOString().split('T')[0], tags: [] }); renderPosts(); markDirty(); scrollToLast('#posts-list .link-item'); }
-function removePost(i) { gatherPosts(); postsData.splice(i, 1); renderPosts(); markDirty(); }
-function movePost(i, dir) { gatherPosts(); const j = i + dir; if (j < 0 || j >= postsData.length) return; [postsData[i], postsData[j]] = [postsData[j], postsData[i]]; renderPosts(); markDirty(); }
+function addPost() {
+  gatherPosts();
+  const today = new Date().toISOString().split('T')[0];
+  postsData.push({ slug: '', title: '', description: '', date: today, tags: [] });
+  renderPosts();
+  markDirty();
+  scrollToLast('#posts-list .link-item');
+  // Uncollapse the new post
+  const items = document.querySelectorAll('#posts-list .link-item');
+  const last = items[items.length - 1];
+  if (last) last.querySelector('.pf-title').focus();
+}
+
+function removePost(i) {
+  if (!confirm('Delete this post?')) return;
+  gatherPosts();
+  const slug = postsData[i].slug;
+  postsData.splice(i, 1);
+  if (slug) delete postContents[slug];
+  renderPosts();
+  markDirty();
+}
+
+function movePost(i, dir) {
+  gatherPosts();
+  const j = i + dir;
+  if (j < 0 || j >= postsData.length) return;
+  [postsData[i], postsData[j]] = [postsData[j], postsData[i]];
+  renderPosts();
+  markDirty();
+}
 
 function getPostsJSON() { gatherPosts(); return JSON.stringify(postsData, null, 2); }
 function downloadPosts() { downloadFile('posts.json', getPostsJSON(), 'application/json'); }
@@ -1281,6 +1517,7 @@ async function saveAll() {
   // Always persist to localStorage as backup
   localStorage.setItem('noctis_admin_config', JSON.stringify(config));
   localStorage.setItem('noctis_admin_posts', JSON.stringify(postsData));
+  localStorage.setItem('noctis_admin_post_contents', JSON.stringify(postContents));
   localStorage.setItem('noctis_admin_services', JSON.stringify(servicesData));
   localStorage.setItem('noctis_admin_seo', JSON.stringify({
     ogTitle: document.getElementById('seo-og-title').value,
@@ -1310,6 +1547,12 @@ async function saveAll() {
         'posts.json': JSON.stringify(postsData, null, 2),
         'feed.xml': generateRSS(),
       };
+      // Add post markdown files
+      for (const [slug, content] of Object.entries(postContents)) {
+        if (slug && content.trim()) {
+          files['posts/' + slug + '.md'] = content;
+        }
+      }
       let committed = 0;
       for (const [path, content] of Object.entries(files)) {
         await ghPutFile(token, repo, path, content);
