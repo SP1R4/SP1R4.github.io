@@ -724,7 +724,7 @@ async function copyPosts() {
 
 function generateRSS() {
   gatherPosts();
-  const base = 'https://sp1r4.github.io/noctis-linktree';
+  const base = 'https://sp1r4.github.io';
   const items = postsData.map(p => {
     const d = new Date(p.date + 'T00:00:00Z');
     const cats = (p.tags || []).map(t => `      <category>${escapeHtml(t)}</category>`).join('\n');

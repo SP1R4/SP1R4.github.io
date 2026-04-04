@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://noctis-sp1r4.goatcounter.com;">
 <title>Projects — NOCTIS</title>
 <meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
 <meta property="og:title" content="Projects — NOCTIS">
 <meta property="og:description" content="Open source projects — cybersecurity tools, research, and development.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://sp1r4.github.io/noctis-linktree/projects.html">
-<meta property="og:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<meta property="og:url" content="https://sp1r4.github.io/projects.html">
+<meta property="og:image" content="https://sp1r4.github.io/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://sp1r4.github.io/noctis-linktree/og-image.png">
+<meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
@@ -108,6 +108,28 @@
   .page-title { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
   .page-subtitle { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
 
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 14px; margin-top: 32px; padding-left: 2px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  /* ── FEATURED PROJECT ── */
+  .featured {
+    display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px;
+  }
+  .featured .project-card {
+    grid-column: span 1;
+  }
+  .featured-badge {
+    font-size: 8px; padding: 2px 7px; border-radius: 2px;
+    background: #34d399; color: #0f0f0f; letter-spacing: 0.06em;
+    font-weight: 600; text-transform: uppercase; margin-left: auto; flex-shrink: 0;
+  }
+  .project-card:hover .featured-badge { background: rgba(52,211,153,0.3); color: var(--bg); }
+
   /* ── PROJECTS GRID ── */
   .projects { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 560px) { .projects { grid-template-columns: 1fr; } }
@@ -186,6 +208,9 @@
       <div class="page-subtitle">Open Source &amp; Research</div>
     </div>
   </div>
+  <div class="section-label">Featured</div>
+  <div class="featured" id="featured"></div>
+  <div class="section-label">All Projects</div>
   <div class="projects" id="projects">
     <div class="loading">Loading repositories...</div>
   </div>
@@ -209,94 +234,123 @@ if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-s
   document.body.classList.add('dark');
 }
 
+// Repos to exclude from the projects page (non-tool repos)
+const EXCLUDE = ['SP1R4', 'noctis-linktree', 'sp1r4.github.io'];
+// Featured repos shown at the top
+const FEATURED = ['BackupHandler', 'PhantomTrap', 'Qsafe', 'hashcracker'];
+
+function buildCard(repo, i, featured) {
+  const a = document.createElement('a');
+  a.className = 'project-card';
+  a.href = repo.html_url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.style.setProperty('--i', i);
+
+  const name = document.createElement('div');
+  name.className = 'proj-name';
+  name.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  const nameText = document.createElement('span');
+  nameText.textContent = repo.name;
+  name.appendChild(nameText);
+  if (featured) {
+    const badge = document.createElement('span');
+    badge.className = 'featured-badge';
+    badge.textContent = 'Featured';
+    name.appendChild(badge);
+  }
+
+  const desc = document.createElement('div');
+  desc.className = 'proj-desc';
+  desc.textContent = repo.description || 'No description';
+
+  const meta = document.createElement('div');
+  meta.className = 'proj-meta';
+
+  if (repo.language) {
+    const lang = document.createElement('span');
+    lang.className = 'proj-lang';
+    const dot = document.createElement('span');
+    dot.className = 'proj-lang-dot';
+    dot.style.background = LANG_COLORS[repo.language] || '#888';
+    const langName = document.createElement('span');
+    langName.textContent = repo.language;
+    lang.appendChild(dot);
+    lang.appendChild(langName);
+    meta.appendChild(lang);
+  }
+
+  if (repo.stargazers_count > 0) {
+    const stars = document.createElement('span');
+    stars.className = 'proj-stat';
+    stars.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    const count = document.createElement('span');
+    count.textContent = repo.stargazers_count;
+    stars.appendChild(count);
+    meta.appendChild(stars);
+  }
+
+  if (repo.forks_count > 0) {
+    const forks = document.createElement('span');
+    forks.className = 'proj-stat';
+    forks.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><line x1="12" y1="12" x2="12" y2="15"/></svg>`;
+    const count = document.createElement('span');
+    count.textContent = repo.forks_count;
+    forks.appendChild(count);
+    meta.appendChild(forks);
+  }
+
+  if (repo.topics && repo.topics.length > 0) {
+    repo.topics.slice(0, 3).forEach(t => {
+      const tag = document.createElement('span');
+      tag.className = 'proj-tag';
+      tag.textContent = t;
+      meta.appendChild(tag);
+    });
+  }
+
+  a.appendChild(name);
+  a.appendChild(desc);
+  a.appendChild(meta);
+  return a;
+}
+
 fetch('https://api.github.com/users/SP1R4/repos?sort=updated&per_page=30')
   .then(r => r.json())
   .then(repos => {
+    const featuredEl = document.getElementById('featured');
     const container = document.getElementById('projects');
     container.innerHTML = '';
 
-    const filtered = repos
-      .filter(r => !r.fork && !r.private)
+    const allRepos = repos
+      .filter(r => !r.fork && !r.private && !EXCLUDE.includes(r.name))
       .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at) - new Date(a.updated_at));
 
-    if (filtered.length === 0) {
+    if (allRepos.length === 0) {
       container.innerHTML = '<div class="loading">No public repositories found.</div>';
       return;
     }
 
-    filtered.forEach((repo, i) => {
-      const a = document.createElement('a');
-      a.className = 'project-card';
-      a.href = repo.html_url;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.style.setProperty('--i', i);
-
-      const name = document.createElement('div');
-      name.className = 'proj-name';
-      name.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
-      const nameText = document.createElement('span');
-      nameText.textContent = repo.name;
-      name.appendChild(nameText);
-
-      const desc = document.createElement('div');
-      desc.className = 'proj-desc';
-      desc.textContent = repo.description || 'No description';
-
-      const meta = document.createElement('div');
-      meta.className = 'proj-meta';
-
-      if (repo.language) {
-        const lang = document.createElement('span');
-        lang.className = 'proj-lang';
-        const dot = document.createElement('span');
-        dot.className = 'proj-lang-dot';
-        dot.style.background = LANG_COLORS[repo.language] || '#888';
-        const langName = document.createElement('span');
-        langName.textContent = repo.language;
-        lang.appendChild(dot);
-        lang.appendChild(langName);
-        meta.appendChild(lang);
+    // Render featured projects in defined order
+    let fi = 0;
+    FEATURED.forEach(name => {
+      const repo = allRepos.find(r => r.name === name);
+      if (repo) {
+        featuredEl.appendChild(buildCard(repo, fi++, true));
       }
+    });
 
-      if (repo.stargazers_count > 0) {
-        const stars = document.createElement('span');
-        stars.className = 'proj-stat';
-        stars.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-        const count = document.createElement('span');
-        count.textContent = repo.stargazers_count;
-        stars.appendChild(count);
-        meta.appendChild(stars);
-      }
-
-      if (repo.forks_count > 0) {
-        const forks = document.createElement('span');
-        forks.className = 'proj-stat';
-        forks.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><line x1="12" y1="12" x2="12" y2="15"/></svg>`;
-        const count = document.createElement('span');
-        count.textContent = repo.forks_count;
-        forks.appendChild(count);
-        meta.appendChild(forks);
-      }
-
-      if (repo.topics && repo.topics.length > 0) {
-        repo.topics.slice(0, 3).forEach(t => {
-          const tag = document.createElement('span');
-          tag.className = 'proj-tag';
-          tag.textContent = t;
-          meta.appendChild(tag);
-        });
-      }
-
-      a.appendChild(name);
-      a.appendChild(desc);
-      a.appendChild(meta);
-      container.appendChild(a);
+    // Render remaining projects (exclude featured)
+    const remaining = allRepos.filter(r => !FEATURED.includes(r.name));
+    remaining.forEach((repo, i) => {
+      container.appendChild(buildCard(repo, i, false));
     });
   })
   .catch(() => {
     document.getElementById('projects').innerHTML = '<div class="loading">Could not load repositories.</div>';
   });
 </script>
+<!-- Analytics: GoatCounter (privacy-friendly, no cookies) -->
+<script data-goatcounter="https://noctis-sp1r4.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
