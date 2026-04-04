@@ -326,8 +326,9 @@ cfgPromise
     cfg.links.forEach((link, i) => {
       const a = document.createElement('a');
       a.className = 'link-card';
-      a.href = link.url;
-      if (!link.url.startsWith('mailto')) a.target = '_blank';
+      const safeUrl = /^(https?:|mailto:|\/|#|\.)/i.test(link.url.trim()) ? link.url : '#';
+      a.href = safeUrl;
+      if (!safeUrl.startsWith('mailto')) a.target = '_blank';
       a.rel = 'noopener';
       a.style.setProperty('--i', i);
 

@@ -851,7 +851,17 @@ function showSetup() {
   document.getElementById('login-setup').style.display = 'block';
 }
 
+let loginAttempts = 0;
+let loginLockUntil = 0;
+
 async function tryLogin() {
+  const now = Date.now();
+  if (now < loginLockUntil) {
+    const secs = Math.ceil((loginLockUntil - now) / 1000);
+    document.getElementById('login-error').textContent = 'Too many attempts. Wait ' + secs + 's';
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
   const pw = document.getElementById('pw').value;
   if (!pw) return;
   if (isFirstUse()) {
@@ -871,6 +881,11 @@ async function tryLogin() {
     sessionStorage.setItem('noctis_auth', '1');
     enterAdmin();
   } else {
+    loginAttempts++;
+    if (loginAttempts >= 5) {
+      loginLockUntil = Date.now() + 30000; // 30s lockout
+      loginAttempts = 0;
+    }
     document.getElementById('login-error').textContent = 'Wrong password';
     document.getElementById('login-error').style.display = 'block';
   }
@@ -1224,6 +1239,13 @@ function togglePreview(btn) {
   }
 }
 
+function sanitizeUrl(url) {
+  // Only allow http, https, mailto, and relative URLs
+  const u = url.trim();
+  if (/^(https?:|mailto:|\/|#|\.)/i.test(u)) return u;
+  return '#';
+}
+
 function simpleMarkdown(md) {
   let html = escapeHtml(md);
   // Code blocks
@@ -1237,9 +1259,9 @@ function simpleMarkdown(md) {
   // Bold/italic
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/_(.+?)_/g, '<em>$1</em>');
-  // Links and images
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Links and images — sanitize URLs to block javascript: URIs
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => '<img src="' + sanitizeUrl(src) + '" alt="' + alt + '">');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => '<a href="' + sanitizeUrl(href) + '">' + text + '</a>');
   // Blockquotes
   html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
   // Lists
@@ -1315,7 +1337,8 @@ function generateRSS() {
   const items = postsData.map(p => {
     const d = new Date(p.date + 'T00:00:00Z');
     const cats = (p.tags || []).map(t => `      <category>${escapeHtml(t)}</category>`).join('\n');
-    return `    <item>\n      <title>${escapeHtml(p.title)}</title>\n      <link>${base}/blog.html#${p.slug}</link>\n      <guid>${base}/blog.html#${p.slug}</guid>\n      <pubDate>${d.toUTCString()}</pubDate>\n      <description>${escapeHtml(p.description)}</description>\n${cats}\n    </item>`;
+    const safeSlug = encodeURIComponent(p.slug);
+    return `    <item>\n      <title>${escapeHtml(p.title)}</title>\n      <link>${base}/blog.html#${safeSlug}</link>\n      <guid>${base}/blog.html#${safeSlug}</guid>\n      <pubDate>${d.toUTCString()}</pubDate>\n      <description>${escapeHtml(p.description)}</description>\n${cats}\n    </item>`;
   }).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>NOCTIS Blog</title>\n    <link>${base}/blog.html</link>\n    <description>Cybersecurity research, CTF writeups, and development notes by S. Markakis.</description>\n    <language>en</language>\n    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>\n${items}\n  </channel>\n</rss>`;
 }
@@ -1610,6 +1633,14 @@ async function testGHConnection() {
 }
 
 async function ghPutFile(token, repo, path, content) {
+  // Validate repo format (owner/name only)
+  if (!/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/.test(repo)) {
+    throw new Error('Invalid repository format');
+  }
+  // Sanitize path: no traversal, no absolute paths
+  if (/\.\.|\0/.test(path) || path.startsWith('/')) {
+    throw new Error('Invalid file path: ' + path);
+  }
   const apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + path;
   const headers = {
     'Authorization': 'Bearer ' + token,
