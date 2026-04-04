@@ -172,6 +172,28 @@
     color: var(--text-muted); font-size: 13px; font-weight: 300;
   }
 
+  /* ── CATEGORY FILTER ── */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
+  }
+  .filter-pill {
+    padding: 5px 14px; border-radius: 3px; cursor: pointer;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; border: 1px solid var(--card-border);
+    background: transparent; color: var(--text-muted);
+    transition: all 0.15s; font-family: 'Inter', sans-serif;
+  }
+  .filter-pill:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+  .filter-pill.active {
+    background: var(--text-primary); color: var(--bg);
+    border-color: var(--text-primary);
+  }
+  .post-count {
+    font-size: 10px; color: var(--text-muted); margin-bottom: 16px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.18s forwards;
+  }
+
   /* ── POST VIEW ── */
   .post-view { display: none; }
   .post-view.active { display: block; }
@@ -264,6 +286,8 @@
         <div class="blog-subtitle">Research &amp; Writeups</div>
       </div>
     </div>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="post-count" id="post-count"></div>
     <div class="post-list" id="post-list"></div>
   </div>
 
@@ -287,6 +311,7 @@
 
 <script>
 let posts = [];
+let activeFilter = null;
 
 function toggleTheme() {
   document.body.classList.toggle('dark');
@@ -302,14 +327,54 @@ function formatDate(d) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+function getAllTags() {
+  const tags = new Set();
+  posts.forEach(p => (p.tags || []).forEach(t => tags.add(t)));
+  return [...tags].sort();
+}
+
+function renderFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = '';
+  const tags = getAllTags();
+  if (tags.length <= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-pill' + (activeFilter === null ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => { activeFilter = null; renderFilterBar(); renderList(); };
+  bar.appendChild(allBtn);
+
+  tags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-pill' + (activeFilter === tag ? ' active' : '');
+    btn.textContent = tag;
+    btn.onclick = () => { activeFilter = tag; renderFilterBar(); renderList(); };
+    bar.appendChild(btn);
+  });
+}
+
 function renderList() {
   const list = document.getElementById('post-list');
+  const countEl = document.getElementById('post-count');
   list.innerHTML = '';
   if (posts.length === 0) {
     list.innerHTML = '<div class="empty-state">No posts yet.</div>';
+    countEl.textContent = '';
     return;
   }
-  const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date));
+  const sorted = [...posts]
+    .filter(p => !activeFilter || (p.tags && p.tags.includes(activeFilter)))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  countEl.textContent = sorted.length + ' post' + (sorted.length !== 1 ? 's' : '') + (activeFilter ? ' in "' + activeFilter + '"' : '');
+
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty-state">No posts in this category.</div>';
+    return;
+  }
+
   sorted.forEach((post, i) => {
     const el = document.createElement('a');
     el.className = 'post-card';
@@ -401,6 +466,7 @@ fetch('posts.json')
   .then(r => r.json())
   .then(data => {
     posts = data;
+    renderFilterBar();
     renderList();
     const hash = location.hash.slice(1);
     if (hash) showPost(hash);
