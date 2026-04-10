@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com;">
 <title>Projects — NOCTIS</title>
 <meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
@@ -16,113 +17,14 @@
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
-
-  :root {
-    --bg: #f0efe9;
-    --card-bg: #fff;
-    --card-border: #e0deda;
-    --text-primary: #0f0f0f;
-    --text-secondary: #888;
-    --text-muted: #bbb;
-    --icon-bg: #f0efe9;
-    --icon-border: #e0deda;
-    --icon-stroke: #555;
-    --wm-stroke: #e4e2dc;
-    --divider: #ddd;
-    --toggle-bg: #e0deda;
-    --toggle-knob: #fff;
-    --tag-bg: #e8e6e0;
-    --tag-color: #666;
-  }
-
-  body.dark {
-    --bg: #0f0f0f;
-    --card-bg: #1a1a1a;
-    --card-border: #2a2a2a;
-    --text-primary: #f4f3ef;
-    --text-secondary: #666;
-    --text-muted: #444;
-    --icon-bg: #111;
-    --icon-border: #2a2a2a;
-    --icon-stroke: #888;
-    --wm-stroke: #1a1a1a;
-    --divider: #222;
-    --toggle-bg: #333;
-    --toggle-knob: #f4f3ef;
-    --tag-bg: #1e1e1e;
-    --tag-color: #888;
-  }
-
-  body {
-    background: var(--bg); min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 48px 20px 80px; font-family: 'Inter', sans-serif;
-    position: relative; overflow-x: hidden;
-  }
-
-  body::before {
-    content: 'NOCTIS'; position: fixed; bottom: -40px; left: 50%;
-    transform: translateX(-50%); font-size: 160px; font-weight: 900;
-    color: transparent; -webkit-text-stroke: 1.5px var(--wm-stroke);
-    letter-spacing: -6px; pointer-events: none; user-select: none;
-    white-space: nowrap; z-index: 0;
-  }
-
-  .container { position: relative; z-index: 1; width: 100%; max-width: 680px; }
-
-  /* ── THEME TOGGLE ── */
-  .theme-toggle {
-    position: fixed; top: 20px; right: 20px; z-index: 50;
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
-  }
-  .toggle-track {
-    width: 40px; height: 22px; background: var(--toggle-bg);
-    border-radius: 11px; position: relative; transition: background 0.25s;
-    border: 0.5px solid var(--card-border);
-  }
-  .toggle-knob {
-    width: 16px; height: 16px; background: var(--toggle-knob);
-    border-radius: 50%; position: absolute; top: 2px; left: 2px;
-    transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  }
-  body.dark .toggle-knob { transform: translateX(18px); }
-  .toggle-icon { font-size: 13px; user-select: none; }
-
-  /* ── HEADER ── */
-  .page-header {
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 40px;
-    opacity: 0; animation: fadeUp 0.4s ease 0.1s forwards;
-  }
-  .back-link {
-    width: 36px; height: 36px; border-radius: 3px;
-    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none; transition: all 0.18s; flex-shrink: 0;
-  }
-  .back-link:hover { background: var(--text-primary); border-color: var(--text-primary); }
-  .back-link svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.18s; }
-  .back-link:hover svg { stroke: var(--bg); }
-  .page-title { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
-  .page-subtitle { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
-
-  /* ── SECTION LABEL ── */
-  .section-label {
-    font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em;
-    text-transform: uppercase; margin-bottom: 14px; margin-top: 32px; padding-left: 2px;
-    opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
-  }
+  /* ── SECTION LABEL override ── */
+  .section-label { margin-top: 32px; }
   .section-label:first-of-type { margin-top: 0; }
 
-  /* ── FEATURED PROJECT ── */
-  .featured {
-    display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px;
-  }
-  .featured .project-card {
-    grid-column: span 1;
-  }
+  /* ── FEATURED ── */
+  .featured { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
   .featured-badge {
     font-size: 8px; padding: 2px 7px; border-radius: 2px;
     background: #34d399; color: #0f0f0f; letter-spacing: 0.06em;
@@ -172,41 +74,34 @@
   .proj-stat svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .proj-lang { display: flex; align-items: center; gap: 5px; }
   .proj-lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: box-shadow 0.18s; }
-  .proj-tag {
-    font-size: 9px; padding: 2px 8px; border-radius: 2px;
-    background: var(--tag-bg); color: var(--tag-color);
-    letter-spacing: 0.04em; transition: all 0.18s;
-  }
 
   .loading {
     text-align: center; padding: 60px 20px;
     color: var(--text-muted); font-size: 12px; font-weight: 300;
     letter-spacing: 0.1em; text-transform: uppercase;
   }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
 </style>
 </head>
-<body>
+<body class="has-nav">
 
-<div class="theme-toggle" onclick="toggleTheme()">
-  <span class="toggle-icon">&#9728;&#65039;</span>
-  <div class="toggle-track"><div class="toggle-knob"></div></div>
-  <span class="toggle-icon">&#127769;</span>
-</div>
+<nav class="site-nav">
+  <a href="index.html" class="nav-brand">NOCTIS</a>
+  <div class="nav-links">
+    <a href="services.html" class="nav-link">Services</a>
+    <a href="projects.html" class="nav-link active">Projects</a>
+    <a href="blog.html" class="nav-link">Blog</a>
+  </div>
+  <div class="nav-toggle" onclick="toggleTheme()">
+    <span class="toggle-icon">☀️</span>
+    <div class="toggle-track"><div class="toggle-knob"></div></div>
+    <span class="toggle-icon">🌙</span>
+  </div>
+</nav>
 
 <div class="container">
   <div class="page-header">
-    <a href="index.html" class="back-link" title="Back to home">
-      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    </a>
-    <div>
-      <div class="page-title">Projects</div>
-      <div class="page-subtitle">Open Source &amp; Research</div>
-    </div>
+    <div class="page-title">Projects</div>
+    <div class="page-subtitle">Open Source &amp; Research</div>
   </div>
   <div class="section-label">Featured</div>
   <div class="featured" id="featured"></div>
@@ -234,10 +129,21 @@ if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-s
   document.body.classList.add('dark');
 }
 
-// Repos to exclude from the projects page (non-tool repos)
 const EXCLUDE = ['SP1R4', 'noctis-linktree', 'sp1r4.github.io'];
-// Featured repos shown at the top
 const FEATURED = ['BackupHandler', 'PhantomTrap', 'Qsafe', 'hashcracker'];
+
+// Fallback data when GitHub API is unavailable
+const FALLBACK_REPOS = [
+  { name: 'BackupHandler', description: 'Full-featured backup solution with local/SSH/S3/MySQL support, Tailscale VPN, AES-256 encryption, dedup, scheduling, and Telegram notifications', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/BackupHandler', topics: ['backup', 'encryption', 'python'] },
+  { name: 'PhantomTrap', description: 'High-interaction honeypot framework with behavioral fingerprinting, campaign detection, and real-time dashboard', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/PhantomTrap', topics: ['honeypot', 'cybersecurity', 'python'] },
+  { name: 'Qsafe', description: 'Post-quantum file encryption tool using Kyber1024 + AES-256-GCM', language: 'C', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/Qsafe', topics: ['cryptography', 'post-quantum', 'security'] },
+  { name: 'hashcracker', description: 'Professional hash identification and cracking toolkit. Identifies 60+ hash types with confidence scoring, cracks via hashcat & John the Ripper.', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/hashcracker', topics: ['cybersecurity', 'hash-cracking', 'python'] },
+  { name: 'FundsForwarder', description: 'Ethereum funds forwarding tool — automatically routes incoming ETH/ERC-20 transactions to a target wallet', language: 'JavaScript', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/FundsForwarder', topics: ['blockchain', 'ethereum', 'web3'] },
+  { name: 'Contract-Downloader', description: 'CLI tool to download Ethereum smart contract source code and bytecode from Etherscan', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/Contract-Downloader', topics: ['ethereum', 'smart-contracts', 'python'] },
+  { name: 'CMDR', description: 'Bash CLI tool to store, tag, categorize, and run shell commands with JSON-based storage', language: 'Shell', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/CMDR', topics: ['bash', 'cli', 'productivity'] },
+  { name: 'AddressTrackerBot', description: 'Telegram bot that monitors Ethereum addresses and sends transaction notifications', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/AddressTrackerBot', topics: ['blockchain', 'telegram-bot', 'python'] },
+  { name: 'tailscale-setup', description: 'Automated Tailscale mesh VPN deployment toolkit with SSH key auth and AnyDesk for Linux and Windows', language: 'Shell', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/tailscale-setup', topics: ['tailscale', 'vpn', 'automation'] },
+];
 
 function buildCard(repo, i, featured) {
   const a = document.createElement('a');
@@ -315,40 +221,41 @@ function buildCard(repo, i, featured) {
   return a;
 }
 
-fetch('https://api.github.com/users/SP1R4/repos?sort=updated&per_page=30')
-  .then(r => r.json())
-  .then(repos => {
-    const featuredEl = document.getElementById('featured');
-    const container = document.getElementById('projects');
-    container.innerHTML = '';
+function renderProjects(repos) {
+  const featuredEl = document.getElementById('featured');
+  const container = document.getElementById('projects');
+  container.innerHTML = '';
 
-    const allRepos = repos
-      .filter(r => !r.fork && !r.private && !EXCLUDE.includes(r.name))
-      .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at) - new Date(a.updated_at));
+  const allRepos = repos
+    .filter(r => !r.fork && !r.private && !EXCLUDE.includes(r.name))
+    .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
 
-    if (allRepos.length === 0) {
-      container.innerHTML = '<div class="loading">No public repositories found.</div>';
-      return;
+  if (allRepos.length === 0) {
+    container.innerHTML = '<div class="loading">No public repositories found.</div>';
+    return;
+  }
+
+  let fi = 0;
+  FEATURED.forEach(name => {
+    const repo = allRepos.find(r => r.name === name);
+    if (repo) {
+      featuredEl.appendChild(buildCard(repo, fi++, true));
     }
-
-    // Render featured projects in defined order
-    let fi = 0;
-    FEATURED.forEach(name => {
-      const repo = allRepos.find(r => r.name === name);
-      if (repo) {
-        featuredEl.appendChild(buildCard(repo, fi++, true));
-      }
-    });
-
-    // Render remaining projects (exclude featured)
-    const remaining = allRepos.filter(r => !FEATURED.includes(r.name));
-    remaining.forEach((repo, i) => {
-      container.appendChild(buildCard(repo, i, false));
-    });
-  })
-  .catch(() => {
-    document.getElementById('projects').innerHTML = '<div class="loading">Could not load repositories.</div>';
   });
+
+  const remaining = allRepos.filter(r => !FEATURED.includes(r.name));
+  remaining.forEach((repo, i) => {
+    container.appendChild(buildCard(repo, i, false));
+  });
+}
+
+fetch('https://api.github.com/users/SP1R4/repos?sort=updated&per_page=30')
+  .then(r => {
+    if (!r.ok) throw new Error('API error');
+    return r.json();
+  })
+  .then(repos => renderProjects(repos))
+  .catch(() => renderProjects(FALLBACK_REPOS));
 </script>
 
 </body>

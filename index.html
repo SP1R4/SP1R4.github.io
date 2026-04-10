@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
 <title>S. Markakis — NOCTIS</title>
 <meta name="description" content="Cybersecurity researcher · Penetration testing · Software development · Crete, Greece">
@@ -18,97 +19,10 @@
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
-
-  :root {
-    --bg: #f0efe9;
-    --card-bg: #fff;
-    --card-border: #e0deda;
-    --text-primary: #0f0f0f;
-    --text-secondary: #888;
-    --text-muted: #bbb;
-    --label: #bbb;
-    --icon-bg: #f0efe9;
-    --icon-border: #e0deda;
-    --icon-stroke: #555;
-    --wm-stroke: #e4e2dc;
-    --avatar-border: #dddbd6;
-    --avatar-bg: #e8e6e0;
-    --divider: #ddd;
-    --footer-sub: #ccc;
-    --toggle-bg: #e0deda;
-    --toggle-knob: #fff;
-  }
-
-  body.dark {
-    --bg: #0f0f0f;
-    --card-bg: #1a1a1a;
-    --card-border: #2a2a2a;
-    --text-primary: #f4f3ef;
-    --text-secondary: #666;
-    --text-muted: #444;
-    --label: #444;
-    --icon-bg: #111;
-    --icon-border: #2a2a2a;
-    --icon-stroke: #888;
-    --wm-stroke: #1a1a1a;
-    --avatar-border: #2a2a2a;
-    --avatar-bg: #1a1a1a;
-    --divider: #222;
-    --footer-sub: #333;
-    --toggle-bg: #333;
-    --toggle-knob: #f4f3ef;
-  }
-
-  body {
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 48px 20px 48px;
-    font-family: 'Inter', sans-serif;
-    position: relative;
-    overflow-x: hidden;
-    transition: background 0.3s;
-  }
-
-  body::before {
-    content: 'NOCTIS';
-    position: fixed;
-    bottom: -40px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 160px; font-weight: 900;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--wm-stroke);
-    letter-spacing: -6px;
-    pointer-events: none; user-select: none;
-    white-space: nowrap; z-index: 0;
-    transition: -webkit-text-stroke-color 0.3s;
-  }
-
-  .container { position: relative; z-index: 1; width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; }
-
-  /* ── THEME TOGGLE ── */
-  .theme-toggle {
-    position: fixed; top: 20px; right: 20px; z-index: 50;
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
-  }
-  .toggle-track {
-    width: 40px; height: 22px; background: var(--toggle-bg);
-    border-radius: 11px; position: relative; transition: background 0.25s;
-    border: 0.5px solid var(--card-border);
-  }
-  .toggle-knob {
-    width: 16px; height: 16px; background: var(--toggle-knob);
-    border-radius: 50%; position: absolute; top: 2px; left: 2px;
-    transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  }
-  body.dark .toggle-knob { transform: translateX(18px); }
-  .toggle-icon { font-size: 13px; user-select: none; }
-
+  .container { max-width: 480px; display: flex; flex-direction: column; align-items: center; }
+  body { justify-content: flex-start; padding: 48px 20px 48px; }
 
   /* ── AVATAR ── */
   .avatar-wrap {
@@ -159,22 +73,15 @@
     font-size: 10px; font-weight: 400; color: var(--text-secondary);
     letter-spacing: 0.04em;
   }
-  @keyframes pulse {
-    0%, 100% { opacity: 0; transform: scale(0.8); }
-    50% { opacity: 0.4; transform: scale(1.6); }
-  }
 
   /* ── SECTION LABEL ── */
   .section-label {
     font-size: 8px; color: var(--label); letter-spacing: 0.22em;
-    text-transform: uppercase; width: 100%; margin-bottom: 10px; padding-left: 2px;
-    opacity: 0; animation: fadeUp 0.4s ease 0.35s forwards;
+    width: 100%; margin-bottom: 10px;
   }
 
   /* ── LINKS ── */
-  .links { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-
-  .links { perspective: 800px; }
+  .links { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; perspective: 800px; }
 
   .link-card {
     width: 100%; display: flex; align-items: center; gap: 14px;
@@ -195,7 +102,6 @@
   .link-card:hover .link-icon svg { stroke: var(--bg); }
   .link-card:hover .link-arrow { color: rgba(255,255,255,0.3); }
 
-
   .link-icon {
     width: 36px; height: 36px; border-radius: 3px;
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
@@ -209,25 +115,11 @@
   .link-sub { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-top: 2px; transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .link-arrow { font-size: 14px; color: var(--divider); transition: color 0.18s; flex-shrink: 0; }
 
-
-
   /* ── DIVIDER / FOOTER ── */
   .divider { width: 32px; height: 0.5px; background: var(--divider); margin-bottom: 32px; opacity: 0; animation: fadeUp 0.4s ease 0.75s forwards; }
   .footer-brand { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; animation: fadeUp 0.4s ease 0.8s forwards; }
   .footer-noctis { font-size: 18px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
   .footer-sub { font-size: 8px; color: var(--footer-sub); letter-spacing: 0.2em; text-transform: uppercase; }
-
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.85); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
 </style>
 </head>
 <body>
@@ -252,7 +144,6 @@
   <div class="footer-brand" id="footer"></div>
 
 </div>
-
 
 <script>
 const ICONS = {
@@ -328,7 +219,8 @@ cfgPromise
       a.className = 'link-card';
       const safeUrl = /^(https?:|mailto:|\/|#|\.|\w[\w\-]*\.html)/i.test(link.url.trim()) ? link.url : '#';
       a.href = safeUrl;
-      if (!safeUrl.startsWith('mailto')) a.target = '_blank';
+      const isInternal = /^[\w][\w\-]*\.html$/i.test(link.url.trim());
+      if (!safeUrl.startsWith('mailto') && !isInternal) a.target = '_blank';
       a.rel = 'noopener';
       a.style.setProperty('--i', i);
 
@@ -351,7 +243,7 @@ cfgPromise
 
       const arrow = document.createElement('span');
       arrow.className = 'link-arrow';
-      arrow.textContent = '\u2197';
+      arrow.textContent = isInternal ? '\u203A' : '\u2197';
 
       a.appendChild(icon);
       a.appendChild(text);
