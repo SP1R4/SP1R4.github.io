@@ -1,0 +1,176 @@
+/* ── NOCTIS — Shared Styles ── */
+
+* { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
+
+:root {
+  --bg: #f0efe9;
+  --card-bg: #fff;
+  --card-border: #e0deda;
+  --text-primary: #0f0f0f;
+  --text-secondary: #888;
+  --text-muted: #bbb;
+  --label: #bbb;
+  --icon-bg: #f0efe9;
+  --icon-border: #e0deda;
+  --icon-stroke: #555;
+  --wm-stroke: #e4e2dc;
+  --avatar-border: #dddbd6;
+  --avatar-bg: #e8e6e0;
+  --divider: #ddd;
+  --footer-sub: #ccc;
+  --toggle-bg: #e0deda;
+  --toggle-knob: #fff;
+  --tag-bg: #e8e6e0;
+  --tag-color: #666;
+  --accent: #34d399;
+  --code-bg: #e8e6e0;
+  --code-border: #dddbd6;
+  --inline-code-bg: #e4e2dc;
+  --link-color: #0f0f0f;
+  --blockquote-border: #ccc;
+  --blockquote-bg: rgba(0,0,0,0.02);
+}
+
+body.dark {
+  --bg: #0f0f0f;
+  --card-bg: #1a1a1a;
+  --card-border: #2a2a2a;
+  --text-primary: #f4f3ef;
+  --text-secondary: #666;
+  --text-muted: #444;
+  --label: #444;
+  --icon-bg: #111;
+  --icon-border: #2a2a2a;
+  --icon-stroke: #888;
+  --wm-stroke: #1a1a1a;
+  --avatar-border: #2a2a2a;
+  --avatar-bg: #1a1a1a;
+  --divider: #222;
+  --footer-sub: #333;
+  --toggle-bg: #333;
+  --toggle-knob: #f4f3ef;
+  --tag-bg: #1e1e1e;
+  --tag-color: #888;
+  --accent: #34d399;
+  --code-bg: #161616;
+  --code-border: #2a2a2a;
+  --inline-code-bg: #222;
+  --link-color: #34d399;
+  --blockquote-border: #333;
+  --blockquote-bg: rgba(255,255,255,0.02);
+}
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 20px 80px;
+  font-family: 'Inter', sans-serif;
+  position: relative; overflow-x: hidden;
+  transition: background 0.3s;
+}
+
+body::before {
+  content: 'NOCTIS';
+  position: fixed; bottom: -40px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 160px; font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--wm-stroke);
+  letter-spacing: -6px;
+  pointer-events: none; user-select: none;
+  white-space: nowrap; z-index: 0;
+  transition: -webkit-text-stroke-color 0.3s;
+}
+
+.container { position: relative; z-index: 1; width: 100%; max-width: 680px; }
+
+/* ── SITE NAV ── */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center;
+  padding: 0 24px; height: 48px;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--card-border);
+  transition: background 0.3s, border-color 0.3s;
+}
+.nav-brand {
+  font-size: 14px; font-weight: 900; color: var(--text-primary);
+  text-decoration: none; letter-spacing: -0.5px;
+  margin-right: 28px; flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.nav-brand:hover { opacity: 0.7; }
+.nav-links {
+  display: flex; gap: 20px; flex: 1;
+}
+.nav-link {
+  font-size: 11px; font-weight: 400; color: var(--text-muted);
+  text-decoration: none; letter-spacing: 0.04em;
+  transition: color 0.15s;
+  padding: 4px 0;
+}
+.nav-link:hover { color: var(--text-primary); }
+.nav-link.active { color: var(--text-primary); font-weight: 500; }
+.nav-toggle {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  margin-left: auto; flex-shrink: 0;
+}
+.nav-toggle .toggle-icon { font-size: 11px; user-select: none; }
+
+body.has-nav { padding-top: 72px; }
+
+/* ── STANDALONE THEME TOGGLE (index page) ── */
+.theme-toggle {
+  position: fixed; top: 20px; right: 20px; z-index: 50;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.toggle-track {
+  width: 36px; height: 20px; background: var(--toggle-bg);
+  border-radius: 10px; position: relative; transition: background 0.25s;
+  border: 0.5px solid var(--card-border);
+}
+.toggle-knob {
+  width: 14px; height: 14px; background: var(--toggle-knob);
+  border-radius: 50%; position: absolute; top: 2px; left: 2px;
+  transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+body.dark .toggle-knob { transform: translateX(16px); }
+.toggle-icon { font-size: 13px; user-select: none; }
+
+/* ── PAGE HEADER (used on sub-pages below nav) ── */
+.page-header {
+  margin-bottom: 36px;
+  opacity: 0; animation: fadeUp 0.4s ease 0.1s forwards;
+}
+.page-title { font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
+.page-subtitle { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em;
+  text-transform: uppercase; margin-bottom: 14px; padding-left: 2px;
+  opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
+}
+
+/* ── TAG ── */
+.post-tag, .proj-tag {
+  font-size: 9px; padding: 2px 8px; border-radius: 2px;
+  background: var(--tag-bg); color: var(--tag-color);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: all 0.18s;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 0.4; transform: scale(1.6); }
+}

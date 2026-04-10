@@ -3,51 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
 <title>404 — NOCTIS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Helvetica Neue,Arial' font-weight='900'>N</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  :root {
-    --bg: #f0efe9;
-    --text-primary: #0f0f0f;
-    --text-secondary: #888;
-    --text-muted: #bbb;
-    --wm-stroke: #e4e2dc;
-    --card-bg: #fff;
-    --card-border: #e0deda;
-    --icon-stroke: #555;
-  }
-
-  body.dark {
-    --bg: #0f0f0f;
-    --text-primary: #f4f3ef;
-    --text-secondary: #666;
-    --text-muted: #444;
-    --wm-stroke: #1a1a1a;
-    --card-bg: #1a1a1a;
-    --card-border: #2a2a2a;
-    --icon-stroke: #888;
-  }
-
   body {
-    background: var(--bg); min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-family: 'Inter', sans-serif; position: relative; overflow: hidden;
-    padding: 40px 20px;
+    justify-content: center;
+    padding: 40px 20px; overflow: hidden;
   }
-
   body::before {
     content: '404';
-    position: fixed; top: 50%; left: 50%;
+    top: 50%; left: 50%; bottom: auto;
     transform: translate(-50%, -50%);
-    font-size: 280px; font-weight: 900;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--wm-stroke);
+    font-size: 280px;
     letter-spacing: -10px;
-    pointer-events: none; user-select: none; z-index: 0;
   }
 
   .content {
@@ -95,11 +67,6 @@
     margin-top: 40px;
     font-size: 10px; font-weight: 900; color: var(--text-muted);
     letter-spacing: 0.2em; text-transform: uppercase;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
