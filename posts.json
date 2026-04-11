@@ -1,5 +1,13 @@
 [
   {
+    "slug": "htb-blurry",
+    "title": "HTB: Blurry",
+    "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
+    "date": "2026-04-11",
+    "tags": ["hackthebox"],
+    "html": "writeups/htb-blurry.html"
+  },
+  {
     "slug": "htb-solarlab",
     "title": "HTB: SolarLab",
     "description": "HackTheBox SolarLab machine walkthrough — full writeup with screenshots.",
