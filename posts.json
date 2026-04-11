@@ -1,10 +1,11 @@
 [
   {
-    "slug": "htb-template",
-    "title": "HTB Walkthrough Template",
-    "description": "Template structure for HackTheBox machine writeups.",
+    "slug": "htb-sandworm",
+    "title": "HTB: Sandworm",
+    "description": "HackTheBox Sandworm machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
-    "tags": ["hackthebox"]
+    "tags": ["hackthebox"],
+    "html": "writeups/htb-sandworm.html"
   },
   {
     "slug": "hello-world",
