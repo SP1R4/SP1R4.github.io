@@ -21,5 +21,5 @@
   <!-- Divider -->
   <line x1="570" y1="365" x2="630" y2="365" stroke="#2a2a2a" stroke-width="1"/>
   <!-- URL -->
-  <text x="600" y="400" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="13" fill="#444" letter-spacing="2">sp1r4.github.io/noctis-linktree</text>
+  <text x="600" y="400" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="13" fill="#444" letter-spacing="2">sp1r4.github.io</text>
 </svg>
