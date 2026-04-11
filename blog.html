@@ -276,9 +276,13 @@ function renderList() {
   sorted.forEach((post, i) => {
     const el = document.createElement('a');
     el.className = 'post-card';
-    el.href = '#' + post.slug;
+    if (post.html) {
+      el.href = post.html;
+    } else {
+      el.href = '#' + post.slug;
+      el.onclick = (e) => { e.preventDefault(); showPost(post.slug); };
+    }
     el.style.setProperty('--i', i);
-    el.onclick = (e) => { e.preventDefault(); showPost(post.slug); };
 
     const title = document.createElement('div');
     title.className = 'post-title';
