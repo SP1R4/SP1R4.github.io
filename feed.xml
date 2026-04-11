@@ -14,13 +14,5 @@
       <description>HackTheBox Sandworm machine walkthrough — full writeup with screenshots.</description>
       <category>hackthebox</category>
     </item>
-    <item>
-      <title>Hello World</title>
-      <link>https://sp1r4.github.io/blog.html#hello-world</link>
-      <guid>https://sp1r4.github.io/blog.html#hello-world</guid>
-      <pubDate>Tue, 31 Mar 2026 00:00:00 GMT</pubDate>
-      <description>Welcome to the NOCTIS blog — what to expect from future posts.</description>
-      <category>general</category>
-    </item>
   </channel>
 </rss>
