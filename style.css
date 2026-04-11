@@ -116,7 +116,7 @@ body::before {
   display: flex; align-items: center; gap: 8px; cursor: pointer;
   margin-left: auto; flex-shrink: 0;
 }
-.nav-toggle .toggle-icon { font-size: 11px; user-select: none; }
+.nav-toggle .toggle-icon { font-size: 11px; user-select: none; color: var(--text-muted); display: flex; align-items: center; }
 
 body.has-nav { padding-top: 72px; }
 
@@ -136,7 +136,7 @@ body.has-nav { padding-top: 72px; }
   transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 body.dark .toggle-knob { transform: translateX(16px); }
-.toggle-icon { font-size: 13px; user-select: none; }
+.toggle-icon { font-size: 13px; user-select: none; color: var(--text-muted); display: flex; align-items: center; }
 
 /* ── PAGE HEADER (used on sub-pages below nav) ── */
 .page-header {
