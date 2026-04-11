@@ -7,6 +7,14 @@
     <language>en</language>
     <atom:link href="https://sp1r4.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>HTB Walkthrough Template</title>
+      <link>https://sp1r4.github.io/blog.html#htb-template</link>
+      <guid>https://sp1r4.github.io/blog.html#htb-template</guid>
+      <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
+      <description>Template structure for HackTheBox machine writeups.</description>
+      <category>hackthebox</category>
+    </item>
+    <item>
       <title>Hello World</title>
       <link>https://sp1r4.github.io/blog.html#hello-world</link>
       <guid>https://sp1r4.github.io/blog.html#hello-world</guid>
