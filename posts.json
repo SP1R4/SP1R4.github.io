@@ -1,5 +1,13 @@
 [
   {
+    "slug": "htb-freelancer",
+    "title": "HTB: Freelancer",
+    "description": "HackTheBox Freelancer machine walkthrough — full writeup with screenshots.",
+    "date": "2026-04-11",
+    "tags": ["hackthebox"],
+    "html": "writeups/htb-freelancer.html"
+  },
+  {
     "slug": "htb-sandworm",
     "title": "HTB: Sandworm",
     "description": "HackTheBox Sandworm machine walkthrough — full writeup with screenshots.",
