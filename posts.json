@@ -1,11 +1,16 @@
 [
   {
+    "slug": "htb-template",
+    "title": "HTB Walkthrough Template",
+    "description": "Template structure for HackTheBox machine writeups.",
+    "date": "2026-04-11",
+    "tags": ["hackthebox"]
+  },
+  {
     "slug": "hello-world",
     "title": "Hello World",
     "description": "Welcome to the NOCTIS blog — what to expect from future posts.",
     "date": "2026-03-31",
-    "tags": [
-      "general"
-    ]
+    "tags": ["general"]
   }
 ]
