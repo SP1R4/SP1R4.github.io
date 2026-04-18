@@ -30,5 +30,13 @@
     "date": "2026-04-11",
     "tags": ["hackthebox"],
     "html": "writeups/htb-sandworm.html"
+  },
+  {
+    "slug": "htb-authority",
+    "title": "HTB: Authority",
+    "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
+    "date": "2026-04-19",
+    "tags": ["hackthebox"],
+    "html": "writeups/HTB_Authority_SP1R4.html"
   }
 ]
