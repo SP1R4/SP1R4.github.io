@@ -49,6 +49,26 @@ with open('posts.json', 'w') as f:
 print(f"Added: {new_post['title']} ({new_post['slug']})")
 PYEOF
 
+echo
+echo "─── Extracting embedded images ───"
+python3 extract-writeup-images.py
+
+echo
+echo "─── Generating OG card ───"
+python3 generate-og-images.py
+
+echo
+echo "─── Regenerating feed.xml ───"
 ./generate-feed.sh
+
+echo
+echo "─── Regenerating sitemap.xml ───"
+./generate-sitemap.sh
+
+echo
+echo "─── Validating ───"
 ./validate.sh
-echo "Done. Review changes, then: git add . && git commit -m 'Add $SLUG writeup' && git push"
+
+echo
+echo "Done. Review changes, then:"
+echo "  git add . && git commit -m 'Add $SLUG writeup' && git push"
