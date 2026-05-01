@@ -132,8 +132,11 @@ body::before {
 
 /* ── INDEX-PAGE LANG TOGGLE (sits beside the floating theme switch) ── */
 .index-lang {
-  position: fixed; top: 18px; right: 70px; z-index: 50;
+  position: fixed; top: 16px; right: 110px; z-index: 51;
   margin: 0;
+}
+@media (max-width: 480px) {
+  .index-lang { right: 100px; top: 18px; }
 }
 
 /* ── HAMBURGER ── */

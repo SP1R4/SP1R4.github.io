@@ -158,9 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const langBtn = document.getElementById('index-lang');
-  if (langBtn && window.NoctisI18n) {
-    const sync = () => { langBtn.textContent = window.NoctisI18n.getLang() === 'el' ? 'EN' : 'EL'; };
+  if (langBtn) {
+    const sync = () => {
+      if (window.NoctisI18n) langBtn.textContent = window.NoctisI18n.getLang() === 'el' ? 'EN' : 'EL';
+    };
     sync();
-    langBtn.addEventListener('click', () => { window.NoctisI18n.toggleLang(); sync(); });
+    langBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.NoctisI18n) {
+        window.NoctisI18n.toggleLang();
+        sync();
+      }
+    });
+    document.addEventListener('langchange', sync);
   }
 });
