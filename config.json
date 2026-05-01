@@ -2,56 +2,72 @@
   "name": "S. Markakis",
   "brand": "NOCTIS · Cybersecurity & IT",
   "bio": "Security researcher who also keeps the lights on. Pentesting, server administration, network design, backup systems, and the automation glue in between.",
+  "bio_el": "Ερευνητής ασφαλείας που κρατά και τα φώτα αναμμένα. Pentesting, διαχείριση servers, σχεδιασμός δικτύων, συστήματα backup και ο αυτοματισμός που τα ενώνει όλα.",
   "status": {
     "text": "Open for freelance & consulting",
+    "text_el": "Διαθέσιμος για freelance & συμβουλευτική",
     "color": "#34d399",
     "visible": true
   },
   "avatar": "avatar.jpeg",
   "footer": {
     "title": "NOCTIS",
-    "sub": "Cybersecurity & IT Consulting · Crete"
+    "sub": "Cybersecurity & IT Consulting · Crete",
+    "sub_el": "Συμβουλευτική Κυβερνοασφάλειας & IT · Κρήτη"
   },
   "links": [
     {
       "title": "Email",
+      "title_el": "Email",
       "sub": "sp1r4.work@gmail.com",
       "url": "mailto:sp1r4.work@gmail.com",
       "icon": "email"
     },
     {
       "title": "GitHub",
+      "title_el": "GitHub",
       "sub": "Open source security & automation tools",
+      "sub_el": "Εργαλεία ασφαλείας & αυτοματισμού ανοιχτού κώδικα",
       "url": "https://github.com/SP1R4",
       "icon": "github"
     },
     {
       "title": "X / Twitter",
+      "title_el": "X / Twitter",
       "sub": "@_SP1R4",
+      "sub_el": "@_SP1R4",
       "url": "https://x.com/_SP1R4",
       "icon": "twitter"
     },
     {
       "title": "HackTheBox",
+      "title_el": "HackTheBox",
       "sub": "Penetration testing & ethical hacking",
+      "sub_el": "Δοκιμές διείσδυσης & ηθικό hacking",
       "url": "https://app.hackthebox.com/users/332355",
       "icon": "box"
     },
     {
       "title": "Services",
+      "title_el": "Υπηρεσίες",
       "sub": "Pentesting, security audits & IT consulting",
+      "sub_el": "Pentesting, έλεγχοι ασφαλείας & συμβουλευτική IT",
       "url": "services.html",
       "icon": "shield"
     },
     {
       "title": "Projects",
+      "title_el": "Έργα",
       "sub": "Open source tools & research",
+      "sub_el": "Εργαλεία ανοιχτού κώδικα & έρευνα",
       "url": "projects.html",
       "icon": "code"
     },
     {
       "title": "Blog",
+      "title_el": "Ιστολόγιο",
       "sub": "Research, writeups & development notes",
+      "sub_el": "Έρευνα, writeups & σημειώσεις ανάπτυξης",
       "url": "blog.html",
       "icon": "blog"
     }

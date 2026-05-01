@@ -114,9 +114,21 @@ body::before {
 .nav-link.active { color: var(--text-primary); font-weight: 500; }
 .nav-toggle {
   display: flex; align-items: center; gap: 8px; cursor: pointer;
-  margin-left: auto; flex-shrink: 0;
+  margin-left: 12px; flex-shrink: 0;
 }
 .nav-toggle .toggle-icon { font-size: 11px; user-select: none; color: var(--text-muted); display: flex; align-items: center; }
+
+/* ── LANGUAGE TOGGLE ── */
+.nav-lang {
+  margin-left: auto; flex-shrink: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  padding: 5px 10px; border-radius: 3px;
+  background: transparent; color: var(--text-muted);
+  border: 0.5px solid var(--card-border);
+  cursor: pointer; transition: all 0.15s;
+}
+.nav-lang:hover { border-color: var(--text-secondary); color: var(--text-primary); }
 
 /* ── HAMBURGER ── */
 .nav-hamburger {
@@ -144,7 +156,8 @@ body::before {
   }
   .site-nav.nav-open .nav-links { display: flex; }
   .nav-link { padding: 10px 0; }
-  .nav-toggle { margin-left: 0; }
+  .nav-lang { margin-left: auto; }
+  .nav-toggle { margin-left: 8px; }
 }
 
 body.has-nav { padding-top: 72px; }

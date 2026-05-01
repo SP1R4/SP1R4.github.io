@@ -1,5 +1,7 @@
 // Renders the projects page from the GitHub API with a static fallback.
 
+const t = (k) => (window.NoctisI18n ? window.NoctisI18n.t(k) : k);
+
 const LANG_COLORS = {
   Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
   Go: '#00ADD8', Rust: '#dea584', C: '#555555', 'C++': '#f34b7d',
@@ -40,13 +42,13 @@ function buildCard(repo, i, featured) {
   if (featured) {
     const badge = document.createElement('span');
     badge.className = 'featured-badge';
-    badge.textContent = 'Featured';
+    badge.textContent = t('projects.featured.badge');
     name.appendChild(badge);
   }
 
   const desc = document.createElement('div');
   desc.className = 'proj-desc';
-  desc.textContent = repo.description || 'No description';
+  desc.textContent = repo.description || t('projects.noDesc');
 
   const meta = document.createElement('div');
   meta.className = 'proj-meta';
@@ -109,7 +111,7 @@ function renderProjects(repos) {
     .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
 
   if (allRepos.length === 0) {
-    container.innerHTML = '<div class="loading">No public repositories found.</div>';
+    container.innerHTML = `<div class="loading">${t('projects.empty')}</div>`;
     return;
   }
 
@@ -127,10 +129,18 @@ function renderProjects(repos) {
   });
 }
 
+let lastRepos = null;
 fetch('https://api.github.com/users/SP1R4/repos?sort=updated&per_page=30')
   .then(r => {
     if (!r.ok) throw new Error('API error');
     return r.json();
   })
-  .then(repos => renderProjects(repos))
-  .catch(() => renderProjects(FALLBACK_REPOS));
+  .then(repos => { lastRepos = repos; renderProjects(repos); })
+  .catch(() => { lastRepos = FALLBACK_REPOS; renderProjects(FALLBACK_REPOS); });
+
+document.addEventListener('langchange', () => {
+  if (lastRepos) {
+    document.getElementById('featured').innerHTML = '';
+    renderProjects(lastRepos);
+  }
+});

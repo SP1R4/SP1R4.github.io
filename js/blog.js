@@ -3,9 +3,12 @@
 let posts = [];
 let activeFilter = null;
 
+const t = (k) => (window.NoctisI18n ? window.NoctisI18n.t(k) : k);
+
 function formatDate(d) {
   const date = new Date(d + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const locale = window.NoctisI18n && window.NoctisI18n.getLang() === 'el' ? 'el-GR' : 'en-US';
+  return date.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function getAllTags() {
@@ -23,7 +26,7 @@ function renderFilterBar() {
 
   const allBtn = document.createElement('button');
   allBtn.className = 'filter-pill' + (activeFilter === null ? ' active' : '');
-  allBtn.textContent = 'All';
+  allBtn.textContent = t('blog.filter.all');
   allBtn.addEventListener('click', () => { activeFilter = null; renderFilterBar(); renderList(); });
   bar.appendChild(allBtn);
 
@@ -41,7 +44,7 @@ function renderList() {
   const countEl = document.getElementById('post-count');
   list.innerHTML = '';
   if (posts.length === 0) {
-    list.innerHTML = '<div class="empty-state">No posts yet.</div>';
+    list.innerHTML = `<div class="empty-state">${t('blog.empty')}</div>`;
     countEl.textContent = '';
     return;
   }
@@ -49,10 +52,11 @@ function renderList() {
     .filter(p => !activeFilter || (p.tags && p.tags.includes(activeFilter)))
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  countEl.textContent = sorted.length + ' post' + (sorted.length !== 1 ? 's' : '') + (activeFilter ? ' in "' + activeFilter + '"' : '');
+  const noun = sorted.length === 1 ? t('blog.post') : t('blog.posts');
+  countEl.textContent = `${sorted.length} ${noun}${activeFilter ? ' ' + t('blog.in') + ' "' + activeFilter + '"' : ''}`;
 
   if (sorted.length === 0) {
-    list.innerHTML = '<div class="empty-state">No posts in this category.</div>';
+    list.innerHTML = `<div class="empty-state">${t('blog.emptyCat')}</div>`;
     return;
   }
 
@@ -98,3 +102,10 @@ fetch('posts.json')
     renderFilterBar();
     renderList();
   });
+
+document.addEventListener('langchange', () => {
+  if (posts.length) {
+    renderFilterBar();
+    renderList();
+  }
+});

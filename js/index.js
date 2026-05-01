@@ -21,7 +21,32 @@ const cfgPromise = isPreview && localStorage.getItem('noctis_preview')
   ? Promise.resolve(JSON.parse(localStorage.getItem('noctis_preview')))
   : fetch('config.json').then(r => r.json());
 
+function localized(obj, key) {
+  const lang = window.NoctisI18n ? window.NoctisI18n.getLang() : 'en';
+  if (lang !== 'en' && obj[key + '_' + lang]) return obj[key + '_' + lang];
+  return obj[key];
+}
+
+let cachedCfg = null;
+
+function applyCfgI18n(cfg) {
+  document.getElementById('bio').textContent = localized(cfg, 'bio');
+  const statusTxt = document.querySelector('#status .status-text');
+  if (statusTxt) statusTxt.textContent = localized(cfg.status, 'text');
+  const footerSub = document.querySelector('#footer .footer-sub');
+  if (footerSub) footerSub.textContent = localized(cfg.footer, 'sub');
+  document.querySelectorAll('.link-card').forEach((card, i) => {
+    const link = cfg.links[i];
+    if (!link) return;
+    const titleEl = card.querySelector('.link-title');
+    const subEl = card.querySelector('.link-sub');
+    if (titleEl) titleEl.textContent = localized(link, 'title');
+    if (subEl) subEl.textContent = localized(link, 'sub');
+  });
+}
+
 cfgPromise.then(cfg => {
+  cachedCfg = cfg;
   const aw = document.getElementById('avatar-wrap');
   const img = document.createElement('img');
   img.src = cfg.avatar;
@@ -37,7 +62,7 @@ cfgPromise.then(cfg => {
 
   document.getElementById('name').textContent = cfg.name;
   document.getElementById('brand').textContent = cfg.brand;
-  document.getElementById('bio').textContent = cfg.bio;
+  document.getElementById('bio').textContent = localized(cfg, 'bio');
 
   const statusEl = document.getElementById('status');
   if (cfg.status && cfg.status.visible) {
@@ -47,7 +72,7 @@ cfgPromise.then(cfg => {
     dot.style.setProperty('--status-color', cfg.status.color);
     const txt = document.createElement('span');
     txt.className = 'status-text';
-    txt.textContent = cfg.status.text;
+    txt.textContent = localized(cfg.status, 'text');
     statusEl.appendChild(dot);
     statusEl.appendChild(txt);
   } else {
@@ -73,12 +98,12 @@ cfgPromise.then(cfg => {
     text.className = 'link-text';
     const title = document.createElement('div');
     title.className = 'link-title';
-    title.textContent = link.title;
+    title.textContent = localized(link, 'title');
     text.appendChild(title);
     if (link.sub) {
       const sub = document.createElement('div');
       sub.className = 'link-sub';
-      sub.textContent = link.sub;
+      sub.textContent = localized(link, 'sub');
       text.appendChild(sub);
     }
 
@@ -111,9 +136,13 @@ cfgPromise.then(cfg => {
   ft.textContent = cfg.footer.title;
   const fs = document.createElement('div');
   fs.className = 'footer-sub';
-  fs.textContent = cfg.footer.sub;
+  fs.textContent = localized(cfg.footer, 'sub');
   footer.appendChild(ft);
   footer.appendChild(fs);
+});
+
+document.addEventListener('langchange', () => {
+  if (cachedCfg) applyCfgI18n(cachedCfg);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
