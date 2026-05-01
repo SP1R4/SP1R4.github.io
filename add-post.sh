@@ -54,6 +54,18 @@ echo "─── Extracting embedded images ───"
 python3 extract-writeup-images.py
 
 echo
+echo "─── Optimizing images (WebP + dimensions) ───"
+python3 optimize-writeup-images.py
+
+echo
+echo "─── Computing reading times ───"
+python3 compute-reading-time.py
+
+echo
+echo "─── Injecting JSON-LD ───"
+python3 inject-jsonld.py
+
+echo
 echo "─── Generating OG card ───"
 python3 generate-og-images.py
 

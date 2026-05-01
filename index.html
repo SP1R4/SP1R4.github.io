@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
 <title>S. Markakis — NOCTIS</title>
 <meta name="description" content="Cybersecurity researcher · Penetration testing · Software development · Crete, Greece">
 <meta property="og:title" content="S. Markakis — NOCTIS">
@@ -17,10 +17,39 @@
 <meta name="twitter:description" content="Cybersecurity researcher · Penetration testing · Software development">
 <meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "S. Markakis",
+  "alternateName": "SP1R4",
+  "url": "https://sp1r4.github.io/",
+  "image": "https://sp1r4.github.io/avatar.jpeg",
+  "jobTitle": "Cybersecurity Researcher & IT Consultant",
+  "description": "Security researcher who also keeps the lights on. Pentesting, server administration, network design, backup systems, and the automation glue in between.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressRegion": "Crete",
+    "addressCountry": "GR"
+  },
+  "sameAs": [
+    "https://github.com/SP1R4",
+    "https://x.com/_SP1R4",
+    "https://app.hackthebox.com/users/332355"
+  ],
+  "hasCredential": [
+    {
+      "@type": "EducationalOccupationalCredential",
+      "name": "MikroTik Certified Network Associate",
+      "credentialCategory": "Professional Certification",
+      "recognizedBy": {"@type": "Organization", "name": "MikroTik Training Center"},
+      "url": "https://mikrotik.com/training/certificates/c699901cda199944a6d9"
+    }
+  ]
+}
+</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preload" href="config.json" as="fetch" crossorigin="anonymous"><link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="style.css">
 <style>
   .container { max-width: 480px; display: flex; flex-direction: column; align-items: center; }
@@ -125,6 +154,7 @@
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
 
 <!-- Theme toggle -->
 <div class="theme-toggle" aria-label="Toggle theme" role="button" tabindex="0">
@@ -133,7 +163,7 @@
   <span class="toggle-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
 </div>
 
-<main class="container">
+<main class="container" id="main-content" tabindex="-1">
 
   <div class="avatar-wrap" id="avatar-wrap"></div>
   <div class="name" id="name"></div>

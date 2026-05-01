@@ -1,0 +1,18 @@
+/* TEAM */
+  Author:   S. Markakis  (@SP1R4)
+  Contact:  sp1r4.work [at] gmail.com
+  Twitter:  https://x.com/_SP1R4
+  GitHub:   https://github.com/SP1R4
+  Location: Crete, Greece
+
+/* SITE */
+  Last update: 2026
+  Standards:   HTML5, CSS3, ES2020
+  Components:  Vanilla JS — no frameworks, no trackers
+  Fonts:       Inter (self-hosted)
+  Hosting:     GitHub Pages
+  Source:      https://github.com/SP1R4/SP1R4.github.io
+
+/* THANKS */
+  HackTheBox community, the open-source security ecosystem,
+  and everyone who reads the writeups.

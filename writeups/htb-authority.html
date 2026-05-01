@@ -96,6 +96,36 @@
   .back:hover { color: var(--text-dark); }
   @media (max-width: 600px) { nav { padding: 1rem 1.2rem; } .wrapper { padding: 2rem 1.2rem 5rem; } h1 { font-size: 2.4rem; } }
 </style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: Authority",
+  "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
+  "datePublished": "2026-04-19",
+  "dateModified": "2026-04-19",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-authority.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-authority.svg",
+  "keywords": [
+    "hackthebox"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-authority"
+  },
+  "timeRequired": "PT6M"
+}
+</script>
 </head>
 <body>
 <a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;" onmouseover="this.style.transform='translateX(-2px)';this.style.background='rgba(26,26,24,1)'" onmouseout="this.style.transform='';this.style.background='rgba(26,26,24,0.92)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
@@ -130,7 +160,7 @@
 
   <hr class="divider">
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-01-719ae429b6.png" alt="HTB Authority machine card">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-01-719ae429b6.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-01-719ae429b6.png" alt="HTB Authority machine card" width="750" height="395"></picture>
 
   <div class="overview">
     Authority is a medium Windows Active Directory machine. It starts with <strong>SMB anonymous access</strong> to a Development share containing Ansible playbooks with <strong>Ansible Vault-encrypted credentials</strong>. Cracking the vault key with <code>ansible2john</code> + John the Ripper reveals credentials to log into <strong>PWM</strong> (a password self-service app on port 8443). Modifying the PWM LDAP config to redirect to our machine and running <strong>Responder</strong> captures <code>svc_ldap</code>'s plaintext password. Privilege escalation abuses <strong>ADCS ESC1</strong> &#8212; we add a domain computer, request an Administrator certificate via <strong>Certipy</strong>, authenticate to get an LDAP shell, and add our user to Domain Admins.
@@ -192,7 +222,7 @@ Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows</span></div>
 <span class="pd">&#9492;$ </span><span class="pc">smbclient -L //10.10.11.222/</span></div>
   </div>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-02-16a2b00941.png" alt="smbclient SMB shares listing">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-02-16a2b00941.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-02-16a2b00941.png" alt="smbclient SMB shares listing" width="723" height="287"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">smbclient &#8212; download Development share</span></div>
@@ -205,7 +235,7 @@ smb: \&gt; mget *</span></div>
 
   <p>The share contains Ansible playbooks under <code>Automation/Ansible/PWM/defaults/</code>. The <code>main.yml</code> files hold credentials encrypted with <strong>Ansible Vault</strong>.</p>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-03-a602c5e839.png" alt="Ansible PWM defaults directory">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-03-a602c5e839.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-03-a602c5e839.png" alt="Ansible PWM defaults directory" width="486" height="76"></picture>
 
   <!-- ═══ ANSIBLE VAULT -->
   <h2>Cracking Ansible Vault</h2>
@@ -218,7 +248,7 @@ smb: \&gt; mget *</span></div>
 <span class="pd">&#9492;$ </span><span class="pc">ansible2john pwm_admin_login.txt &gt; vaultpass.hash</span></div>
   </div>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-04-210bd2ef56.png" alt="ansible2john hash conversion">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-04-210bd2ef56.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-04-210bd2ef56.png" alt="ansible2john hash conversion" width="750" height="35"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">john &#8212; crack vault password</span></div>
@@ -227,7 +257,7 @@ smb: \&gt; mget *</span></div>
 <span class="pd">&#9492;$ </span><span class="pc">john vaultpass.hash --show</span></div>
   </div>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-05-34fb7885e0.png" alt="John cracking vault password">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-05-34fb7885e0.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-05-34fb7885e0.png" alt="John cracking vault password" width="720" height="195"></picture>
 
   <p>Vault key cracked: <code>!@#$%^&amp;*</code>. Now decrypt the credentials:</p>
 
@@ -242,15 +272,15 @@ Decryption successful</span>
 Decryption successful</span></div>
   </div>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-06-87d49dbff2.png" alt="ansible-vault decrypt success">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-06-87d49dbff2.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-06-87d49dbff2.png" alt="ansible-vault decrypt success" width="395" height="214"></picture>
 
   <!-- ═══ PWM -->
   <h2>PWM &#8212; Password Self Service (port 8443)</h2>
 
   <p>Port 8443 hosts <strong>PWM</strong>, an open-source LDAP password self-service application. The decrypted credentials grant access as <strong>Configuration Manager</strong>. PWM shows LDAP connection errors &#8212; it is trying to reach <code>ldaps://authority.authority.htb:636</code> but failing, and we notice user <code>svc_ldap</code> in the bind DN.</p>
 
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-07-b04601fe80.png" alt="PWM login page">
-    <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-08-121a856347.png" alt="PWM health page with LDAP error">
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-07-b04601fe80.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-07-b04601fe80.png" alt="PWM login page" width="561" height="302"></picture>
+    <picture data-img-optimized="1"><source srcset="assets/htb-authority/img-08-121a856347.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-authority/img-08-121a856347.png" alt="PWM health page with LDAP error" width="507" height="415"></picture>
 
   <h3>LDAP Capture via Responder</h3>
   <p>The Configuration Manager page allows us to <strong>Download</strong> and <strong>Import</strong> the PWM XML config. We modify the LDAP server URL to point to our machine, import the config, then start Responder. When PWM retries the LDAP bind it sends the credentials in plaintext to us.</p>

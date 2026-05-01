@@ -342,6 +342,36 @@
     h1 { font-size: 2.4rem; }
   }
 </style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: Blurry",
+  "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
+  "datePublished": "2026-04-11",
+  "dateModified": "2026-04-11",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-blurry.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-blurry.svg",
+  "keywords": [
+    "hackthebox"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-blurry"
+  },
+  "timeRequired": "PT5M"
+}
+</script>
 </head>
 <body>
 <a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;" onmouseover="this.style.transform='translateX(-2px)';this.style.background='rgba(26,26,24,1)'" onmouseout="this.style.transform='';this.style.background='rgba(26,26,24,0.92)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
@@ -359,7 +389,7 @@
 <div class="wrapper">
   <a class="back" href="https://sp1r4.github.io/blog.html">&#8592; Back to posts</a>
 
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-01-6d378e98d0.png" alt="Blurry has been Pwned">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-01-6d378e98d0.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-01-6d378e98d0.png" alt="Blurry has been Pwned" width="720" height="303"></picture>
 
   <div class="post-header">
     <h1>HTB: Blurry</h1>
@@ -430,12 +460,12 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span></div>
 
   <h3>chat.blurry.htb &#8212; Rocket.Chat</h3>
   <p>Browsing the Rocket.Chat instance after registering reveals team conversations.
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-02-ee8bea5b9e.png" alt="Rocket.Chat — jippity identified as admin"> The admin user is <strong>jippity</strong> and the team is building AI tooling &#8212; useful context for what runs on <code>app.blurry.htb</code>.</p>
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-02-ee8bea5b9e.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-02-ee8bea5b9e.png" alt="Rocket.Chat — jippity identified as admin" width="720" height="216"></picture> The admin user is <strong>jippity</strong> and the team is building AI tooling &#8212; useful context for what runs on <code>app.blurry.htb</code>.</p>
 
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-03-8624da4ad7.png" alt="chat.blurry.htb — Rocket.Chat login">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-03-8624da4ad7.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-03-8624da4ad7.png" alt="chat.blurry.htb — Rocket.Chat login" width="720" height="263"></picture>
 
   <h3>app.blurry.htb &#8212; ClearML</h3>
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-04-cda9bda008.png" alt="app.blurry.htb — ClearML registration">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-04-cda9bda008.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-04-cda9bda008.png" alt="app.blurry.htb — ClearML registration" width="575" height="354"></picture>
 
   <p><strong>ClearML</strong> is an open-source MLOps platform for tracking AI/ML experiments. Submitting any name grants developer access and provides API credentials. We need to add <code>api.blurry.htb</code> to hosts before running the SDK init.</p>
 
@@ -447,7 +477,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span></div>
 <span class="pco"># paste the config from the web UI settings page when prompted</span></div>
   </div>
 
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-05-ca7a1e1fff.png" alt="ClearML — SDK setup instructions">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-05-ca7a1e1fff.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-05-ca7a1e1fff.png" alt="ClearML — SDK setup instructions" width="648" height="716"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">~/.clearml.conf</span></div>
@@ -462,7 +492,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span></div>
 }</span></div>
   </div>
 
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-06-c1b1e85358.png" alt="clearml-init — credentials verified">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-06-c1b1e85358.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-06-c1b1e85358.png" alt="clearml-init — credentials verified" width="720" height="594"></picture>
 
   <!-- ═══════════════════════════════════════════ VULNS -->
   <h2>Vulnerabilities</h2>
@@ -543,7 +573,7 @@ task.execute_remotely(queue_name=<span class="po">'default'</span>)</div>
 <span class="po">drwxrwxr-x  2 root jippity 4096 Jun 13 13:32 models</span></div>
   </div>
 
-  <img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-07-c830eb0b31.png" alt="/models — writable by jippity">
+  <picture data-img-optimized="1"><source srcset="assets/htb-blurry/img-07-c830eb0b31.webp" type="image/webp"><img loading="lazy" decoding="async" class="screenshot" src="assets/htb-blurry/img-07-c830eb0b31.png" alt="/models — writable by jippity" width="671" height="37"></picture>
 
   <div class="alert alert-info">&#9432; <strong>torch.load() == pickle.load()</strong> &mdash; PyTorch <code>.pth</code> files are pickle-serialized objects. Any class with a custom <code>__reduce__</code> will execute arbitrary code on load.</div>
 

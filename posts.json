@@ -4,39 +4,54 @@
     "title": "HTB: Blurry",
     "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
-    "tags": ["hackthebox"],
-    "html": "writeups/htb-blurry.html"
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-blurry.html",
+    "reading_time": 5
   },
   {
     "slug": "htb-solarlab",
     "title": "HTB: SolarLab",
     "description": "HackTheBox SolarLab machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
-    "tags": ["hackthebox"],
-    "html": "writeups/htb-solarlab.html"
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-solarlab.html",
+    "reading_time": 6
   },
   {
     "slug": "htb-freelancer",
     "title": "HTB: Freelancer",
     "description": "HackTheBox Freelancer machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
-    "tags": ["hackthebox"],
-    "html": "writeups/htb-freelancer.html"
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-freelancer.html",
+    "reading_time": 6
   },
   {
     "slug": "htb-sandworm",
     "title": "HTB: Sandworm",
     "description": "HackTheBox Sandworm machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
-    "tags": ["hackthebox"],
-    "html": "writeups/htb-sandworm.html"
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-sandworm.html",
+    "reading_time": 6
   },
   {
     "slug": "htb-authority",
     "title": "HTB: Authority",
     "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-19",
-    "tags": ["hackthebox"],
-    "html": "writeups/htb-authority.html"
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-authority.html",
+    "reading_time": 6
   }
 ]

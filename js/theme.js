@@ -17,3 +17,9 @@ window.toggleTheme = function () {
   document.body.classList.toggle('dark');
   localStorage.setItem('noctis_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 };
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}

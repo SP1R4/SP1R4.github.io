@@ -89,6 +89,8 @@
       'blog.post': 'post',
       'blog.posts': 'posts',
       'blog.in': 'in',
+      'blog.read': 'read',
+      'blog.search': 'Search posts…',
 
       // 404
       '404.message': "The page you're looking for doesn't exist or has been moved.",
@@ -178,6 +180,8 @@
       'blog.post': 'ανάρτηση',
       'blog.posts': 'αναρτήσεις',
       'blog.in': 'στο',
+      'blog.read': 'ανάγνωση',
+      'blog.search': 'Αναζήτηση…',
 
       // 404
       '404.message': 'Η σελίδα που ψάχνετε δεν υπάρχει ή έχει μετακινηθεί.',

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
 <title>Blog — NOCTIS</title>
 <meta name="description" content="Cybersecurity research, CTF writeups, and development notes by S. Markakis.">
 <meta property="og:title" content="Blog — NOCTIS">
@@ -15,10 +15,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── POST LIST ── */
@@ -79,20 +76,44 @@
     font-size: 10px; color: var(--text-muted); margin-bottom: 16px;
     opacity: 0; animation: fadeUp 0.4s ease 0.18s forwards;
   }
+  .post-reading {
+    padding: 2px 8px; border-radius: 2px;
+    background: var(--icon-bg); border: 0.5px solid var(--icon-border);
+    color: var(--text-muted);
+  }
+
+  /* ── SEARCH ── */
+  .post-search {
+    width: 100%; padding: 10px 14px; margin-bottom: 14px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border);
+    border-radius: 4px; color: var(--text-primary);
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400;
+    outline: none; transition: border-color 0.15s, background 0.15s;
+    opacity: 0; animation: fadeUp 0.4s ease 0.12s forwards;
+  }
+  .post-search::placeholder { color: var(--text-muted); }
+  .post-search:focus { border-color: var(--text-secondary); }
 </style>
 </head>
 <body class="has-nav">
+<a href="#main-content" class="skip-link">Skip to content</a>
 
 <nav id="site-nav"></nav>
 
-<main class="container">
+<main class="container" id="main-content" tabindex="-1">
   <div class="page-header">
     <div class="page-title" data-i18n="blog.title">Blog</div>
     <div class="page-subtitle" data-i18n="blog.subtitle">Research &amp; Writeups</div>
   </div>
+  <input type="search" id="post-search" class="post-search" data-i18n-attr-placeholder="blog.search" placeholder="Search posts…" autocomplete="off">
   <div class="filter-bar" id="filter-bar"></div>
   <div class="post-count" id="post-count"></div>
   <div class="post-list" id="post-list"></div>
+  <noscript>
+    <div class="empty-state" style="margin-top:24px;">
+      JavaScript is required to view the post list. The site degrades gracefully — links to writeups still work directly.
+    </div>
+  </noscript>
 
   <footer class="site-footer">
     <div class="site-footer-brand">NOCTIS</div>

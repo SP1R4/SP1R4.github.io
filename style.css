@@ -248,3 +248,25 @@ a:focus-visible, button:focus-visible, .nav-toggle:focus-visible, .theme-toggle:
 }
 .back-to-top svg { width: 16px; height: 16px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .back-to-top:hover svg { stroke: var(--bg); }
+
+/* ── SKIP TO CONTENT (a11y) ── */
+.skip-link {
+  position: absolute; top: -40px; left: 8px; z-index: 100;
+  padding: 8px 16px; background: var(--text-primary); color: var(--bg);
+  text-decoration: none; font-size: 12px; font-weight: 500;
+  border-radius: 3px; letter-spacing: 0.04em;
+  transition: top 0.18s ease;
+}
+.skip-link:focus { top: 8px; outline: 2px solid var(--accent); }
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .link-card { transform-style: flat !important; }
+  .link-card:hover { transform: none !important; }
+}
