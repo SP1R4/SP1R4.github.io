@@ -25,8 +25,9 @@ cat > "$OUTPUT" << 'HEADER'
 HEADER
 
 python3 -c "
-import json, sys
+import json
 from datetime import datetime
+from xml.sax.saxutils import escape
 
 with open('$POSTS_JSON') as f:
     posts = json.load(f)
@@ -36,13 +37,16 @@ posts.sort(key=lambda p: p['date'], reverse=True)
 for post in posts:
     date = datetime.strptime(post['date'], '%Y-%m-%d')
     rfc822 = date.strftime('%a, %d %b %Y 00:00:00 GMT')
-    tags = ''.join(f'      <category>{t}</category>\n' for t in post.get('tags', []))
+    tags = ''.join(f'      <category>{escape(t)}</category>\n' for t in post.get('tags', []))
+    title = escape(post['title'])
+    desc = escape(post['description'])
+    slug = escape(post['slug'])
     print(f'''    <item>
-      <title>{post['title']}</title>
-      <link>$SITE/blog.html#{post['slug']}</link>
-      <guid>$SITE/blog.html#{post['slug']}</guid>
+      <title>{title}</title>
+      <link>$SITE/blog.html#{slug}</link>
+      <guid>$SITE/blog.html#{slug}</guid>
       <pubDate>{rfc822}</pubDate>
-      <description>{post['description']}</description>
+      <description>{desc}</description>
 {tags.rstrip()}
     </item>''')
 " >> "$OUTPUT"

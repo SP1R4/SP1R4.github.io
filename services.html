@@ -146,15 +146,35 @@
     font-size: 11px; font-weight: 300; color: var(--text-secondary);
     line-height: 1.7; margin-bottom: 14px;
   }
+  .cert-dates {
+    display: flex; gap: 18px; margin-bottom: 14px;
+    font-size: 10px; color: var(--text-muted);
+  }
+  .cert-dates strong {
+    display: block; color: var(--text-secondary); font-weight: 500;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 2px;
+  }
   .cert-meta {
     display: flex; flex-wrap: wrap; gap: 6px;
     padding-top: 14px; border-top: 0.5px solid var(--card-border);
+    margin-bottom: 14px;
   }
   .cert-tag {
     font-size: 9px; padding: 3px 8px; border-radius: 2px;
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     color: var(--text-muted); letter-spacing: 0.04em;
   }
+  .cert-verify {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+    color: var(--accent); text-decoration: none;
+    padding: 6px 12px; border-radius: 3px;
+    border: 0.5px solid var(--accent);
+    transition: background 0.18s, color 0.18s;
+  }
+  .cert-verify:hover { background: var(--accent); color: var(--bg); }
+  .cert-verify svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
   /* ── CTA ── */
   .cta {
@@ -300,6 +320,10 @@
       <div class="cert-title">MikroTik Certified Network Associate</div>
       <div class="cert-org">MikroTik Training Center</div>
       <div class="cert-desc">Foundational expertise in RouterOS configuration, routing, firewalls, wireless networks, QoS, and tunneling on MikroTik infrastructure.</div>
+      <div class="cert-dates">
+        <div><strong>Issued</strong>2026</div>
+        <div><strong>Valid for</strong>3 years</div>
+      </div>
       <div class="cert-meta">
         <span class="cert-tag">RouterOS</span>
         <span class="cert-tag">Routing</span>
@@ -307,6 +331,10 @@
         <span class="cert-tag">Wireless</span>
         <span class="cert-tag">QoS</span>
       </div>
+      <a href="https://mikrotik.com/training/certificates/c699901cda199944a6d9" target="_blank" rel="noopener" class="cert-verify">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        Verify certificate
+      </a>
     </div>
   </div>
 

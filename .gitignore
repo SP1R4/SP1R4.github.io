@@ -1,0 +1,5 @@
+# Local upload staging — raw writeups before they're processed into writeups/
+htb writeups for upload/
+htb writeups for upload.zip
+*.zip
+.DS_Store
