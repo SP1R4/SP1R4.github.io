@@ -130,13 +130,13 @@ body::before {
 }
 .nav-lang:hover { border-color: var(--text-secondary); color: var(--text-primary); }
 
-/* ── INDEX-PAGE LANG TOGGLE (sits beside the floating theme switch) ── */
-.index-lang {
-  position: fixed; top: 16px; right: 110px; z-index: 51;
-  margin: 0;
+/* ── INDEX-PAGE FLOATING CONTROLS (lang + theme) ── */
+.index-controls {
+  position: fixed; top: 16px; right: 20px; z-index: 51;
+  display: flex; align-items: center; gap: 12px;
 }
-@media (max-width: 480px) {
-  .index-lang { right: 100px; top: 18px; }
+.index-controls .theme-toggle {
+  position: static !important; top: auto !important; right: auto !important;
 }
 
 /* ── HAMBURGER ── */
