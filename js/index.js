@@ -156,4 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const langBtn = document.getElementById('index-lang');
+  if (langBtn && window.NoctisI18n) {
+    const sync = () => { langBtn.textContent = window.NoctisI18n.getLang() === 'el' ? 'EN' : 'EL'; };
+    sync();
+    langBtn.addEventListener('click', () => { window.NoctisI18n.toggleLang(); sync(); });
+  }
 });
