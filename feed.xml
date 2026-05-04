@@ -7,6 +7,46 @@
     <language>en</language>
     <atom:link href="https://sp1r4.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>MikroTik: VLANs</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-vlans</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-vlans</guid>
+      <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
+      <description>Configuring VLANs on MikroTik RouterOS — bridge VLAN filtering, tagging, and inter-VLAN routing.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: QoS</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-qos</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-qos</guid>
+      <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
+      <description>Quality of Service on MikroTik — queue trees, simple queues, and traffic prioritization.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Port Forwarding</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-port-forwarding</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-port-forwarding</guid>
+      <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
+      <description>Setting up dst-nat port forwarding rules on MikroTik RouterOS for inbound services.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Wake-on-LAN</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-wol</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-wol</guid>
+      <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
+      <description>Triggering Wake-on-LAN through MikroTik RouterOS — scripts, scheduling, and remote magic packets.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Terminal Tips</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-terminal</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-terminal</guid>
+      <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
+      <description>Useful RouterOS terminal commands and shortcuts for day-to-day MikroTik administration.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
       <title>HTB: Authority</title>
       <link>https://sp1r4.github.io/blog.html#htb-authority</link>
       <guid>https://sp1r4.github.io/blog.html#htb-authority</guid>

@@ -1,5 +1,71 @@
 [
   {
+    "slug": "mikrotik-vlans",
+    "title": "MikroTik: VLANs",
+    "description": "Configuring VLANs on MikroTik RouterOS — bridge VLAN filtering, tagging, and inter-VLAN routing.",
+    "date": "2026-05-04",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-vlans.html",
+    "reading_time": 26
+  },
+  {
+    "slug": "mikrotik-qos",
+    "title": "MikroTik: QoS",
+    "description": "Quality of Service on MikroTik — queue trees, simple queues, and traffic prioritization.",
+    "date": "2026-05-04",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-qos.html",
+    "reading_time": 18
+  },
+  {
+    "slug": "mikrotik-port-forwarding",
+    "title": "MikroTik: Port Forwarding",
+    "description": "Setting up dst-nat port forwarding rules on MikroTik RouterOS for inbound services.",
+    "date": "2026-05-04",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-port-forwarding.html",
+    "reading_time": 19
+  },
+  {
+    "slug": "mikrotik-wol",
+    "title": "MikroTik: Wake-on-LAN",
+    "description": "Triggering Wake-on-LAN through MikroTik RouterOS — scripts, scheduling, and remote magic packets.",
+    "date": "2026-05-04",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-wol.html",
+    "reading_time": 18
+  },
+  {
+    "slug": "mikrotik-terminal",
+    "title": "MikroTik: Terminal Tips",
+    "description": "Useful RouterOS terminal commands and shortcuts for day-to-day MikroTik administration.",
+    "date": "2026-05-04",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-terminal.html",
+    "reading_time": 16
+  },
+  {
+    "slug": "htb-authority",
+    "title": "HTB: Authority",
+    "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
+    "date": "2026-04-19",
+    "tags": [
+      "hackthebox"
+    ],
+    "html": "writeups/htb-authority.html",
+    "reading_time": 6
+  },
+  {
     "slug": "htb-blurry",
     "title": "HTB: Blurry",
     "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
@@ -41,17 +107,6 @@
       "hackthebox"
     ],
     "html": "writeups/htb-sandworm.html",
-    "reading_time": 6
-  },
-  {
-    "slug": "htb-authority",
-    "title": "HTB: Authority",
-    "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
-    "date": "2026-04-19",
-    "tags": [
-      "hackthebox"
-    ],
-    "html": "writeups/htb-authority.html",
     "reading_time": 6
   }
 ]
