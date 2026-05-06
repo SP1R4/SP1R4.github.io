@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RouterOS Scripting Basics — SP1R4 / NOCTIS</title>
+<meta name="description" content="RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.">
+<meta property="og:title" content="MikroTik: RouterOS Scripting — NOCTIS">
+<meta property="og:description" content="RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-scripting.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-scripting.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-scripting.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Barlow',sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  .wb4-wrap{margin:1.4rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .wb4-path{background:var(--head);color:#fff;font-family:var(--font-mono);font-size:.72rem;padding:.4rem 1rem;display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;}
+  .wb4-path span.sep{color:#888880;}
+  .wb4-path span.active{color:var(--accent);font-weight:600;}
+  .wb4-caption{font-size:.78rem;color:var(--body);font-style:italic;padding:.45rem .9rem;border-top:1px solid var(--rule);background:var(--card);}
+  .ref-table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .ref-table th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .ref-table td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .ref-table tr:nth-child(even) td{background:var(--card);}
+  .ref-table td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .ref-table td:last-child{color:var(--body);font-size:.82rem;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: RouterOS Scripting",
+  "description": "RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.",
+  "datePublished": "2026-05-06",
+  "dateModified": "2026-05-06",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-scripting.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-scripting.svg",
+  "keywords": [
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-scripting"
+  },
+  "timeRequired": "PT13M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;" onmouseover="this.style.transform='translateX(-2px)';this.style.background='rgba(26,26,24,1)'" onmouseout="this.style.transform='';this.style.background='rgba(26,26,24,0.92)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+<nav>
+  <span class="nav-brand">NOCTIS</span>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; May 2026</p>
+  <h1 class="post-title">RouterOS Scripting<br>Basics</h1>
+  <p class="post-subtitle">Variables, conditionals, loops, functions, and the scheduler — with real examples: Wake-on-LAN automation, Telegram alerts, and an auto-backup script you can deploy today.</p>
+  <div class="tags">
+    <span class="tag">RouterOS</span>
+    <span class="tag">Scripting</span>
+    <span class="tag">Scheduler</span>
+    <span class="tag">Automation</span>
+    <span class="tag">Telegram</span>
+    <span class="tag">Functions</span>
+    <span class="tag">MTCNA+</span>
+  </div>
+  <hr class="title-rule">
+
+  <!-- Hero: script anatomy diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 155" xmlns="http://www.w3.org/2000/svg">
+      <defs><style>
+        .hbg{fill:#e1ded7}
+        .hl{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle}
+        .hm{font-family:'JetBrains Mono',monospace;font-size:9.5px;fill:#555550}
+        .hs{font-family:'Barlow',sans-serif;font-size:8.5px;fill:#888880;text-anchor:middle}
+        .ha{stroke:#c63d1f;stroke-width:1.2;fill:none;marker-end:url(#hap)}
+        .hb{stroke:#3a5a78;stroke-width:1.2;fill:none;marker-end:url(#hbp)}
+        .hc{stroke:#c08020;stroke-width:1.2;fill:none;marker-end:url(#hcp)}
+        .hd{stroke:#558840;stroke-width:1.2;fill:none;marker-end:url(#hdp)}
+      </style>
+        <marker id="hap" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0L0,6L6,3z" fill="#c63d1f"/></marker>
+        <marker id="hbp" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0L0,6L6,3z" fill="#3a5a78"/></marker>
+        <marker id="hcp" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0L0,6L6,3z" fill="#c08020"/></marker>
+        <marker id="hdp" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0L0,6L6,3z" fill="#558840"/></marker>
+      </defs>
+      <rect width="720" height="155" class="hbg"/>
+      <!-- Code line -->
+      <rect x="16" y="30" width="688" height="28" fill="#d4d2cc" rx="4" stroke="#c8c5be" stroke-width="1"/>
+      <text x="30" y="49" class="hm"><tspan fill="#c63d1f">:local</tspan><tspan fill="#555550"> myVar </tspan><tspan fill="#3a5a78">"hello"</tspan><tspan fill="#555550"> ; </tspan><tspan fill="#c63d1f">:if</tspan><tspan fill="#555550"> (</tspan><tspan fill="#c08020">$myVar</tspan><tspan fill="#555550"> = </tspan><tspan fill="#3a5a78">"hello"</tspan><tspan fill="#555550">) </tspan><tspan fill="#c63d1f">do=</tspan><tspan fill="#555550">{ </tspan><tspan fill="#558840">:log info</tspan><tspan fill="#555550"> "matched" }</tspan></text>
+      <!-- Annotations -->
+      <line x1="58" y1="58" x2="58" y2="88" class="ha"/>
+      <text x="58" y="100" class="hs" style="fill:#c63d1f;">keyword</text>
+      <line x1="130" y1="58" x2="130" y2="88" class="hb"/>
+      <text x="130" y="100" class="hs" style="fill:#3a5a78;">variable name</text>
+      <text x="130" y="111" class="hs" style="fill:#3a5a78;">+ string value</text>
+      <line x1="320" y1="58" x2="320" y2="88" class="hc"/>
+      <text x="320" y="100" class="hs" style="fill:#c08020;">variable reference</text>
+      <text x="320" y="111" class="hs" style="fill:#c08020;">($ prefix)</text>
+      <line x1="580" y1="58" x2="580" y2="88" class="hd"/>
+      <text x="580" y="100" class="hs" style="fill:#558840;">log command</text>
+      <text x="580" y="111" class="hs" style="fill:#558840;">inside do block</text>
+      <text x="360" y="140" style="font-family:'Barlow',sans-serif;font-style:italic;font-size:9.5px;fill:#888880;text-anchor:middle;">RouterOS scripting syntax: keywords start with colon · variables declared with :local · referenced with $ · blocks use { }</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Every Netwatch alert, every scheduled backup, every WoL trigger in this tutorial series is a script. RouterOS has a complete scripting language built in — variables, conditionals, loops, functions, and a scheduler that runs scripts on any time pattern you define. You don't need to know Python or Bash. You just need to know the syntax, which is unique to RouterOS but consistent and learnable in an afternoon.</p>
+    <p>This tutorial builds from the ground up: syntax rules, variables, control flow, functions, then three complete real-world scripts you can deploy immediately — a Telegram alert when any host goes down, a Wake-on-LAN automation, and an auto-backup that emails you a config file every night.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>RouterOS v7.x — scripting syntax is consistent across v7</li>
+      <li>Comfortable with the RouterOS CLI (see the Terminal tutorial if not)</li>
+      <li>For the Telegram example: a Telegram bot token and chat ID (free, 5-minute setup)</li>
+      <li>For the email example: SMTP credentials (Gmail app password works)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Syntax Rules — The Five Things You Must Know</h2>
+  <p class="section-thesis"><em>RouterOS scripting has its own syntax that looks like nothing else. Learn these five rules and the rest falls into place.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS scripting — five fundamental rules</span>
+    <pre class="term"><span class="cmt"># ── Rule 1: Keywords start with colon ────────────────────────────────────
+# Every scripting keyword is prefixed with ":"
+# :local  :global  :if  :foreach  :while  :do  :return  :log  :put  :set</span>
+<span class="out">:log info "this is a log message"</span>
+<span class="out">:put "this prints to terminal"</span>
+
+<span class="cmt"># ── Rule 2: Variables declared with :local or :global ────────────────────
+# :local = exists only in this script/function
+# :global = persists across scripts and scheduler runs</span>
+<span class="out">:local myName "Hotel-01"</span>
+<span class="out">:global lastBackup</span>
+
+<span class="cmt"># ── Rule 3: Variables referenced with $ prefix ───────────────────────────</span>
+<span class="out">:local greeting "Hello"</span>
+<span class="out">:put $greeting</span>         <span class="cmt"># prints: Hello</span>
+<span class="out">:put ("prefix-" . $greeting)</span>  <span class="cmt"># . concatenates strings → prefix-Hello</span>
+
+<span class="cmt"># ── Rule 4: Blocks use { } — NOT indentation ─────────────────────────────
+# if/else, loops, and functions all use curly braces for their bodies</span>
+<span class="out">:if ($x > 0) do={</span>
+<span class="out">    :put "positive"</span>
+<span class="out">} else={</span>
+<span class="out">    :put "zero or negative"</span>
+<span class="out">}</span>
+
+<span class="cmt"># ── Rule 5: Strings use double quotes, numbers are bare ──────────────────</span>
+<span class="out">:local name "router-01"</span>   <span class="cmt"># string — double quotes</span>
+<span class="out">:local count 5</span>            <span class="cmt"># number — no quotes</span>
+<span class="out">:local flag true</span>          <span class="cmt"># boolean — no quotes</span>
+<span class="out">:local ts [/system clock get time]</span>  <span class="cmt"># capture command output with [ ]</span></pre>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Variables and Data Types</h2>
+  <p class="section-thesis"><em>RouterOS has six data types. Knowing which one you're working with prevents 90% of scripting bugs.</em></p>
+
+  <table class="ref-table">
+    <thead><tr><th>Type</th><th>Example</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>str</td><td><code>"hello"</code></td><td>Text. Concatenate with the <code>.</code> operator.</td></tr>
+      <tr><td>num</td><td><code>42</code></td><td>Integer. Arithmetic with <code>+ - * /</code>.</td></tr>
+      <tr><td>bool</td><td><code>true</code> / <code>false</code></td><td>Used in conditions. Returned by comparisons.</td></tr>
+      <tr><td>ip</td><td><code>192.168.1.1</code></td><td>IP address. Supports subnet operations.</td></tr>
+      <tr><td>array</td><td><code>{1;2;3}</code></td><td>Semicolon-separated. Iterate with <code>:foreach</code>.</td></tr>
+      <tr><td>nothing</td><td><code>[:toarray ""]</code></td><td>Empty / nil. Check with <code>[:len $var] = 0</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — variable operations</span>
+    <pre class="term"><span class="cmt"># String concatenation with .</span>
+<span class="out">:local hostname [/system identity get name]</span>
+<span class="out">:local msg ("Alert from: " . $hostname)</span>
+<span class="out">:put $msg</span>      <span class="cmt"># → Alert from: Hotel-01</span>
+
+<span class="cmt"># Capture command output into a variable using [ ]</span>
+<span class="out">:local uptime [/system resource get uptime]</span>
+<span class="out">:local version [/system resource get version]</span>
+<span class="out">:put ("Version: " . $version . " Uptime: " . $uptime)</span>
+
+<span class="cmt"># Array declaration and access</span>
+<span class="out">:local servers {192.168.20.50; 192.168.20.51; 192.168.20.52}</span>
+<span class="out">:put ($servers->0)</span>  <span class="cmt"># → 192.168.20.50 (zero-indexed)</span>
+<span class="out">:put [:len $servers]</span>  <span class="cmt"># → 3 (length of array)</span>
+
+<span class="cmt"># Type conversion</span>
+<span class="out">:local numStr "42"</span>
+<span class="out">:local num [:tonum $numStr]</span>
+<span class="out">:put ($num + 1)</span>  <span class="cmt"># → 43</span>
+
+<span class="cmt"># Global variable — persists between scheduler runs</span>
+<span class="out">:global failCount</span>
+<span class="out">:if (![:isset $failCount]) do={ :set failCount 0 }</span>
+<span class="out">:set failCount ($failCount + 1)</span>
+<span class="cmt"># Use globals carefully — they persist until router reboot.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Quoting Inside Strings</span>
+    <p>If your string contains double quotes, escape them with a backslash: <code>\"</code>. This is the most common syntax error in Netwatch scripts. For example, a log message inside a down-script must be written as: <code>:log warning "host \"192.168.20.50\" is DOWN"</code>. Getting this wrong causes the script to fail silently with no error in the log — the scheduler just skips execution.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Conditionals and Loops</h2>
+  <p class="section-thesis"><em>:if checks a condition. :foreach iterates an array. :while loops until a condition is false. These three cover every control flow pattern you'll need.</em></p>
+
+  <h3 class="sub">:if — Conditionals</h3>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — :if conditional patterns</span>
+    <pre class="term"><span class="cmt"># Basic if/else</span>
+<span class="out">:local x 10</span>
+<span class="out">:if ($x > 5) do={</span>
+<span class="out">    :log info "x is greater than 5"</span>
+<span class="out">} else={</span>
+<span class="out">    :log info "x is 5 or less"</span>
+<span class="out">}</span>
+
+<span class="cmt"># Comparison operators</span>
+<span class="cmt"># =   equal          !=  not equal</span>
+<span class="cmt"># >   greater than   <   less than</span>
+<span class="cmt"># >=  greater/equal  <=  less/equal</span>
+<span class="cmt"># &&  logical AND    ||  logical OR   !  NOT</span>
+
+<span class="cmt"># Check if a DHCP lease exists for a hostname</span>
+<span class="out">:local leaseCount [/ip dhcp-server lease count-numbers \</span>
+<span class="out">    where host-name="fileserver"]</span>
+<span class="out">:if ($leaseCount > 0) do={</span>
+<span class="out">    :log info "fileserver has a DHCP lease"</span>
+<span class="out">} else={</span>
+<span class="out">    :log warning "fileserver not found in DHCP leases"</span>
+<span class="out">}</span>
+
+<span class="cmt"># Nested condition with AND</span>
+<span class="out">:local cpu [/system resource get cpu-load]</span>
+<span class="out">:local mem [/system resource get free-memory]</span>
+<span class="out">:if ($cpu > 80 && $mem < 10000000) do={</span>
+<span class="out">    :log warning "High CPU and low memory simultaneously"</span>
+<span class="out">}</span></pre>
+  </div>
+
+  <h3 class="sub">:foreach — Iterate Arrays</h3>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — :foreach loop patterns</span>
+    <pre class="term"><span class="cmt"># Iterate a static array</span>
+<span class="out">:local vlans {10; 20; 30; 40}</span>
+<span class="out">:foreach vlan in=$vlans do={</span>
+<span class="out">    :put ("Processing VLAN: " . $vlan)</span>
+<span class="out">}</span>
+
+<span class="cmt"># Iterate over RouterOS objects — find returns an array of internal IDs</span>
+<span class="out">:foreach leaseId in=[/ip dhcp-server lease find \</span>
+<span class="out">    where status=bound] do={</span>
+<span class="out">    :local ip [/ip dhcp-server lease get $leaseId address]</span>
+<span class="out">    :local host [/ip dhcp-server lease get $leaseId host-name]</span>
+<span class="out">    :put ($host . " → " . $ip)</span>
+<span class="out">}</span>
+<span class="cmt"># Prints every bound DHCP lease as "hostname → IP"</span>
+
+<span class="cmt"># Count iterations with an index variable</span>
+<span class="out">:local count 0</span>
+<span class="out">:foreach i in=[/interface find where running=yes] do={</span>
+<span class="out">    :set count ($count + 1)</span>
+<span class="out">}</span>
+<span class="out">:put ("Running interfaces: " . $count)</span></pre>
+  </div>
+
+  <h3 class="sub">:while — Loop Until Condition</h3>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — :while loop</span>
+    <pre class="term"><span class="cmt"># Wait for a host to come up after WoL (ping loop with timeout)</span>
+<span class="out">:local target "192.168.20.50"</span>
+<span class="out">:local attempts 0</span>
+<span class="out">:local maxAttempts 12</span>
+<span class="out">:local isUp false</span>
+
+<span class="out">:while ($attempts < $maxAttempts && !$isUp) do={</span>
+<span class="out">    :delay 5s</span>
+<span class="out">    :local result [/ping address=$target count=1 as-value]</span>
+<span class="out">    :if ($result->"received" > 0) do={</span>
+<span class="out">        :set isUp true</span>
+<span class="out">        :log info ("Host " . $target . " is UP after WoL")</span>
+<span class="out">    }</span>
+<span class="out">    :set attempts ($attempts + 1)</span>
+<span class="out">}</span>
+
+<span class="out">:if (!$isUp) do={</span>
+<span class="out">    :log warning ("Host " . $target . " did not respond after 60s")</span>
+<span class="out">}</span>
+<span class="cmt"># Loops up to 12 times, 5s apart = 60s max wait.
+# Exits early if host responds. Logs warning if timeout.</span></pre>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Functions</h2>
+  <p class="section-thesis"><em>Functions let you write a block of logic once and call it from anywhere — a scheduler, a Netwatch script, or another function.</em></p>
+
+  <p>RouterOS functions are declared as global variables that hold a script block. Call them with <code>[$funcName param1=val1]</code>. They can accept parameters and return values.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — function declaration and usage</span>
+    <pre class="term"><span class="cmt"># Declare a function as a global variable</span>
+<span class="out">:global sendTelegram</span>
+<span class="out">:set sendTelegram do={</span>
+<span class="out">    :local message $1</span>
+<span class="out">    :local token "YOUR_BOT_TOKEN"</span>
+<span class="out">    :local chatId "YOUR_CHAT_ID"</span>
+<span class="out">    /tool fetch url=("https://api.telegram.org/bot" . $token . \</span>
+<span class="out">        "/sendMessage?chat_id=" . $chatId . \</span>
+<span class="out">        "&text=" . $message) \</span>
+<span class="out">        keep-result=no</span>
+<span class="out">}</span>
+
+<span class="cmt"># Call the function — $1 is the first positional argument</span>
+<span class="out">[$sendTelegram "Test alert from Hotel-01"]</span>
+
+<span class="cmt"># Function with named parameters</span>
+<span class="out">:global wakeAndVerify</span>
+<span class="out">:set wakeAndVerify do={</span>
+<span class="out">    :local iface $iface</span>
+<span class="out">    :local mac $mac</span>
+<span class="out">    :local target $target</span>
+<span class="out">    /tool wol interface=$iface mac=$mac</span>
+<span class="out">    :delay 45s</span>
+<span class="out">    :local result [/ping address=$target count=3 as-value]</span>
+<span class="out">    :return ($result->"received" > 0)</span>
+<span class="out">}</span>
+
+<span class="cmt"># Call with named parameters</span>
+<span class="out">:local success [$wakeAndVerify \</span>
+<span class="out">    iface=vlan20 mac="AA:BB:CC:DD:EE:FF" target="192.168.20.50"]</span>
+<span class="out">:if ($success) do={</span>
+<span class="out">    :log info "Server woke successfully"</span>
+<span class="out">} else={</span>
+<span class="out">    :log warning "Server did not respond after WoL"</span>
+<span class="out">}</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Global Functions Must Be Declared Before They Are Called</span>
+    <p>Global functions set with <code>:global funcName; :set funcName do={...}</code> only persist in memory until the router reboots. When the scheduler runs a script that calls a global function, it must either declare the function inline, or the function must be set up by a startup script that runs before any scheduler entries. The safest pattern for production: put the function declaration at the top of every script that uses it. This is verbose but reliable.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">The Scheduler</h2>
+  <p class="section-thesis"><em>The scheduler is what makes scripts operational — it runs them on a time pattern, on startup, or at a specific date and time.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — scheduler patterns</span>
+    <pre class="term"><span class="cmt"># Run every day at 02:00</span>
+<span class="pc">[admin@MikroTik] ></span> <span class="out">/system scheduler add \</span>
+<span class="out">    name="daily-backup" \</span>
+<span class="out">    start-time=02:00:00 \</span>
+<span class="out">    interval=1d \</span>
+<span class="out">    on-event="/system script run auto-backup" \</span>
+<span class="out">    comment="Run auto-backup script nightly"</span>
+
+<span class="cmt"># Run every 30 minutes</span>
+<span class="pc">[admin@MikroTik] ></span> <span class="out">/system scheduler add \</span>
+<span class="out">    name="health-check" \</span>
+<span class="out">    interval=00:30:00 \</span>
+<span class="out">    on-event="/system script run health-check" \</span>
+<span class="out">    comment="30-minute health check"</span>
+
+<span class="cmt"># Run on startup (interval=0, no start-time)</span>
+<span class="pc">[admin@MikroTik] ></span> <span class="out">/system scheduler add \</span>
+<span class="out">    name="startup-init" \</span>
+<span class="out">    on-event="/system script run startup-init" \</span>
+<span class="out">    start-time=startup \</span>
+<span class="out">    comment="Initialise globals on boot"</span>
+
+<span class="cmt"># Run inline script directly (no separate script object needed)</span>
+<span class="pc">[admin@MikroTik] ></span> <span class="out">/system scheduler add \</span>
+<span class="out">    name="log-uptime" \</span>
+<span class="out">    interval=1h \</span>
+<span class="out">    on-event={:log info ("Uptime: " . [/system resource get uptime])}</span></pre>
+  </div>
+
+  <div class="wb4-wrap">
+    <div class="wb4-path">System <span class="sep">›</span> Scheduler <span class="sep">›</span> <span class="active">+ Add</span></div>
+    <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;">
+      <defs><style>
+        .w4bg{fill:#1e1e1e}.w4hdr{fill:#2a2a2a}.w4sb{fill:#252525}.w4work{fill:#eae8e3}
+        .w4row{fill:#eae8e3;stroke:#c8c5be;stroke-width:.4}.w4rowh{fill:#dddbd5;stroke:#c8c5be;stroke-width:.4}
+        .w4hl{fill:#c63d1f;fill-opacity:.13;stroke:#c63d1f;stroke-width:.5}
+        .w4inp{fill:#fff;stroke:#c8c5be;stroke-width:.8}.w4form{fill:#f0ede8;stroke:#c8c5be;stroke-width:.5}
+        .wbm{font-family:'JetBrains Mono',monospace;font-size:8px;fill:#555550}
+        .wbma{font-family:'JetBrains Mono',monospace;font-size:8px;fill:#c63d1f}
+        .wbt{font-family:'Inter','Barlow',sans-serif;font-size:8.5px;fill:#555550}
+        .wbs{font-family:'Barlow',sans-serif;font-size:8px;fill:#888880}
+      </style></defs>
+      <rect width="680" height="200" class="w4bg"/>
+      <rect x="0" y="0" width="680" height="24" class="w4hdr"/>
+      <text x="10" y="16" style="font-family:'Inter',sans-serif;font-weight:600;font-size:10px;fill:#eae8e3;">WinBox 4.1  —  System › Scheduler</text>
+      <circle cx="672" cy="12" r="5" fill="#c63d1f"/>
+      <rect x="0" y="24" width="138" height="176" class="w4sb"/>
+      <text x="12" y="42" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;">Identity</text>
+      <text x="12" y="58" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;">Clock</text>
+      <text x="12" y="74" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;">Scripts</text>
+      <rect x="0" y="78" width="138" height="16" fill="#c63d1f" fill-opacity=".2"/>
+      <rect x="0" y="78" width="3" height="16" fill="#c63d1f"/>
+      <text x="12" y="90" style="font-family:'Inter',sans-serif;font-size:9px;fill:#c63d1f;font-weight:600;">Scheduler</text>
+      <rect x="138" y="24" width="542" height="176" class="w4work"/>
+      <rect x="138" y="24" width="542" height="26" fill="#dddbd5"/>
+      <rect x="144" y="29" width="44" height="16" fill="#c63d1f" rx="3"/>
+      <text x="166" y="40" style="font-family:'Inter',sans-serif;font-size:8px;fill:#fff;text-anchor:middle;font-weight:500;">+ Add</text>
+      <rect x="148" y="56" width="524" height="136" class="w4form" rx="4"/>
+      <rect x="148" y="56" width="524" height="20" fill="#1a1a18" rx="4"/>
+      <rect x="148" y="68" width="524" height="8" fill="#1a1a18"/>
+      <text x="160" y="71" style="font-family:'Inter',sans-serif;font-weight:600;font-size:9px;fill:#eae8e3;">New Scheduler Entry — daily-backup</text>
+      <text x="160" y="92" class="wbt">Name</text>
+      <rect x="240" y="83" width="420" height="13" class="w4inp" rx="2"/>
+      <text x="246" y="93" class="wbm">daily-backup</text>
+      <text x="160" y="110" class="wbt">Start Time</text>
+      <rect x="240" y="101" width="100" height="13" class="w4inp" rx="2"/>
+      <text x="246" y="111" class="wbma">02:00:00</text>
+      <text x="350" y="110" class="wbt">Interval</text>
+      <rect x="420" y="101" width="120" height="13" class="w4inp" rx="2"/>
+      <text x="426" y="111" class="wbma">1d 00:00:00</text>
+      <text x="160" y="128" class="wbt">On Event</text>
+      <rect x="240" y="119" width="420" height="30" class="w4inp" rx="2"/>
+      <text x="246" y="131" class="wbm">/system script run auto-backup</text>
+      <text x="246" y="143" class="wbs">← call a named script, or paste script body inline here</text>
+      <text x="160" y="164" class="wbt">Comment</text>
+      <rect x="240" y="155" width="420" height="13" class="w4inp" rx="2"/>
+      <text x="246" y="165" class="wbm">Run auto-backup script nightly</text>
+      <rect x="558" y="176" width="50" height="13" fill="#c63d1f" rx="3"/>
+      <text x="583" y="186" style="font-family:'Inter',sans-serif;font-size:8px;fill:#fff;text-anchor:middle;font-weight:500;">Apply</text>
+      <rect x="138" y="184" width="542" height="16" fill="#dddbd5"/>
+      <text x="144" y="194" class="wbs">System › Scheduler  ·  On Event: call a script by name or paste inline  ·  Interval: 1d = daily, 00:30:00 = every 30 minutes</text>
+    </svg>
+    <div class="wb4-caption">System › Scheduler → <strong>+ Add</strong>. Set Start Time for first run, Interval for recurrence, On Event for the script to run. You can call a named script (<code>/system script run name</code>) or paste the script body directly into On Event.</div>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Practical Script 1 — Telegram Alert System</h2>
+  <p class="section-thesis"><em>A reusable alert function that any other script can call. One function, one Telegram message, works from Netwatch, scheduler, or any script.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — complete Telegram alert script</span>
+    <pre class="term"><span class="cmt"># Script name: telegram-alert
+# Place in System › Scripts, call from Netwatch down-scripts or scheduler.
+# Requires: Telegram bot token and chat ID.
+# Get them free at: https://t.me/BotFather</span>
+
+<span class="out">:local botToken "1234567890:ABCDefGhIJKlmNoPQRsTUVwxyZ"</span>
+<span class="out">:local chatId "-1001234567890"</span>
+<span class="out">:local hostname [/system identity get name]</span>
+<span class="out">:local uptime [/system resource get uptime]</span>
+
+<span class="cmt"># Build the message — encode spaces as + for URL</span>
+<span class="out">:local msg ("🔴 ALERT — " . $hostname . \</span>
+<span class="out">    "%0AHost: 192.168.20.50 is DOWN" . \</span>
+<span class="out">    "%0AUptime: " . $uptime . \</span>
+<span class="out">    "%0ATime: " . [/system clock get time] . \</span>
+<span class="out">    " " . [/system clock get date])</span>
+
+<span class="cmt"># Send via Telegram Bot API</span>
+<span class="out">:do {</span>
+<span class="out">    /tool fetch \</span>
+<span class="out">        url=("https://api.telegram.org/bot" . $botToken . \</span>
+<span class="out">            "/sendMessage?chat_id=" . $chatId . \</span>
+<span class="out">            "&text=" . $msg) \</span>
+<span class="out">        keep-result=no \</span>
+<span class="out">        http-method=get</span>
+<span class="out">    :log info "Telegram alert sent"</span>
+<span class="out">} on-error={</span>
+<span class="out">    :log warning "Telegram alert FAILED — check internet connectivity"</span>
+<span class="out">}</span>
+<span class="cmt"># :do { } on-error={ } = try/catch pattern.
+# If /tool fetch fails (no internet), logs warning instead of crashing.
+# %0A = URL-encoded newline in Telegram messages.</span></pre>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">Practical Script 2 — Wake-on-LAN Automation</h2>
+  <p class="section-thesis"><em>Wake the NAS at 02:00, verify it came up, send a Telegram confirmation. Three tools from this series working together in one script.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — automated WoL with verification and alert</span>
+    <pre class="term"><span class="cmt"># Script name: wake-nas-verify
+# Schedule: daily at 01:55 (5 min before backup job)
+# Assumes: NAS at 192.168.20.50, MAC AA:BB:CC:DD:EE:FF</span>
+
+<span class="out">:local nasIP "192.168.20.50"</span>
+<span class="out">:local nasMac "AA:BB:CC:DD:EE:FF"</span>
+<span class="out">:local nasIface "vlan20"</span>
+<span class="out">:local botToken "YOUR_BOT_TOKEN"</span>
+<span class="out">:local chatId "YOUR_CHAT_ID"</span>
+<span class="out">:local hostname [/system identity get name]</span>
+
+<span class="cmt"># Step 1: Check if NAS is already up</span>
+<span class="out">:local alreadyUp [/ping address=$nasIP count=1 as-value]</span>
+<span class="out">:if ($alreadyUp->"received" > 0) do={</span>
+<span class="out">    :log info "NAS already online — skipping WoL"</span>
+<span class="out">    :error "NAS already up"</span>  <span class="cmt"># :error exits the script cleanly</span>
+<span class="out">}</span>
+
+<span class="cmt"># Step 2: Send magic packet</span>
+<span class="out">:log info ("Sending WoL to " . $nasMac . " via " . $nasIface)</span>
+<span class="out">/tool wol interface=$nasIface mac=$nasMac</span>
+
+<span class="cmt"># Step 3: Wait and verify (up to 60 seconds)</span>
+<span class="out">:local attempts 0</span>
+<span class="out">:local isUp false</span>
+<span class="out">:while ($attempts < 12 && !$isUp) do={</span>
+<span class="out">    :delay 5s</span>
+<span class="out">    :local ping [/ping address=$nasIP count=1 as-value]</span>
+<span class="out">    :if ($ping->"received" > 0) do={ :set isUp true }</span>
+<span class="out">    :set attempts ($attempts + 1)</span>
+<span class="out">}</span>
+
+<span class="cmt"># Step 4: Report result via Telegram</span>
+<span class="out">:local status</span>
+<span class="out">:if ($isUp) do={</span>
+<span class="out">    :set status "✅ NAS is UP"</span>
+<span class="out">    :log info ("WoL success: NAS responded after " . \</span>
+<span class="out">        ($attempts * 5) . "s")</span>
+<span class="out">} else={</span>
+<span class="out">    :set status "❌ NAS did NOT respond after 60s"</span>
+<span class="out">    :log warning "WoL failed: NAS unreachable"</span>
+<span class="out">}</span>
+
+<span class="out">:local msg ($status . "%0AHost: " . $nasIP . \</span>
+<span class="out">    "%0ARouter: " . $hostname)</span>
+<span class="out">:do {</span>
+<span class="out">    /tool fetch url=("https://api.telegram.org/bot" . \</span>
+<span class="out">        $botToken . "/sendMessage?chat_id=" . \</span>
+<span class="out">        $chatId . "&text=" . $msg) keep-result=no</span>
+<span class="out">} on-error={ :log warning "Telegram send failed" }</span></pre>
+  </div>
+
+  <!-- 08 -->
+  <p class="section-num">08</p>
+  <h2 class="section-title">Practical Script 3 — Auto-Backup via Email</h2>
+  <p class="section-thesis"><em>Every night at 02:00, export the config, attach it to an email, and send it offsite. If the router is ever bricked or stolen, you have yesterday's config in your inbox.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — nightly auto-backup to email</span>
+    <pre class="term"><span class="cmt"># First: configure SMTP settings (one-time setup)</span>
+<span class="pc">[admin@MikroTik] ></span> <span class="out">/tool e-mail set \</span>
+<span class="out">    server=smtp.gmail.com \</span>
+<span class="out">    port=587 \</span>
+<span class="out">    start-tls=yes \</span>
+<span class="out">    from=noctis.alerts@gmail.com \</span>
+<span class="out">    user=noctis.alerts@gmail.com \</span>
+<span class="out">    password="YOUR_APP_PASSWORD"</span>
+<span class="cmt"># Use a Gmail App Password (not your main password).
+# Generate at: Google Account → Security → App passwords</span>
+
+<span class="cmt"># Script name: auto-backup
+# Schedule: daily at 02:00</span>
+<span class="out">:local hostname [/system identity get name]</span>
+<span class="out">:local date [/system clock get date]</span>
+<span class="out">:local dateStr [:pick $date 7 11]  <span class="cmt"># year</span></span>
+<span class="out">:local dateStr ($dateStr . "-" . [:pick $date 0 3])  <span class="cmt"># month</span></span>
+<span class="out">:local dateStr ($dateStr . "-" . [:pick $date 4 6])  <span class="cmt"># day</span></span>
+<span class="out">:local filename ($hostname . "-" . $dateStr . ".rsc")</span>
+
+<span class="cmt"># Step 1: Export config to file</span>
+<span class="out">/export file=$hostname</span>
+<span class="cmt"># Creates /hostname.rsc on router flash</span>
+
+<span class="cmt"># Step 2: Also create binary backup</span>
+<span class="out">/system backup save name=$hostname</span>
+<span class="cmt"># Creates /hostname.backup on router flash</span>
+
+<span class="cmt"># Step 3: Send .rsc export as email attachment</span>
+<span class="out">:do {</span>
+<span class="out">    /tool e-mail send \</span>
+<span class="out">        to="sp1r4@noctis.gr" \</span>
+<span class="out">        subject=("RouterOS Backup: " . $hostname . " " . $date) \</span>
+<span class="out">        body=("Automated backup from " . $hostname . \</span>
+<span class="out">              "\nDate: " . $date . \</span>
+<span class="out">              "\nUptime: " . [/system resource get uptime] . \</span>
+<span class="out">              "\nVersion: " . [/system resource get version]) \</span>
+<span class="out">        file=($hostname . ".rsc")</span>
+<span class="out">    :log info ("Backup email sent for " . $hostname)</span>
+<span class="out">} on-error={</span>
+<span class="out">    :log warning ("Backup email FAILED for " . $hostname)</span>
+<span class="out">}</span>
+
+<span class="cmt"># Step 4: Clean up old backup files (keep last 3)</span>
+<span class="out">:local files [/file find where name~($hostname . ".rsc")]</span>
+<span class="out">:if ([:len $files] > 3) do={</span>
+<span class="out">    /file remove ($files->0)</span>
+<span class="out">    :log info "Removed oldest backup file"</span>
+<span class="out">}</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">🛡 Operator's View — Scripting for Production Networks</span>
+    <p><strong>Always wrap external calls in <code>:do {} on-error={}</code>.</strong> Any script that calls <code>/tool fetch</code> or <code>/tool e-mail send</code> will fail silently if the internet is down. Without try/catch, the script crashes mid-execution and subsequent steps never run. Wrap every network call and log a warning on failure — then the rest of the script continues.</p>
+    <p><strong>Test scripts in the terminal before scheduling them.</strong> Paste the script body directly at the CLI prompt and run it interactively. Watch the log with <code>/log print follow</code> in a second terminal session. Once it works correctly, move it to System › Scripts and schedule it. Never schedule an untested script on a production router.</p>
+    <p><strong>Use <code>:log</code> liberally during development, sparingly in production.</strong> Every <code>:log info</code> call writes to the router's volatile log buffer. A script that runs every 5 minutes and logs 10 lines will fill the 1000-line log buffer and push out useful entries. In production, only log state changes and errors — not routine confirmation messages.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>All keywords start with colon, all variable references start with $, all blocks use { }.</strong> These three rules are the entire syntax skeleton. Everything else is built on them.</li>
+      <li><strong>Capture command output with [ ].</strong> <code>:local ip [/ip address get 0 address]</code> stores the result of any RouterOS command in a variable. This is how scripts interact with the router's running config.</li>
+      <li><strong>Use <code>:do {} on-error={}</code> around every external call.</strong> <code>/tool fetch</code>, <code>/tool e-mail send</code>, and <code>/ping</code> can all fail. Without error handling, a script crashes silently mid-execution and subsequent steps are skipped with no indication of what happened.</li>
+      <li><strong>Global functions must be redeclared after reboot.</strong> Add a startup scheduler entry that runs a script to set all your global functions. This is the production-safe pattern — don't rely on functions surviving across reboots.</li>
+      <li><strong>The scheduler's <code>start-time=startup</code> replaces autorun scripts.</strong> Use it to initialise globals, start containers, and verify interface states on boot. It's more reliable than the deprecated autorun approach.</li>
+      <li><strong>Test in the terminal before scheduling.</strong> Run scripts interactively, watch the log, fix issues, then schedule. Scheduling an untested script is how you create a router that reboots itself at 02:00 every night.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Running a hotel, villa, or SMB in Crete?</h3>
+    <p>NOCTIS builds and maintains automated monitoring and backup systems for hospitality networks — Telegram alerts, nightly config backups, and scheduled maintenance scripts. If your network has no automation, one missed failure can cost you hours of downtime. Book a call to discuss what your network needs.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

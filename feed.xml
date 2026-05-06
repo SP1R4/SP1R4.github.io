@@ -7,6 +7,22 @@
     <language>en</language>
     <atom:link href="https://sp1r4.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>MikroTik: Backup and Recovery</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-backup</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-backup</guid>
+      <pubDate>Wed, 06 May 2026 00:00:00 GMT</pubDate>
+      <description>Export vs binary backup on MikroTik RouterOS — when to use which, how to automate both, and the full Netinstall recovery procedure.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: RouterOS Scripting</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-scripting</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-scripting</guid>
+      <pubDate>Wed, 06 May 2026 00:00:00 GMT</pubDate>
+      <description>RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
       <title>MikroTik: VLANs</title>
       <link>https://sp1r4.github.io/blog.html#mikrotik-vlans</link>
       <guid>https://sp1r4.github.io/blog.html#mikrotik-vlans</guid>
