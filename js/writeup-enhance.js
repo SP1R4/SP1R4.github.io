@@ -1,0 +1,460 @@
+// NOCTIS — writeup enhancements: reading progress bar, floating TOC,
+// copy-to-clipboard buttons, series banner, related-posts strip.
+// Standalone (no deps); loaded by every writeup HTML after writeup-sidebar.js.
+(function () {
+  if (window.__noctisWriteupEnhanced) return;
+  window.__noctisWriteupEnhanced = true;
+
+  const POSTS_URL = '../posts.json';
+
+  function currentSlug() {
+    const file = (location.pathname.split('/').pop() || '').replace(/\.html$/i, '');
+    return file;
+  }
+
+  function slugify(s) {
+    return (s || '')
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 60);
+  }
+
+  function injectStyles() {
+    if (document.getElementById('noctis-enhance-style')) return;
+    const css = `
+      /* Reading progress bar */
+      .noctis-progress {
+        position: fixed; top: 0; left: 0; height: 2px; width: 0;
+        background: #c63d1f; z-index: 10000;
+        transition: width 0.05s linear;
+        will-change: width;
+      }
+
+      /* Floating TOC */
+      .noctis-toc-toggle {
+        position: fixed; top: 18px; right: 18px; z-index: 9999;
+        width: 38px; height: 38px;
+        background: rgba(26,26,24,0.92); color: #eae8e3;
+        border: 1px solid rgba(234,232,227,0.15); border-radius: 4px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        transition: background 0.18s;
+      }
+      .noctis-toc-toggle:hover { background: rgba(26,26,24,1); }
+      .noctis-toc-toggle svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+      .noctis-toc-panel {
+        position: fixed; top: 64px; right: 18px; z-index: 9999;
+        width: 280px; max-height: calc(100vh - 96px);
+        background: rgba(20,20,20,0.96);
+        border: 1px solid rgba(255,255,255,0.10); border-radius: 6px;
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        font-family: 'Inter','Barlow',system-ui,sans-serif;
+        padding: 14px 12px; overflow-y: auto;
+        opacity: 0; pointer-events: none; transform: translateY(-6px);
+        transition: opacity 0.18s, transform 0.18s;
+      }
+      .noctis-toc-panel.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+      .noctis-toc-panel h3 {
+        font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
+        color: rgba(255,255,255,0.45); text-transform: uppercase;
+        margin: 0 6px 10px; padding: 0;
+      }
+      .noctis-toc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+      .noctis-toc-list a {
+        display: block; padding: 7px 10px; border-radius: 3px;
+        text-decoration: none; color: rgba(234,232,227,0.78);
+        font-size: 12px; font-weight: 500; line-height: 1.35;
+        border-left: 2px solid transparent;
+      }
+      .noctis-toc-list a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+      .noctis-toc-list a.active {
+        background: rgba(198,61,31,0.10); border-left-color: #c63d1f; color: #fff;
+      }
+      .noctis-toc-list .lvl-3 { padding-left: 22px; font-size: 11px; color: rgba(234,232,227,0.62); }
+
+      /* Copy button on code/terminal blocks */
+      .noctis-copyable { position: relative; }
+      .noctis-copy-btn {
+        position: absolute; top: 8px; right: 8px; z-index: 5;
+        font-family: 'JetBrains Mono','Inter',monospace;
+        font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+        padding: 5px 9px; border-radius: 3px;
+        background: rgba(26,26,24,0.78); color: #eae8e3;
+        border: 1px solid rgba(234,232,227,0.18);
+        cursor: pointer; opacity: 0;
+        transition: opacity 0.15s, background 0.15s;
+      }
+      .noctis-copyable:hover .noctis-copy-btn,
+      .noctis-copy-btn:focus-visible { opacity: 1; }
+      .noctis-copy-btn:hover { background: rgba(26,26,24,1); }
+      .noctis-copy-btn.copied { background: #3a6a48; border-color: #3a6a48; color: #fff; }
+
+      /* Series banner */
+      .noctis-series {
+        margin: 1.4rem 0 2rem;
+        padding: 0.9rem 1.1rem;
+        background: rgba(198,61,31,0.06);
+        border: 1px solid rgba(198,61,31,0.2);
+        border-left: 3px solid #c63d1f;
+        border-radius: 5px;
+        font-family: 'Barlow','Inter',system-ui,sans-serif;
+        font-size: 0.85rem; color: #555550;
+        display: flex; flex-wrap: wrap; gap: 6px 14px;
+        align-items: center; justify-content: space-between;
+      }
+      .noctis-series-label {
+        font-family: 'Barlow Condensed','Barlow',sans-serif;
+        font-weight: 700; font-size: 0.72rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: #c63d1f;
+      }
+      .noctis-series-title { color: #1a1a18; font-weight: 600; }
+      .noctis-series-nav { display: flex; gap: 12px; flex-wrap: wrap; }
+      .noctis-series-nav a {
+        color: #c63d1f; text-decoration: none;
+        font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em;
+      }
+      .noctis-series-nav a:hover { text-decoration: underline; }
+      .noctis-series-nav a[aria-disabled="true"] { color: #aaa89f; pointer-events: none; }
+
+      /* Related posts */
+      .noctis-related {
+        margin: 3rem 0 1.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(26,26,24,0.12);
+        font-family: 'Barlow','Inter',system-ui,sans-serif;
+      }
+      .noctis-related h3 {
+        font-family: 'Barlow Condensed','Barlow',sans-serif;
+        font-weight: 800; font-size: 1.4rem; letter-spacing: 0.04em;
+        text-transform: uppercase; color: #1a1a18; margin-bottom: 1rem;
+      }
+      .noctis-related-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .noctis-related-card {
+        display: block; padding: 14px 16px;
+        background: rgba(26,26,24,0.04);
+        border: 1px solid rgba(26,26,24,0.10);
+        border-radius: 5px; text-decoration: none;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+      }
+      .noctis-related-card:hover {
+        background: rgba(26,26,24,0.08);
+        border-color: rgba(198,61,31,0.4);
+        transform: translateY(-2px);
+        text-decoration: none;
+      }
+      .noctis-related-tag {
+        font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+        text-transform: uppercase; color: #c63d1f;
+      }
+      .noctis-related-title {
+        font-size: 0.95rem; font-weight: 600; color: #1a1a18;
+        margin: 4px 0 4px; line-height: 1.3;
+      }
+      .noctis-related-meta {
+        font-size: 0.72rem; color: #888880; letter-spacing: 0.04em;
+      }
+
+      /* Hide TOC button when sidebar is open on narrow screens (would overlap close target) */
+      @media (max-width: 1099px) {
+        .noctis-toc-panel { right: 12px; width: calc(100vw - 24px); max-width: 320px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .noctis-progress, .noctis-toc-panel, .noctis-copy-btn,
+        .noctis-related-card { transition: none !important; }
+      }
+    `;
+    const style = document.createElement('style');
+    style.id = 'noctis-enhance-style';
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // 1. Reading progress bar
+  function setupProgress() {
+    const bar = document.createElement('div');
+    bar.className = 'noctis-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+
+    function update() {
+      const h = document.documentElement;
+      const max = (h.scrollHeight - h.clientHeight) || 1;
+      const pct = Math.max(0, Math.min(100, (h.scrollTop / max) * 100));
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+
+  // 2. Floating TOC built from h2/h3
+  function setupTOC() {
+    const headings = Array.from(document.querySelectorAll('h2, h3'))
+      .filter(h => {
+        if (h.closest('nav, footer, .noctis-related, .noctis-series, .noctis-toc-panel')) return false;
+        const txt = (h.textContent || '').trim();
+        if (!txt) return false;
+        return true;
+      });
+    if (headings.length < 3) return;
+
+    const usedIds = new Set(Array.from(document.querySelectorAll('[id]')).map(e => e.id));
+    headings.forEach(h => {
+      if (!h.id) {
+        let base = slugify(h.textContent) || 'section';
+        let id = base, n = 2;
+        while (usedIds.has(id)) { id = base + '-' + (n++); }
+        h.id = id;
+        usedIds.add(id);
+      }
+    });
+
+    const toggle = document.createElement('button');
+    toggle.className = 'noctis-toc-toggle';
+    toggle.type = 'button';
+    toggle.setAttribute('aria-label', 'Table of contents');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.innerHTML = '<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>';
+
+    const panel = document.createElement('aside');
+    panel.className = 'noctis-toc-panel';
+    panel.setAttribute('aria-label', 'Table of contents');
+    const heading = document.createElement('h3');
+    heading.textContent = 'On this page';
+    panel.appendChild(heading);
+    const ul = document.createElement('ul');
+    ul.className = 'noctis-toc-list';
+    headings.forEach(h => {
+      const li = document.createElement('li');
+      li.className = 'lvl-' + h.tagName.charAt(1);
+      const a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = (h.textContent || '').trim();
+      a.dataset.targetId = h.id;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    panel.appendChild(ul);
+
+    function close() { panel.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+    function open() { panel.classList.add('open'); toggle.setAttribute('aria-expanded', 'true'); }
+    toggle.addEventListener('click', () => panel.classList.contains('open') ? close() : open());
+    panel.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') close();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => {
+      if (!panel.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.body.appendChild(toggle);
+    document.body.appendChild(panel);
+
+    // Active section tracking
+    const links = panel.querySelectorAll('a');
+    if ('IntersectionObserver' in window) {
+      const byId = new Map();
+      links.forEach(a => byId.set(a.dataset.targetId, a));
+      const visible = new Set();
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) visible.add(en.target.id);
+          else visible.delete(en.target.id);
+        });
+        const orderedIds = headings.map(h => h.id);
+        const firstVisible = orderedIds.find(id => visible.has(id));
+        links.forEach(a => a.classList.remove('active'));
+        if (firstVisible && byId.has(firstVisible)) byId.get(firstVisible).classList.add('active');
+      }, { rootMargin: '-72px 0px -65% 0px', threshold: 0 });
+      headings.forEach(h => io.observe(h));
+    }
+  }
+
+  // 3. Copy-to-clipboard on code/terminal blocks
+  function setupCopyButtons() {
+    const candidates = [];
+    document.querySelectorAll('.term-wrap, .terminal').forEach(el => candidates.push(el));
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.term-wrap, .terminal, .noctis-copyable')) return;
+      candidates.push(pre);
+    });
+
+    candidates.forEach(target => {
+      if (target.dataset.copyAttached === '1') return;
+      target.dataset.copyAttached = '1';
+      target.classList.add('noctis-copyable');
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'noctis-copy-btn';
+      btn.textContent = 'COPY';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const src = target.querySelector('pre, .term-body, code') || target;
+        const text = (src.innerText || src.textContent || '').replace(/ /g, ' ').trimEnd();
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+          }
+          btn.textContent = 'COPIED';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1600);
+        } catch {
+          btn.textContent = 'ERR';
+          setTimeout(() => { btn.textContent = 'COPY'; }, 1600);
+        }
+      });
+
+      target.appendChild(btn);
+    });
+  }
+
+  // 4. Series banner + 5. Related posts (depend on posts.json)
+  function setupPostsAware(posts) {
+    const slug = currentSlug();
+    const here = posts.find(p => p.slug === slug);
+    if (!here) return;
+
+    if (here.series) {
+      const inSeries = posts
+        .filter(p => p.series === here.series)
+        .sort((a, b) => (a.series_order || 0) - (b.series_order || 0));
+      const idx = inSeries.findIndex(p => p.slug === slug);
+      if (idx >= 0 && inSeries.length > 1) {
+        const prev = inSeries[idx - 1];
+        const next = inSeries[idx + 1];
+        const banner = document.createElement('div');
+        banner.className = 'noctis-series';
+        const left = document.createElement('div');
+        const label = document.createElement('span');
+        label.className = 'noctis-series-label';
+        const seriesName = (here.series_name) || here.series;
+        label.textContent = 'Part ' + (idx + 1) + ' of ' + inSeries.length + ' · ' + seriesName;
+        left.appendChild(label);
+        const nav = document.createElement('div');
+        nav.className = 'noctis-series-nav';
+        const prevA = document.createElement('a');
+        prevA.textContent = '← ' + (prev ? prev.title : 'Start');
+        if (prev) {
+          prevA.href = (prev.html || '').split('/').pop() || '#';
+        } else {
+          prevA.setAttribute('aria-disabled', 'true');
+          prevA.href = '#';
+        }
+        const nextA = document.createElement('a');
+        nextA.textContent = (next ? next.title : 'End') + ' →';
+        if (next) {
+          nextA.href = (next.html || '').split('/').pop() || '#';
+        } else {
+          nextA.setAttribute('aria-disabled', 'true');
+          nextA.href = '#';
+        }
+        nav.appendChild(prevA);
+        nav.appendChild(nextA);
+        banner.appendChild(left);
+        banner.appendChild(nav);
+
+        const anchor = document.querySelector('.thesis-card, .post-header, h1.post-title, h1');
+        if (anchor && anchor.parentNode) {
+          if (anchor.classList.contains('thesis-card') || anchor.classList.contains('post-header')) {
+            anchor.parentNode.insertBefore(banner, anchor);
+          } else {
+            anchor.parentNode.insertBefore(banner, anchor.nextSibling);
+          }
+        } else {
+          document.body.insertBefore(banner, document.body.firstChild);
+        }
+      }
+    }
+
+    // Related: same-tag, exclude current, exclude same-series duplicates of immediate prev/next
+    const tags = new Set(here.tags || []);
+    const candidates = posts
+      .filter(p => p.slug !== slug)
+      .map(p => {
+        const overlap = (p.tags || []).filter(t => tags.has(t)).length;
+        return { p, overlap };
+      })
+      .filter(x => x.overlap > 0)
+      .sort((a, b) => b.overlap - a.overlap || (b.p.date || '').localeCompare(a.p.date || ''))
+      .slice(0, 3)
+      .map(x => x.p);
+
+    if (candidates.length) {
+      const sec = document.createElement('section');
+      sec.className = 'noctis-related';
+      const h = document.createElement('h3');
+      h.textContent = 'Related writeups';
+      sec.appendChild(h);
+      const grid = document.createElement('div');
+      grid.className = 'noctis-related-grid';
+      candidates.forEach(p => {
+        const card = document.createElement('a');
+        card.className = 'noctis-related-card';
+        card.href = (p.html || '').split('/').pop() || '#';
+        const tag = document.createElement('div');
+        tag.className = 'noctis-related-tag';
+        tag.textContent = (p.tags && p.tags[0]) || '';
+        const t = document.createElement('div');
+        t.className = 'noctis-related-title';
+        t.textContent = p.title || p.slug;
+        const meta = document.createElement('div');
+        meta.className = 'noctis-related-meta';
+        const parts = [];
+        if (p.date) {
+          try { parts.push(new Date(p.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })); }
+          catch { parts.push(p.date); }
+        }
+        if (p.reading_time) parts.push(p.reading_time + ' min read');
+        meta.textContent = parts.join(' · ');
+        card.appendChild(tag);
+        card.appendChild(t);
+        card.appendChild(meta);
+        grid.appendChild(card);
+      });
+      sec.appendChild(grid);
+
+      const footer = document.querySelector('footer');
+      if (footer && footer.parentNode) {
+        footer.parentNode.insertBefore(sec, footer);
+      } else {
+        document.body.appendChild(sec);
+      }
+    }
+  }
+
+  function init() {
+    injectStyles();
+    setupProgress();
+    setupTOC();
+    setupCopyButtons();
+    fetch(POSTS_URL, { cache: 'no-cache' })
+      .then(r => r.ok ? r.json() : [])
+      .then(posts => {
+        if (Array.isArray(posts) && posts.length) setupPostsAware(posts);
+      })
+      .catch(() => {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
