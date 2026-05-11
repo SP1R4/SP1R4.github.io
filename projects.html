@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://gc.zgo.at;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://gc.zgo.at; worker-src 'self' blob:;">
 <title>Projects — NOCTIS</title>
 <meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
 <meta property="og:title" content="Projects — NOCTIS">
@@ -106,6 +106,7 @@
   <footer class="site-footer">
     <div class="site-footer-brand">NOCTIS</div>
     <div class="site-footer-sub" data-i18n="services.footer.sub">Cybersecurity &amp; IT Consulting</div>
+    <div class="site-footer-links"><a href="privacy.html">Privacy &amp; Legal</a></div>
   </footer>
 
 </main>
@@ -114,6 +115,7 @@
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/projects.js" defer></script>
+<script src="js/search.js" defer></script>
 <script src="js/analytics.js" defer></script>
 
 </body>

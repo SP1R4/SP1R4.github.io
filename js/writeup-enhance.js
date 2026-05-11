@@ -203,6 +203,46 @@
         .noctis-toc-panel { right: 12px; width: calc(100vw - 24px); max-width: 320px; }
       }
 
+      /* Image lightbox */
+      .noctis-lightbox {
+        position: fixed; inset: 0; z-index: 10001;
+        background: rgba(0,0,0,0.92);
+        display: flex; align-items: center; justify-content: center;
+        padding: 40px;
+        opacity: 0; transition: opacity 0.18s ease;
+        cursor: zoom-out;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .noctis-lightbox.open { opacity: 1; }
+      .noctis-lightbox img {
+        max-width: 100%; max-height: 100%;
+        object-fit: contain;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        transform: scale(0.96);
+        transition: transform 0.18s ease;
+      }
+      .noctis-lightbox.open img { transform: scale(1); }
+      .noctis-lightbox-close {
+        position: absolute; top: 18px; right: 18px;
+        width: 38px; height: 38px; border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-family: inherit; font-size: 20px; line-height: 1;
+        transition: background 0.15s;
+      }
+      .noctis-lightbox-close:hover { background: rgba(255,255,255,0.16); }
+      .noctis-lightbox-hint {
+        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+        color: rgba(255,255,255,0.45);
+        font-family: 'Barlow Condensed','Barlow',sans-serif;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      [data-lightboxable] { cursor: zoom-in; }
+
       @media (prefers-reduced-motion: reduce) {
         .noctis-progress, .noctis-toc-panel, .noctis-copy-btn,
         .noctis-related-card, .noctis-share-btn { transition: none !important; }
@@ -334,6 +374,70 @@
     }
   }
 
+  // 2.5. Image lightbox — click any content image for fullscreen view.
+  function setupImageLightbox() {
+    document.querySelectorAll('img').forEach(img => {
+      if (img.closest('nav, footer, .noctis-sidebar, .noctis-related, .noctis-toc-panel, .noctis-share, .writeup-back-link')) return;
+      if (img.dataset.lightboxAttached === '1') return;
+      // Skip tiny/decorative images (icons, badges)
+      const w = img.naturalWidth || img.width || 0;
+      const h = img.naturalHeight || img.height || 0;
+      if (w && w < 200 && h && h < 200) return;
+      img.dataset.lightboxAttached = '1';
+      img.setAttribute('data-lightboxable', '');
+      img.addEventListener('click', (e) => {
+        e.preventDefault();
+        openLightbox(img);
+      });
+    });
+  }
+
+  function openLightbox(img) {
+    const overlay = document.createElement('div');
+    overlay.className = 'noctis-lightbox';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Image viewer');
+
+    const full = document.createElement('img');
+    full.src = img.currentSrc || img.src;
+    full.alt = img.alt || '';
+    overlay.appendChild(full);
+
+    const close = document.createElement('button');
+    close.className = 'noctis-lightbox-close';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close image viewer');
+    close.innerHTML = '&times;';
+    overlay.appendChild(close);
+
+    const hint = document.createElement('div');
+    hint.className = 'noctis-lightbox-hint';
+    hint.textContent = 'Click anywhere or press Esc to close';
+    overlay.appendChild(hint);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    function shut() {
+      overlay.classList.remove('open');
+      setTimeout(() => {
+        overlay.remove();
+        document.body.style.overflow = prevOverflow;
+        document.removeEventListener('keydown', onKey);
+      }, 180);
+    }
+    function onKey(e) { if (e.key === 'Escape') shut(); }
+    overlay.addEventListener('click', (e) => {
+      // Close on overlay or close-button; don't close when clicking image itself for now
+      if (e.target === overlay || e.target === close) shut();
+    });
+    document.addEventListener('keydown', onKey);
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('open'));
+  }
+
   // 3. Copy-to-clipboard on code/terminal blocks
   function setupCopyButtons() {
     const candidates = [];
@@ -379,6 +483,16 @@
 
       target.appendChild(btn);
     });
+  }
+
+  // Load the global Ctrl+K search script (shared with the main pages).
+  function loadGlobalSearch() {
+    if (document.querySelector('script[data-noctis-search]')) return;
+    const s = document.createElement('script');
+    s.src = '/js/search.js';
+    s.defer = true;
+    s.setAttribute('data-noctis-search', '1');
+    document.head.appendChild(s);
   }
 
   // 3.5. Reading-position resume — restore scroll % per slug across visits.
@@ -610,8 +724,10 @@
     injectStyles();
     setupProgress();
     setupTOC();
+    setupImageLightbox();
     setupCopyButtons();
     setupReadingResume();
+    loadGlobalSearch();
     fetch(POSTS_URL, { cache: 'no-cache' })
       .then(r => r.ok ? r.json() : [])
       .then(posts => {

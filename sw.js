@@ -1,5 +1,5 @@
 // NOCTIS service worker — cache-first for static assets, network-first for HTML.
-const VERSION = 'v16';
+const VERSION = 'v17';
 const STATIC_CACHE = `noctis-static-${VERSION}`;
 const RUNTIME_CACHE = `noctis-runtime-${VERSION}`;
 
@@ -9,6 +9,7 @@ const PRECACHE = [
   '/services.html',
   '/projects.html',
   '/blog.html',
+  '/privacy.html',
   '/404.html',
   '/style.css',
   '/fonts/inter.css',
@@ -27,6 +28,7 @@ const PRECACHE = [
   '/js/blog.js',
   '/js/projects.js',
   '/js/analytics.js',
+  '/js/search.js',
 ];
 
 self.addEventListener('install', (event) => {
