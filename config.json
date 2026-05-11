@@ -17,27 +17,12 @@
   },
   "links": [
     {
-      "title": "Email",
-      "title_el": "Email",
-      "sub": "sp1r4.work@gmail.com",
-      "url": "mailto:sp1r4.work@gmail.com",
-      "icon": "email"
-    },
-    {
-      "title": "Telegram",
-      "title_el": "Telegram",
-      "sub": "@S_Markakis",
-      "sub_el": "@S_Markakis",
-      "url": "https://t.me/S_Markakis",
-      "icon": "telegram"
-    },
-    {
-      "title": "Viber",
-      "title_el": "Viber",
-      "sub": "+30 697 667 7014",
-      "sub_el": "+30 697 667 7014",
-      "url": "viber://chat?number=%2B306976677014",
-      "icon": "viber"
+      "type": "pill",
+      "items": [
+        { "label": "Email", "url": "mailto:sp1r4.work@gmail.com", "icon": "email" },
+        { "label": "Telegram", "url": "https://t.me/S_Markakis", "icon": "telegram" },
+        { "label": "Viber", "url": "viber://chat?number=%2B306976677014", "icon": "viber" }
+      ]
     },
     {
       "title": "GitHub",

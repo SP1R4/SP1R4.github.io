@@ -37,7 +37,8 @@ function applyCfgI18n(cfg) {
   if (statusTxt) statusTxt.textContent = localized(cfg.status, 'text');
   const footerSub = document.querySelector('#footer .footer-sub');
   if (footerSub) footerSub.textContent = localized(cfg.footer, 'sub');
-  document.querySelectorAll('.link-card').forEach((card, i) => {
+  document.querySelectorAll('.link-card').forEach(card => {
+    const i = parseInt(card.dataset.linkIdx, 10);
     const link = cfg.links[i];
     if (!link) return;
     const titleEl = card.querySelector('.link-title');
@@ -45,6 +46,31 @@ function applyCfgI18n(cfg) {
     if (titleEl) titleEl.textContent = localized(link, 'title');
     if (subEl) subEl.textContent = localized(link, 'sub');
   });
+}
+
+function renderPill(link, container, idx) {
+  const pill = document.createElement('div');
+  pill.className = 'link-pill';
+  pill.style.setProperty('--i', idx);
+  (link.items || []).forEach(it => {
+    const a = document.createElement('a');
+    a.className = 'link-pill-item';
+    const safeUrl = /^(https?:|mailto:|tel:|tg:|viber:|\/|#|\.|\w[\w\-]*\.html)/i.test(it.url.trim()) ? it.url : '#';
+    a.href = safeUrl;
+    const isAppScheme = /^(mailto:|tel:|tg:|viber:)/i.test(safeUrl);
+    if (!isAppScheme) { a.target = '_blank'; }
+    a.rel = 'noopener';
+    const icon = document.createElement('span');
+    icon.className = 'link-pill-icon';
+    icon.innerHTML = Object.prototype.hasOwnProperty.call(ICONS, it.icon) ? ICONS[it.icon] : ICONS.link;
+    const label = document.createElement('span');
+    label.className = 'link-pill-label';
+    label.textContent = it.label;
+    a.appendChild(icon);
+    a.appendChild(label);
+    pill.appendChild(a);
+  });
+  container.appendChild(pill);
 }
 
 cfgPromise.then(cfg => {
@@ -83,8 +109,13 @@ cfgPromise.then(cfg => {
 
   const container = document.getElementById('links-container');
   cfg.links.forEach((link, i) => {
+    if (link.type === 'pill') {
+      renderPill(link, container, i);
+      return;
+    }
     const a = document.createElement('a');
     a.className = 'link-card';
+    a.dataset.linkIdx = String(i);
     const safeUrl = /^(https?:|mailto:|tel:|tg:|viber:|\/|#|\.|\w[\w\-]*\.html)/i.test(link.url.trim()) ? link.url : '#';
     a.href = safeUrl;
     const isInternal = /^[\w][\w\-]*\.html$/i.test(link.url.trim());
