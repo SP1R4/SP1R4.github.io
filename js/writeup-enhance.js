@@ -122,7 +122,7 @@
 
       /* Share row */
       .noctis-share {
-        margin: 2.4rem 0 1rem;
+        margin: 2.4rem 0 1rem 2rem;
         display: flex; gap: 8px; flex-wrap: wrap;
         align-items: center;
         font-family: 'Barlow','Inter',system-ui,sans-serif;
