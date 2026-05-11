@@ -31,11 +31,11 @@ SVG_TEMPLATE = '''<?xml version="1.0" encoding="UTF-8"?>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect width="1200" height="630" fill="url(#grid)"/>
-  <rect x="0" y="0" width="1200" height="6" fill="#34d399"/>
-  <text x="80" y="160" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="500" fill="#34d399" letter-spacing="6">{tag_label}</text>
+  <rect x="0" y="0" width="1200" height="6" fill="#c63d1f"/>
+  <text x="80" y="160" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="500" fill="#c63d1f" letter-spacing="6">{tag_label}</text>
   <text x="80" y="290" font-family="Inter, Helvetica, Arial, sans-serif" font-size="78" font-weight="900" fill="#ffffff" letter-spacing="-2">{title}</text>
   <text x="80" y="370" font-family="Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="400" fill="#a0a0a0">{description}</text>
-  <line x1="80" y1="480" x2="200" y2="480" stroke="#34d399" stroke-width="2"/>
+  <line x1="80" y1="480" x2="200" y2="480" stroke="#c63d1f" stroke-width="2"/>
   <text x="80" y="540" font-family="Inter, Helvetica, Arial, sans-serif" font-size="32" font-weight="900" fill="#ffffff" letter-spacing="-1">NOCTIS</text>
   <text x="80" y="570" font-family="Inter, Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#888" letter-spacing="3">CYBERSECURITY · IT</text>
   <text x="1120" y="570" font-family="Inter, Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#666" text-anchor="end">sp1r4.github.io</text>

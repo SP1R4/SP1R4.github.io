@@ -11,11 +11,12 @@
 <meta property="og:description" content="Cybersecurity research, CTF writeups, and development notes.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sp1r4.github.io/blog.html">
-<meta property="og:image" content="https://sp1r4.github.io/og-image.png">
+<meta property="og:image" content="https://sp1r4.github.io/og/blog.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
+<meta name="twitter:image" content="https://sp1r4.github.io/og/blog.svg">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
@@ -89,17 +90,32 @@
     color: var(--text-muted);
   }
 
-  /* ── SEARCH ── */
+  /* ── SEARCH + RSS ── */
+  .search-row {
+    display: flex; gap: 8px; align-items: stretch; margin-bottom: 14px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.12s forwards;
+  }
   .post-search {
-    width: 100%; padding: 10px 14px; margin-bottom: 14px;
+    flex: 1; min-width: 0; padding: 10px 14px;
     background: var(--card-bg); border: 0.5px solid var(--card-border);
     border-radius: 4px; color: var(--text-primary);
     font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400;
     outline: none; transition: border-color 0.15s, background 0.15s;
-    opacity: 0; animation: fadeUp 0.4s ease 0.12s forwards;
   }
   .post-search::placeholder { color: var(--text-muted); }
   .post-search:focus { border-color: var(--text-secondary); }
+  .rss-link {
+    flex-shrink: 0; width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--card-bg); border: 0.5px solid var(--card-border);
+    border-radius: 4px; color: var(--text-muted);
+    text-decoration: none; transition: all 0.18s;
+  }
+  .rss-link:hover {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    transform: translateY(-1px);
+  }
+  .rss-link svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 </style>
 </head>
 <body class="has-nav">
@@ -112,7 +128,12 @@
     <div class="page-title" data-i18n="blog.title">Blog</div>
     <div class="page-subtitle" data-i18n="blog.subtitle">Research &amp; Writeups</div>
   </div>
-  <input type="search" id="post-search" class="post-search" data-i18n-attr-placeholder="blog.search" placeholder="Search posts…" autocomplete="off">
+  <div class="search-row">
+    <input type="search" id="post-search" class="post-search" data-i18n-attr-placeholder="blog.search" placeholder="Search posts…" autocomplete="off">
+    <a href="feed.xml" class="rss-link" aria-label="RSS feed" title="Subscribe via RSS">
+      <svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.5"/></svg>
+    </a>
+  </div>
   <div class="filter-bar" id="filter-bar"></div>
   <div class="post-count" id="post-count"></div>
   <div class="post-list" id="post-list"></div>

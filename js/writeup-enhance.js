@@ -208,6 +208,24 @@
         .noctis-related-card, .noctis-share-btn { transition: none !important; }
         .noctis-related-card:hover, .noctis-share-btn:hover { transform: none !important; }
       }
+
+      /* Print: strip nav/chrome so saved PDFs look clean. */
+      @media print {
+        .noctis-progress, .noctis-toc-toggle, .noctis-toc-panel,
+        .noctis-copy-btn, .noctis-share, .noctis-related,
+        .noctis-series-nav { display: none !important; }
+        body { padding-left: 0 !important; padding-top: 0 !important; background: #fff !important; }
+        h1, h2, h3, h4 { page-break-after: avoid; }
+        .term-wrap, .terminal, pre, figure, img {
+          page-break-inside: avoid;
+          max-width: 100% !important;
+        }
+        a[href^="http"]::after {
+          content: " (" attr(href) ")";
+          font-size: 0.82em; color: #555;
+          word-break: break-all;
+        }
+      }
     `;
     const style = document.createElement('style');
     style.id = 'noctis-enhance-style';
@@ -361,6 +379,38 @@
 
       target.appendChild(btn);
     });
+  }
+
+  // 3.5. Reading-position resume — restore scroll % per slug across visits.
+  function setupReadingResume() {
+    const key = 'noctis-resume:' + currentSlug();
+    const max = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+    try {
+      const pct = parseFloat(localStorage.getItem(key));
+      if (Number.isFinite(pct) && pct > 0.05 && pct < 0.95) {
+        const restore = () => {
+          const m = max();
+          if (m > 0) window.scrollTo({ top: m * pct, behavior: 'instant' });
+        };
+        if (document.readyState === 'complete') restore();
+        else window.addEventListener('load', restore, { once: true });
+      }
+    } catch {}
+
+    let pending = null;
+    window.addEventListener('scroll', () => {
+      if (pending) return;
+      pending = setTimeout(() => {
+        try {
+          const m = max();
+          const pct = m > 0 ? window.scrollY / m : 0;
+          if (pct > 0.95 || pct < 0.02) localStorage.removeItem(key);
+          else localStorage.setItem(key, pct.toFixed(3));
+        } catch {}
+        pending = null;
+      }, 800);
+    }, { passive: true });
   }
 
   // 4. Share row — Twitter/X, LinkedIn, Mastodon, copy link
@@ -561,6 +611,7 @@
     setupProgress();
     setupTOC();
     setupCopyButtons();
+    setupReadingResume();
     fetch(POSTS_URL, { cache: 'no-cache' })
       .then(r => r.ok ? r.json() : [])
       .then(posts => {

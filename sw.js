@@ -1,5 +1,5 @@
 // NOCTIS service worker — cache-first for static assets, network-first for HTML.
-const VERSION = 'v14';
+const VERSION = 'v15';
 const STATIC_CACHE = `noctis-static-${VERSION}`;
 const RUNTIME_CACHE = `noctis-runtime-${VERSION}`;
 
@@ -13,6 +13,9 @@ const PRECACHE = [
   '/style.css',
   '/fonts/inter.css',
   '/favicon.svg',
+  '/apple-touch-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/manifest.webmanifest',
   '/posts.json',
   '/config.json',
