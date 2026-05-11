@@ -24,6 +24,22 @@
       "icon": "email"
     },
     {
+      "title": "Telegram",
+      "title_el": "Telegram",
+      "sub": "@S_Markakis",
+      "sub_el": "@S_Markakis",
+      "url": "https://t.me/S_Markakis",
+      "icon": "telegram"
+    },
+    {
+      "title": "Viber",
+      "title_el": "Viber",
+      "sub": "+30 697 667 7014",
+      "sub_el": "+30 697 667 7014",
+      "url": "viber://chat?number=%2B306976677014",
+      "icon": "viber"
+    },
+    {
       "title": "GitHub",
       "title_el": "GitHub",
       "sub": "Open source security & automation tools",
