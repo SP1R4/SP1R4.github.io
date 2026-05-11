@@ -1,8 +1,49 @@
 // Renders the blog post list from posts.json with tag filtering.
+// Search uses Pagefind (full-text index) when available, falling back
+// to a substring match on title/description/tags if it fails to load.
 
 let posts = [];
 let activeFilter = null;
 let searchQuery = '';
+let pagefindMod = null;
+let pagefindReady = false;
+let pagefindUrls = null;
+let pagefindReqId = 0;
+
+async function initPagefind() {
+  try {
+    pagefindMod = await import('/pagefind/pagefind.js');
+    if (pagefindMod.options) await pagefindMod.options({ baseUrl: '/' });
+    pagefindReady = true;
+  } catch (e) {
+    pagefindReady = false;
+  }
+}
+initPagefind();
+
+async function runPagefind(query) {
+  const myReq = ++pagefindReqId;
+  if (!pagefindReady || !pagefindMod || !query.trim()) {
+    pagefindUrls = null;
+    return;
+  }
+  try {
+    const result = await pagefindMod.search(query);
+    if (myReq !== pagefindReqId) return;
+    const set = new Set();
+    await Promise.all(result.results.map(async r => {
+      const d = await r.data();
+      try {
+        const u = new URL(d.url, location.href);
+        set.add(u.pathname.replace(/^\//, ''));
+      } catch {}
+    }));
+    if (myReq !== pagefindReqId) return;
+    pagefindUrls = set;
+  } catch (e) {
+    pagefindUrls = null;
+  }
+}
 
 const t = (k) => (window.NoctisI18n ? window.NoctisI18n.t(k) : k);
 
@@ -54,6 +95,7 @@ function renderList() {
     .filter(p => !activeFilter || (p.tags && p.tags.includes(activeFilter)))
     .filter(p => {
       if (!q) return true;
+      if (pagefindUrls) return pagefindUrls.has(p.html);
       const haystack = [p.title, p.description, ...(p.tags || [])].join(' ').toLowerCase();
       return haystack.includes(q);
     })
@@ -117,10 +159,16 @@ fetch('posts.json')
   });
 
 const searchEl = document.getElementById('post-search');
+let searchDebounce = null;
 if (searchEl) {
   searchEl.addEventListener('input', () => {
     searchQuery = searchEl.value;
     renderList();
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(async () => {
+      await runPagefind(searchQuery);
+      renderList();
+    }, 140);
   });
 }
 

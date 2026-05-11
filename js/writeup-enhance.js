@@ -120,6 +120,43 @@
       .noctis-series-nav a:hover { text-decoration: underline; }
       .noctis-series-nav a[aria-disabled="true"] { color: #aaa89f; pointer-events: none; }
 
+      /* Share row */
+      .noctis-share {
+        margin: 2.4rem 0 1rem;
+        display: flex; gap: 8px; flex-wrap: wrap;
+        align-items: center;
+        font-family: 'Barlow','Inter',system-ui,sans-serif;
+      }
+      .noctis-share-label {
+        font-family: 'Barlow Condensed','Barlow',sans-serif;
+        font-weight: 700; font-size: 0.72rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: #888880;
+        margin-right: 6px;
+      }
+      .noctis-share-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 12px; border-radius: 4px;
+        background: rgba(26,26,24,0.04);
+        border: 1px solid rgba(26,26,24,0.12);
+        color: #1a1a18; text-decoration: none; cursor: pointer;
+        font-size: 0.78rem; font-weight: 500; letter-spacing: 0.02em;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+      }
+      .noctis-share-btn:hover {
+        background: rgba(198,61,31,0.08);
+        border-color: rgba(198,61,31,0.4);
+        transform: translateY(-1px);
+        text-decoration: none;
+      }
+      .noctis-share-btn svg {
+        width: 13px; height: 13px;
+        stroke: currentColor; fill: none; stroke-width: 1.6;
+        stroke-linecap: round; stroke-linejoin: round;
+      }
+      .noctis-share-btn.copied {
+        background: #3a6a48; border-color: #3a6a48; color: #fff;
+      }
+
       /* Related posts */
       .noctis-related {
         margin: 3rem 0 1.5rem;
@@ -168,7 +205,8 @@
 
       @media (prefers-reduced-motion: reduce) {
         .noctis-progress, .noctis-toc-panel, .noctis-copy-btn,
-        .noctis-related-card { transition: none !important; }
+        .noctis-related-card, .noctis-share-btn { transition: none !important; }
+        .noctis-related-card:hover, .noctis-share-btn:hover { transform: none !important; }
       }
     `;
     const style = document.createElement('style');
@@ -325,7 +363,86 @@
     });
   }
 
-  // 4. Series banner + 5. Related posts (depend on posts.json)
+  // 4. Share row — Twitter/X, LinkedIn, Mastodon, copy link
+  function setupShare(title) {
+    const url = location.href;
+    const enc = encodeURIComponent;
+    const text = (title || document.title || '').trim();
+
+    const sec = document.createElement('div');
+    sec.className = 'noctis-share';
+
+    const label = document.createElement('span');
+    label.className = 'noctis-share-label';
+    label.textContent = 'Share';
+    sec.appendChild(label);
+
+    function mkLink(href, name, iconSvg, opts) {
+      const a = document.createElement('a');
+      a.className = 'noctis-share-btn';
+      a.href = href;
+      if (opts && opts.newTab !== false) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+      a.innerHTML = iconSvg + '<span>' + name + '</span>';
+      return a;
+    }
+
+    const xIcon = '<svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg>';
+    const liIcon = '<svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>';
+    const mastoIcon = '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+    const linkIcon = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+
+    sec.appendChild(mkLink(
+      'https://twitter.com/intent/tweet?text=' + enc(text) + '&url=' + enc(url),
+      'X', xIcon
+    ));
+    sec.appendChild(mkLink(
+      'https://www.linkedin.com/sharing/share-offsite/?url=' + enc(url),
+      'LinkedIn', liIcon
+    ));
+    sec.appendChild(mkLink(
+      'https://toot.kytta.dev/?text=' + enc(text + ' ' + url),
+      'Mastodon', mastoIcon
+    ));
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'noctis-share-btn';
+    copyBtn.innerHTML = linkIcon + '<span>Copy link</span>';
+    copyBtn.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = url; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta);
+        }
+        copyBtn.classList.add('copied');
+        copyBtn.querySelector('span').textContent = 'Copied';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.querySelector('span').textContent = 'Copy link';
+        }, 1600);
+      } catch {
+        copyBtn.querySelector('span').textContent = 'Error';
+        setTimeout(() => { copyBtn.querySelector('span').textContent = 'Copy link'; }, 1600);
+      }
+    });
+    sec.appendChild(copyBtn);
+
+    // Insert before related-posts section if present, otherwise before footer
+    const related = document.querySelector('.noctis-related');
+    if (related && related.parentNode) {
+      related.parentNode.insertBefore(sec, related);
+    } else {
+      const footer = document.querySelector('footer');
+      if (footer && footer.parentNode) footer.parentNode.insertBefore(sec, footer);
+      else document.body.appendChild(sec);
+    }
+  }
+
+  // 5. Series banner + 6. Related posts (depend on posts.json)
   function setupPostsAware(posts) {
     const slug = currentSlug();
     const here = posts.find(p => p.slug === slug);
@@ -447,9 +564,15 @@
     fetch(POSTS_URL, { cache: 'no-cache' })
       .then(r => r.ok ? r.json() : [])
       .then(posts => {
-        if (Array.isArray(posts) && posts.length) setupPostsAware(posts);
+        let title = null;
+        if (Array.isArray(posts) && posts.length) {
+          const here = posts.find(p => p.slug === currentSlug());
+          if (here) title = here.title;
+          setupPostsAware(posts);
+        }
+        setupShare(title);
       })
-      .catch(() => {});
+      .catch(() => { setupShare(null); });
   }
 
   if (document.readyState === 'loading') {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.github.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://gc.zgo.at;">
 <title>Projects — NOCTIS</title>
 <meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
 <meta property="og:title" content="Projects — NOCTIS">
@@ -15,7 +15,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og-image.png">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
-<link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="stylesheet" href="fonts/inter.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="style.css">
 <style>
   /* ── SECTION LABEL override ── */
@@ -109,6 +113,7 @@
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/projects.js" defer></script>
+<script src="js/analytics.js" defer></script>
 
 </body>
 </html>

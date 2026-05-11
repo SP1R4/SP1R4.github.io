@@ -78,6 +78,14 @@ echo "─── Regenerating sitemap.xml ───"
 ./generate-sitemap.sh
 
 echo
+echo "─── Rebuilding search index (Pagefind) ───"
+if command -v npx >/dev/null 2>&1; then
+  npx -y pagefind@latest --site . --output-path pagefind --quiet || echo "Pagefind failed; search index not rebuilt"
+else
+  echo "Skipping Pagefind: npx not found"
+fi
+
+echo
 echo "─── Validating ───"
 ./validate.sh
 

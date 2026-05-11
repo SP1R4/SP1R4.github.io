@@ -1,0 +1,4 @@
+Contact: mailto:sp1r4.work@gmail.com
+Expires: 2027-05-11T00:00:00.000Z
+Preferred-Languages: en, el
+Canonical: https://sp1r4.github.io/.well-known/security.txt
