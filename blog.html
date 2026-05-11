@@ -40,6 +40,9 @@
   .post-card:hover .post-desc { color: var(--text-secondary); }
   .post-card:hover .post-meta { color: var(--text-secondary); }
   .post-card:hover .post-tag { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+  /* Visited writeups: dim the title so readers can see what they've already read at a glance. */
+  .post-card:visited .post-title { color: var(--text-muted); }
+  .post-card:visited:hover .post-title { color: var(--bg); }
 
   .post-title {
     font-size: 15px; font-weight: 600; color: var(--text-primary);

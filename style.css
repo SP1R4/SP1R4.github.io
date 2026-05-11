@@ -1,5 +1,13 @@
 /* ── NOCTIS — Shared Styles ── */
 
+html { scroll-behavior: smooth; }
+
+/* Cross-page view transitions on supporting browsers (Chromium 111+, Safari TP).
+   Older browsers ignore this — pages just navigate normally. */
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 0.22s; }
+
 * { margin:0; padding:0; box-sizing:border-box; transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s; }
 
 :root {
@@ -22,7 +30,7 @@
   --toggle-knob: #fff;
   --tag-bg: #e8e6e0;
   --tag-color: #666;
-  --accent: #34d399;
+  --accent: #c63d1f;
   --code-bg: #e8e6e0;
   --code-border: #dddbd6;
   --inline-code-bg: #e4e2dc;
@@ -51,11 +59,11 @@ body.dark {
   --toggle-knob: #f4f3ef;
   --tag-bg: #1e1e1e;
   --tag-color: #888;
-  --accent: #34d399;
+  --accent: #c63d1f;
   --code-bg: #161616;
   --code-border: #2a2a2a;
   --inline-code-bg: #222;
-  --link-color: #34d399;
+  --link-color: #c63d1f;
   --blockquote-border: #333;
   --blockquote-bg: rgba(255,255,255,0.02);
 }
@@ -66,6 +74,9 @@ body {
   display: flex; flex-direction: column; align-items: center;
   padding: 48px 20px 80px;
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   position: relative; overflow-x: hidden;
   transition: background 0.3s;
 }
@@ -81,6 +92,20 @@ body::before {
   pointer-events: none; user-select: none;
   white-space: nowrap; z-index: 0;
   transition: -webkit-text-stroke-color 0.3s;
+}
+
+/* Subtle film-grain overlay across the whole page. */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  z-index: 200; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+body.dark::after {
+  opacity: 0.06;
+  mix-blend-mode: screen;
 }
 
 .container { position: relative; z-index: 1; width: 100%; max-width: 680px; }
