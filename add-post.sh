@@ -80,7 +80,8 @@ echo "─── Regenerating sitemap.xml ───"
 echo
 echo "─── Rebuilding search index (Pagefind) ───"
 if command -v npx >/dev/null 2>&1; then
-  npx -y pagefind@latest --site . --output-path pagefind --quiet || echo "Pagefind failed; search index not rebuilt"
+  # Scope to real site files; excludes the local "htb writeups for upload/" staging dir
+  npx -y pagefind@latest --site . --output-path pagefind --glob "{*.html,writeups/**/*.html}" --quiet || echo "Pagefind failed; search index not rebuilt"
 else
   echo "Skipping Pagefind: npx not found"
 fi
