@@ -17,28 +17,12 @@
   },
   "links": [
     {
-      "type": "pill",
-      "items": [
-        { "label": "Email", "url": "mailto:sp1r4.work@gmail.com", "icon": "email" },
-        { "label": "Telegram", "url": "https://t.me/S_Markakis", "icon": "telegram" },
-        { "label": "Viber", "url": "viber://chat?number=%2B306976677014", "icon": "viber" }
-      ]
-    },
-    {
       "title": "GitHub",
       "title_el": "GitHub",
       "sub": "Open source security & automation tools",
       "sub_el": "Εργαλεία ασφαλείας & αυτοματισμού ανοιχτού κώδικα",
       "url": "https://github.com/SP1R4",
       "icon": "github"
-    },
-    {
-      "title": "X / Twitter",
-      "title_el": "X / Twitter",
-      "sub": "@_SP1R4",
-      "sub_el": "@_SP1R4",
-      "url": "https://x.com/_SP1R4",
-      "icon": "twitter"
     },
     {
       "title": "HackTheBox",
@@ -71,6 +55,15 @@
       "sub_el": "Έρευνα, writeups & σημειώσεις ανάπτυξης",
       "url": "blog.html",
       "icon": "blog"
+    },
+    {
+      "type": "pill",
+      "items": [
+        { "label": "Email", "url": "mailto:sp1r4.work@gmail.com", "icon": "email" },
+        { "label": "Telegram", "url": "https://t.me/S_Markakis", "icon": "telegram" },
+        { "label": "Viber", "url": "viber://chat?number=%2B306976677014", "icon": "viber" },
+        { "label": "X", "url": "https://x.com/_SP1R4", "icon": "twitter" }
+      ]
     }
   ]
 }
