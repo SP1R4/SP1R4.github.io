@@ -1,8 +1,8 @@
 {
   "name": "S. Markakis",
   "brand": "NOCTIS · Cybersecurity & IT",
-  "bio": "Security researcher who also keeps the lights on. Pentesting, server administration, network design, backup systems, and the automation glue in between.",
-  "bio_el": "Ερευνητής ασφαλείας που κρατά και τα φώτα αναμμένα. Pentesting, διαχείριση servers, σχεδιασμός δικτύων, συστήματα backup και ο αυτοματισμός που τα ενώνει όλα.",
+  "bio": "I design resilient networks and break the ones that aren’t. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels, firewalls — hardened with backups, automation, and the occasional pentest.",
+  "bio_el": "Σχεδιάζω ανθεκτικά δίκτυα και σπάω όσα δεν είναι. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels, firewalls — θωρακισμένα με backups, αυτοματισμό και περιστασιακό pentest.",
   "status": {
     "text": "Open for freelance & consulting",
     "text_el": "Διαθέσιμος για freelance & συμβουλευτική",
