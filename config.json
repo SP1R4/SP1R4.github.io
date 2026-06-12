@@ -61,7 +61,6 @@
       "items": [
         { "label": "Email", "url": "mailto:sp1r4.work@gmail.com", "icon": "email" },
         { "label": "Telegram", "url": "https://t.me/S_Markakis", "icon": "telegram" },
-        { "label": "Viber", "url": "viber://chat?number=%2B306976677014", "icon": "viber" },
         { "label": "X", "url": "https://x.com/_SP1R4", "icon": "twitter" }
       ]
     }
