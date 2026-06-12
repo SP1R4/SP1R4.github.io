@@ -15,17 +15,17 @@ html { scroll-behavior: smooth; }
   --card-bg: #fff;
   --card-border: #e0deda;
   --text-primary: #0f0f0f;
-  --text-secondary: #888;
-  --text-muted: #bbb;
-  --label: #bbb;
+  --text-secondary: #5e5a52;
+  --text-muted: #6b675f;
+  --label: #6b675f;
   --icon-bg: #f0efe9;
   --icon-border: #e0deda;
   --icon-stroke: #555;
-  --wm-stroke: #e4e2dc;
+  --wm-stroke: #e7dbd4;
   --avatar-border: #dddbd6;
   --avatar-bg: #e8e6e0;
   --divider: #ddd;
-  --footer-sub: #ccc;
+  --footer-sub: #8a847a;
   --toggle-bg: #e0deda;
   --toggle-knob: #fff;
   --tag-bg: #e8e6e0;
@@ -44,17 +44,17 @@ body.dark {
   --card-bg: #1a1a1a;
   --card-border: #2a2a2a;
   --text-primary: #f4f3ef;
-  --text-secondary: #666;
-  --text-muted: #444;
-  --label: #444;
+  --text-secondary: #959086;
+  --text-muted: #807b72;
+  --label: #807b72;
   --icon-bg: #111;
   --icon-border: #2a2a2a;
   --icon-stroke: #888;
-  --wm-stroke: #1a1a1a;
+  --wm-stroke: #241a16;
   --avatar-border: #2a2a2a;
   --avatar-bg: #1a1a1a;
   --divider: #222;
-  --footer-sub: #333;
+  --footer-sub: #635f58;
   --toggle-bg: #333;
   --toggle-knob: #f4f3ef;
   --tag-bg: #1e1e1e;
@@ -81,14 +81,27 @@ body {
   transition: background 0.3s;
 }
 
+/* ── TYPE SYSTEM ──
+   Body stays Inter (set on <body>). Display headings use Barlow Condensed;
+   micro-labels & nav use JetBrains Mono for a terminal/noir accent. */
+.name, .page-title, .nav-brand, .footer-noctis, .site-footer-brand, .avatar-initials {
+  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+}
+.brand-tag, .page-subtitle, .section-label, .status-text,
+.nav-link, .nav-lang, .post-tag, .proj-tag,
+.footer-sub, .site-footer-sub {
+  font-family: 'JetBrains Mono', 'Inter', monospace;
+}
+
 body::before {
   content: 'NOCTIS';
   position: fixed; bottom: -40px; left: 50%;
   transform: translateX(-50%);
-  font-size: 160px; font-weight: 900;
+  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+  font-size: 168px; font-weight: 800;
   color: transparent;
   -webkit-text-stroke: 1.5px var(--wm-stroke);
-  letter-spacing: -6px;
+  letter-spacing: 1px;
   pointer-events: none; user-select: none;
   white-space: nowrap; z-index: 0;
   transition: -webkit-text-stroke-color 0.3s;
@@ -146,7 +159,7 @@ body.dark::after {
 /* ── LANGUAGE TOGGLE ── */
 .nav-lang {
   margin-left: auto; flex-shrink: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'JetBrains Mono', 'Inter', monospace;
   font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
   padding: 5px 10px; border-radius: 3px;
   background: transparent; color: var(--text-muted);
@@ -311,3 +324,24 @@ a:focus-visible, button:focus-visible, .nav-toggle:focus-visible, .theme-toggle:
   .link-card { transform-style: flat !important; }
   .link-card:hover { transform: none !important; }
 }
+
+/* ── ACCENT — rust signature (#c63d1f) ── */
+/* Active nav item gets a rust underline instead of relying on weight alone. */
+.nav-link.active { position: relative; }
+.nav-link.active::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 1.5px; background: var(--accent); border-radius: 1px;
+}
+/* Terminal-style rust tick leading every section label. */
+.section-label { position: relative; padding-left: 14px; }
+.section-label::before {
+  content: ''; position: absolute; left: 0; top: 0.5em;
+  width: 6px; height: 6px; background: var(--accent);
+  border-radius: 1px;
+}
+/* Tags ignite on hover. */
+.post-tag:hover, .proj-tag:hover {
+  background: var(--accent); color: #fff;
+}
+/* Footer links underline in rust. */
+.site-footer-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
