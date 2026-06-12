@@ -1,8 +1,8 @@
 {
   "name": "S. Markakis",
   "brand": "NOCTIS · Cybersecurity & IT",
-  "bio": "I design resilient networks and break the ones that aren’t. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels, firewalls — hardened with backups, automation, and the occasional pentest.",
-  "bio_el": "Σχεδιάζω ανθεκτικά δίκτυα και σπάω όσα δεν είναι. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels, firewalls — θωρακισμένα με backups, αυτοματισμό και περιστασιακό pentest.",
+  "bio": "I design resilient networks and break the ones that aren’t. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels and firewalls — plus Starlink installs across Crete that actually stay online. Hardened with backups, automation, and the occasional pentest.",
+  "bio_el": "Σχεδιάζω ανθεκτικά δίκτυα και σπάω όσα δεν είναι. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels και firewalls — μαζί με εγκαταστάσεις Starlink σε όλη την Κρήτη που πραγματικά μένουν online. Θωρακισμένα με backups, αυτοματισμό και περιστασιακό pentest.",
   "status": {
     "text": "Open for freelance & consulting",
     "text_el": "Διαθέσιμος για freelance & συμβουλευτική",
@@ -31,6 +31,14 @@
       "sub_el": "Δοκιμές διείσδυσης & ηθικό hacking",
       "url": "https://app.hackthebox.com/users/332355",
       "icon": "box"
+    },
+    {
+      "title": "Starlink Installation",
+      "title_el": "Εγκατάσταση Starlink",
+      "sub": "Satellite internet & managed connectivity in Crete",
+      "sub_el": "Δορυφορικό ίντερνετ & διαχείριση σύνδεσης στην Κρήτη",
+      "url": "starlink.html",
+      "icon": "satellite"
     },
     {
       "title": "Services",

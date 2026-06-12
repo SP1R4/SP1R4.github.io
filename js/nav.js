@@ -5,6 +5,7 @@
 (function () {
   const NAV_LINKS = [
     { href: 'services.html', i18n: 'nav.services' },
+    { href: 'starlink.html', i18n: 'nav.starlink' },
     { href: 'projects.html', i18n: 'nav.projects' },
     { href: 'blog.html', i18n: 'nav.blog' },
   ];

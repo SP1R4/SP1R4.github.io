@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<title>Starlink Installation in Crete — NOCTIS</title>
+<meta name="description" content="Professional Starlink installation across Crete — Heraklion, Chania, Rethymno, Lasithi. Site survey, mounting, and full network integration with MikroTik multi-WAN failover, security, and remote management.">
+<meta name="keywords" content="Starlink Crete, Starlink installation Crete, Starlink εγκατάσταση Κρήτη, satellite internet Crete, Starlink Heraklion, Starlink Chania, Starlink Rethymno, multi-WAN failover, MikroTik">
+<link rel="canonical" href="https://sp1r4.github.io/starlink.html">
+<meta property="og:title" content="Starlink Installation in Crete — NOCTIS">
+<meta property="og:description" content="End-to-end Starlink deployment and managed connectivity across Crete — survey, install, and MikroTik network integration with failover and remote monitoring.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sp1r4.github.io/starlink.html">
+<meta property="og:image" content="https://sp1r4.github.io/og/starlink.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Starlink Installation in Crete — NOCTIS">
+<meta name="twitter:description" content="Professional Starlink installation & managed connectivity across Crete.">
+<meta name="twitter:image" content="https://sp1r4.github.io/og/starlink.svg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Starlink Installation & Managed Connectivity",
+  "name": "Starlink Installation in Crete",
+  "description": "End-to-end Starlink deployment and managed connectivity across Crete — site survey, dish mounting, weatherproofed cabling, and full network integration with MikroTik multi-WAN failover, VLANs, VPN, and remote monitoring.",
+  "url": "https://sp1r4.github.io/starlink.html",
+  "provider": {
+    "@type": "ProfessionalService",
+    "name": "NOCTIS — S. Markakis",
+    "url": "https://sp1r4.github.io/",
+    "image": "https://sp1r4.github.io/avatar.jpeg",
+    "email": "sp1r4.work@gmail.com",
+    "address": { "@type": "PostalAddress", "addressRegion": "Crete", "addressCountry": "GR" },
+    "areaServed": { "@type": "AdministrativeArea", "name": "Crete, Greece" }
+  },
+  "areaServed": [
+    { "@type": "AdministrativeArea", "name": "Crete" },
+    { "@type": "City", "name": "Heraklion" },
+    { "@type": "City", "name": "Chania" },
+    { "@type": "City", "name": "Rethymno" },
+    { "@type": "City", "name": "Lasithi" }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Starlink packages",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Installation" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Install + Managed" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Business Failover" } }
+    ]
+  }
+}
+</script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="fonts/inter.css">
+<link rel="stylesheet" href="fonts/display.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  .intro {
+    font-size: 13px; font-weight: 300; color: var(--text-secondary);
+    line-height: 1.8; margin-bottom: 10px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
+  }
+  .areas {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.04em; color: var(--accent);
+    margin-bottom: 38px;
+    opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
+  }
+
+  /* ── WHY ── */
+  .why { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
+  .why-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 44px; }
+  .why-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; color: var(--text-primary);
+  }
+  .why-list svg {
+    width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px;
+    stroke: var(--accent); fill: none; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ── USE CASES ── */
+  .uc-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 44px;
+  }
+  .uc-card {
+    padding: 18px; background: var(--card-bg);
+    border: 0.5px solid var(--card-border); border-radius: 4px;
+    opacity: 0; animation: fadeUp 0.4s ease calc(var(--i,0) * 0.06s + 0.2s) forwards;
+    transition: transform 0.22s, box-shadow 0.22s;
+  }
+  .uc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .uc-icon { width: 32px; height: 32px; border-radius: 3px; background: var(--icon-bg); border: 0.5px solid var(--icon-border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .uc-icon svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .uc-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+  .uc-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.65; }
+
+  /* ── PROCESS ── */
+  .process { display: flex; flex-direction: column; gap: 2px; margin-bottom: 44px; }
+  .step { display: flex; gap: 16px; padding: 14px 0; border-bottom: 0.5px solid var(--divider); }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+    font-size: 22px; line-height: 1; color: var(--accent);
+    width: 28px; flex-shrink: 0;
+  }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .step-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── PACKAGES ── */
+  .packages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .pkg {
+    display: flex; flex-direction: column; padding: 20px 18px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: 4px;
+    position: relative;
+    opacity: 0; animation: fadeUp 0.4s ease calc(var(--i,0) * 0.07s + 0.25s) forwards;
+  }
+  .pkg.popular { border-color: var(--accent); box-shadow: 0 0 0 0.5px var(--accent); }
+  .pkg-flag {
+    position: absolute; top: -9px; left: 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #fff; background: var(--accent);
+    padding: 2px 8px; border-radius: 2px;
+  }
+  .pkg-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .pkg-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; min-height: 42px; }
+  .pkg-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .pkg-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--text-primary); line-height: 1.5; }
+  .pkg-features svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .pkg-note { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-bottom: 44px; font-style: italic; }
+
+  /* ── FAQ ── */
+  .faq { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+  .faq-item { padding: 16px 0; border-bottom: 0.5px solid var(--divider); }
+  .faq-q { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+  .faq-a { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.7; }
+
+  @media (max-width: 560px) {
+    .uc-grid { grid-template-columns: 1fr; }
+    .packages { grid-template-columns: 1fr; }
+  }
+
+  /* ── CTA ── */
+  .cta { text-align: center; padding: 40px 20px; border-top: 0.5px solid var(--divider); opacity: 0; animation: fadeUp 0.4s ease 0.4s forwards; }
+  .cta-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+  .cta-desc { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
+  .cta-pill { display: inline-flex; align-items: stretch; background: var(--text-primary); border-radius: 999px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.10); transition: transform 0.22s, box-shadow 0.22s; }
+  .cta-pill:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.20); }
+  .cta-pill-item { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; color: var(--bg); text-decoration: none; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; border-right: 1px solid rgba(255,255,255,0.14); transition: background 0.15s; }
+  .cta-pill-item:last-child { border-right: none; }
+  .cta-pill-item:hover { background: rgba(255,255,255,0.10); }
+  .cta-pill-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .cta-pill-item svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  @media (max-width: 520px) {
+    .cta-pill { flex-direction: column; border-radius: 20px; width: 100%; max-width: 320px; }
+    .cta-pill-item { justify-content: center; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.14); padding: 14px 18px; }
+    .cta-pill-item:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body class="has-nav">
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<nav id="site-nav"></nav>
+
+<main class="container" id="main-content" tabindex="-1">
+  <div class="page-header">
+    <div class="page-title" data-i18n="starlink.title">Starlink Installation in Crete</div>
+    <div class="page-subtitle" data-i18n="starlink.subtitle">Managed Satellite Connectivity</div>
+  </div>
+
+  <p class="intro" data-i18n="starlink.intro">Professional Starlink setup across Crete — for homes, villas, farms, and businesses where fixed broadband is slow, unreliable, or simply unavailable. I don't just mount the dish: I integrate it into a proper network with failover, security, and remote monitoring, so you get connectivity you can actually depend on.</p>
+  <div class="areas" data-i18n="starlink.areas">Serving Heraklion · Chania · Rethymno · Lasithi · all of Crete</div>
+
+  <div class="section-label" data-i18n="starlink.section.why">Why work with me</div>
+  <p class="why" data-i18n="starlink.why">Anyone can point a dish at the sky — the value is in the network behind it. As a MikroTik-certified network engineer (MTCNA) and security professional, I build the connection to stay up when Starlink blips, segment your traffic safely, and fix most issues remotely without a second visit.</p>
+  <ul class="why-list">
+    <li><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg><span data-i18n="starlink.why.i1">MTCNA-certified network engineering</span></li>
+    <li><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg><span data-i18n="starlink.why.i2">Multi-WAN failover so you never go dark</span></li>
+    <li><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg><span data-i18n="starlink.why.i3">Secured & monitored, not just plugged in</span></li>
+    <li><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg><span data-i18n="starlink.why.i4">Remote support — most fixes need no site visit</span></li>
+  </ul>
+
+  <div class="section-label" data-i18n="starlink.section.usecases">Who it's for</div>
+  <div class="uc-grid">
+    <div class="uc-card" style="--i:0">
+      <div class="uc-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg></div>
+      <div class="uc-title" data-i18n="starlink.uc.villas.t">Villas & Agrotourism</div>
+      <div class="uc-desc" data-i18n="starlink.uc.villas.d">Guest-grade Wi-Fi at remote villas and rentals — reliable enough for five-star reviews, with a separate guest network.</div>
+    </div>
+    <div class="uc-card" style="--i:1">
+      <div class="uc-icon"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 21v-6h6v6"/></svg></div>
+      <div class="uc-title" data-i18n="starlink.uc.rural.t">Rural Homes & Farms</div>
+      <div class="uc-desc" data-i18n="starlink.uc.rural.d">Real broadband where DSL crawls or doesn't reach — mountain villages, olive groves, off-grid plots.</div>
+    </div>
+    <div class="uc-card" style="--i:2">
+      <div class="uc-icon"><svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M4 20V8l8-5 8 5v12"/><path d="M9 20v-6h6v6"/></svg></div>
+      <div class="uc-title" data-i18n="starlink.uc.work.t">Worksites & Remote Offices</div>
+      <div class="uc-desc" data-i18n="starlink.uc.work.d">Connectivity from day one on construction sites, temporary offices, and seasonal operations.</div>
+    </div>
+    <div class="uc-card" style="--i:3">
+      <div class="uc-icon"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div>
+      <div class="uc-title" data-i18n="starlink.uc.backup.t">Business Backup Link</div>
+      <div class="uc-desc" data-i18n="starlink.uc.backup.d">Automatic failover to Starlink the moment your primary line drops — no downtime, no lost sales.</div>
+    </div>
+  </div>
+
+  <div class="section-label" data-i18n="starlink.section.process">How it works</div>
+  <div class="process">
+    <div class="step"><div class="step-num">1</div><div><div class="step-title" data-i18n="starlink.step.1.t">Site survey</div><div class="step-desc" data-i18n="starlink.step.1.d">Obstruction check and the best mount position for a clear view of the sky.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div><div class="step-title" data-i18n="starlink.step.2.t">Installation</div><div class="step-desc" data-i18n="starlink.step.2.d">Secure mounting, weatherproofed cabling, and tidy routing indoors.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div><div class="step-title" data-i18n="starlink.step.3.t">Network integration</div><div class="step-desc" data-i18n="starlink.step.3.d">Router setup, failover, VLANs, VPN and Wi-Fi tuned to your space.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div><div class="step-title" data-i18n="starlink.step.4.t">Ongoing management</div><div class="step-desc" data-i18n="starlink.step.4.d">Remote monitoring, updates, and support so it keeps running.</div></div></div>
+  </div>
+
+  <div class="section-label" data-i18n="starlink.section.packages">Packages</div>
+  <div class="packages">
+    <div class="pkg" style="--i:0">
+      <div class="pkg-name" data-i18n="starlink.pkg.install.t">Installation</div>
+      <div class="pkg-desc" data-i18n="starlink.pkg.install.d">One-off professional install, done right.</div>
+      <ul class="pkg-features">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.install.f1">Site survey & obstruction check</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.install.f2">Mounting & weatherproofed cabling</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.install.f3">Router setup & Wi-Fi configuration</span></li>
+      </ul>
+    </div>
+    <div class="pkg popular" style="--i:1">
+      <span class="pkg-flag" data-i18n="starlink.pkg.popular">Popular</span>
+      <div class="pkg-name" data-i18n="starlink.pkg.managed.t">Install + Managed</div>
+      <div class="pkg-desc" data-i18n="starlink.pkg.managed.d">Everything in Install, plus we keep it healthy.</div>
+      <ul class="pkg-features">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.managed.f1">Multi-WAN failover & VLAN segmentation</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.managed.f2">Remote monitoring & firmware updates</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.managed.f3">Priority remote support</span></li>
+      </ul>
+    </div>
+    <div class="pkg" style="--i:2">
+      <div class="pkg-name" data-i18n="starlink.pkg.business.t">Business Failover</div>
+      <div class="pkg-desc" data-i18n="starlink.pkg.business.d">Starlink as a resilient backup to your main line.</div>
+      <ul class="pkg-features">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.business.f1">Automatic failover (Starlink + fixed/4G)</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.business.f2">Hardened firewall & VPN</span></li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="starlink.pkg.business.f3">SLA-based monitoring & alerting</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pkg-note" data-i18n="starlink.pkg.note">Hardware (Starlink kit) billed separately. Final quote after the site survey.</div>
+
+  <div class="section-label" data-i18n="starlink.section.faq">Questions</div>
+  <div class="faq">
+    <div class="faq-item"><div class="faq-q" data-i18n="starlink.faq.q1">Do you cover my area?</div><div class="faq-a" data-i18n="starlink.faq.a1">I serve all of Crete — Heraklion, Chania, Rethymno and Lasithi, including remote and mountain locations. If you can see the sky, Starlink usually works.</div></div>
+    <div class="faq-item"><div class="faq-q" data-i18n="starlink.faq.q2">How fast and reliable is it?</div><div class="faq-a" data-i18n="starlink.faq.a2">Typically 100–250 Mbps down with low latency. With multi-WAN failover I add a second line so a brief Starlink dropout doesn't take you offline.</div></div>
+    <div class="faq-item"><div class="faq-q" data-i18n="starlink.faq.q3">Do I need to buy the Starlink kit first?</div><div class="faq-a" data-i18n="starlink.faq.a3">You can buy it yourself, or I can advise on the right kit (Standard, Mini, or High Performance) for your site before you order.</div></div>
+    <div class="faq-item"><div class="faq-q" data-i18n="starlink.faq.q4">Can you integrate it with my existing network?</div><div class="faq-a" data-i18n="starlink.faq.a4">Yes — that's the core of what I do. MikroTik, OPNsense or pfSense, VLANs, VPN, guest networks and failover are all standard.</div></div>
+  </div>
+
+  <div class="cta">
+    <div class="cta-title" data-i18n="starlink.cta.title">Request a free site survey</div>
+    <div class="cta-desc" data-i18n="starlink.cta.desc">Tell me your location and what you need the connection for. I'll assess feasibility and send a tailored quote.</div>
+    <div class="cta-pill" role="group" aria-label="Contact methods">
+      <a href="mailto:sp1r4.work@gmail.com?subject=Starlink%20site%20survey" class="cta-pill-item">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+        <span>Email</span>
+      </a>
+      <a href="https://t.me/S_Markakis" target="_blank" rel="noopener" class="cta-pill-item">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2z"/></svg>
+        <span>Telegram</span>
+      </a>
+      <a href="https://x.com/_SP1R4" target="_blank" rel="noopener" class="cta-pill-item">
+        <svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span>X</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="site-footer-brand">NOCTIS</div>
+    <div class="site-footer-sub" data-i18n="starlink.footer.sub">Starlink Installation & Managed Connectivity · Crete</div>
+    <div class="site-footer-links"><a href="services.html" data-i18n="nav.services">Services</a> · <a href="privacy.html">Privacy &amp; Legal</a></div>
+  </footer>
+
+</main>
+
+<script src="js/i18n.js" defer></script>
+<script src="js/theme.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/search.js" defer></script>
+<script src="js/analytics.js" defer></script>
+</body>
+</html>

@@ -18,8 +18,10 @@ with open('posts.json') as f:
 static = [
     ('/', '1.0'),
     ('/services.html', '0.8'),
+    ('/starlink.html', '0.9'),
     ('/projects.html', '0.8'),
     ('/blog.html', '0.8'),
+    ('/privacy.html', '0.3'),
 ]
 
 print('<?xml version="1.0" encoding="UTF-8"?>')
