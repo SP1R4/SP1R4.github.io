@@ -147,7 +147,7 @@
       'starlink.form.submit': 'Request site survey',
       'starlink.form.or': 'or reach me directly',
       'starlink.form.sending': 'Sending…',
-      'starlink.form.success': "Thanks — I'll get back to you shortly.",
+      'starlink.form.success': "Got it ✓ — I'll reply to your email within 24 hours.",
       'starlink.form.error': 'Something went wrong — please email me directly.',
       'starlink.footer.sub': 'Starlink Installation & Managed Connectivity · Crete',
 
@@ -320,7 +320,7 @@
       'starlink.form.submit': 'Ζήτησε αυτοψία',
       'starlink.form.or': 'ή επικοινώνησε απευθείας',
       'starlink.form.sending': 'Αποστολή…',
-      'starlink.form.success': 'Ευχαριστώ — θα επικοινωνήσω σύντομα.',
+      'starlink.form.success': 'Έλαβα το αίτημά σου ✓ — θα απαντήσω εντός 24 ωρών στο email σου.',
       'starlink.form.error': 'Κάτι πήγε στραβά — στείλε μου email απευθείας.',
       'starlink.footer.sub': 'Εγκατάσταση Starlink & Διαχείριση Σύνδεσης · Κρήτη',
 
