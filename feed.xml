@@ -7,6 +7,15 @@
     <language>en</language>
     <atom:link href="https://sp1r4.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>Starlink + MikroTik Failover</title>
+      <link>https://sp1r4.github.io/blog.html#starlink-mikrotik-failover</link>
+      <guid>https://sp1r4.github.io/blog.html#starlink-mikrotik-failover</guid>
+      <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+      <description>Multi-WAN failover on RouterOS v7 — keep a remote Starlink site online with recursive routing, connection marking, NAT, and netwatch health checks.</description>
+      <category>mikrotik</category>
+      <category>starlink</category>
+    </item>
+    <item>
       <title>MikroTik: Backup and Recovery</title>
       <link>https://sp1r4.github.io/blog.html#mikrotik-backup</link>
       <guid>https://sp1r4.github.io/blog.html#mikrotik-backup</guid>

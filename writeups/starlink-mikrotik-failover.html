@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Starlink + MikroTik Multi-WAN Failover — SP1R4 / NOCTIS</title>
+<meta name="description" content="Multi-WAN failover on MikroTik RouterOS v7 — keep a remote Starlink site online with recursive routing, connection marking, NAT, and netwatch health checks.">
+<meta property="og:title" content="Starlink + MikroTik Failover — NOCTIS">
+<meta property="og:description" content="Keep a remote Starlink site online with RouterOS recursive routing failover to a secondary WAN.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/starlink-mikrotik-failover.html">
+<meta property="og:image" content="https://sp1r4.github.io/og/starlink.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/og/starlink.svg">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ─────────────────────────────────────────── */
+  :root {
+    --bg:        #eae8e3;
+    --card:      #e1ded7;
+    --code-bg:   #dddbd5;
+    --term-bg:   #d4d2cc;
+    --rule:      #c8c5be;
+    --body:      #888880;
+    --mid:       #555550;
+    --head:      #1a1a18;
+    --accent:    #c63d1f;
+    --gotcha:    #c08020;
+    --defender:  #3a5a78;
+    --font-disp: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* ── RESET & BASE ────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; background: var(--bg); color: var(--body); }
+  body { font-family: var(--font-body); font-weight: 400; line-height: 1.7;
+         background: var(--bg); min-height: 100vh; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── NAV ─────────────────────────────────────────────── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 52px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg);
+  }
+  .nav-brand {
+    font-family: var(--font-disp); font-weight: 900; font-size: 1.25rem;
+    letter-spacing: 0.12em; color: var(--head); text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 1.6rem; }
+  .nav-links a {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.8rem;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid);
+  }
+  .nav-links a:hover { color: var(--accent); text-decoration: none; }
+
+  /* ── LAYOUT ──────────────────────────────────────────── */
+  .wrap { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  /* ── HEADER ──────────────────────────────────────────── */
+  .post-meta {
+    font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--body); margin-bottom: 0.8rem;
+  }
+  .post-meta span { color: var(--accent); font-weight: 600; }
+  h1.post-title {
+    font-family: var(--font-disp); font-weight: 900; font-size: 3rem;
+    line-height: 1.05; color: var(--head); text-transform: uppercase;
+    letter-spacing: 0.02em; margin-bottom: 1rem;
+  }
+  .post-subtitle {
+    font-size: 1.05rem; color: var(--mid); font-weight: 400;
+    margin-bottom: 1.4rem; line-height: 1.5;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 2rem; }
+  .tag {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.7rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid var(--head); border-radius: 999px;
+    padding: 0.18em 0.75em; color: var(--mid);
+  }
+  hr.title-rule { border: none; border-top: 1px solid var(--rule); margin-bottom: 2rem; }
+
+  /* ── THESIS CARD ─────────────────────────────────────── */
+  .thesis-card {
+    background: var(--card); border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    padding: 1.6rem 1.8rem; margin-bottom: 2.6rem;
+  }
+  .thesis-card p { color: var(--mid); font-size: 0.98rem; line-height: 1.7; }
+  .thesis-card p + p { margin-top: 0.8rem; }
+  .prereqs-label {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.8rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+    margin-top: 1.2rem; margin-bottom: 0.5rem;
+  }
+  .prereqs-list { list-style: none; padding: 0; }
+  .prereqs-list li {
+    font-size: 0.88rem; color: var(--mid); padding: 0.15rem 0;
+    padding-left: 1rem; position: relative;
+  }
+  .prereqs-list li::before {
+    content: "›"; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+  }
+
+  /* ── SECTION HEADINGS ────────────────────────────────── */
+  .section-num {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.82rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.2rem; margin-top: 2.8rem;
+  }
+  h2.section-title {
+    font-family: var(--font-disp); font-weight: 800; font-size: 1.9rem;
+    color: var(--head); text-transform: uppercase; letter-spacing: 0.03em;
+    line-height: 1.1; margin-bottom: 0.5rem;
+  }
+  .section-thesis {
+    font-style: italic; color: var(--mid); font-size: 0.95rem;
+    margin-bottom: 1.4rem; line-height: 1.6;
+    border-bottom: 1px solid var(--rule); padding-bottom: 0.8rem;
+  }
+  h3.sub {
+    font-family: var(--font-disp); font-weight: 700; font-size: 1.15rem;
+    color: var(--mid); text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 1.6rem 0 0.5rem;
+  }
+
+  /* ── BODY COPY ───────────────────────────────────────── */
+  p { margin-bottom: 1rem; color: var(--body); font-size: 0.96rem; }
+  strong { color: var(--mid); font-weight: 600; }
+  em.accent { color: var(--accent); font-style: normal; font-weight: 600; }
+
+  /* ── TERMINAL BLOCKS ─────────────────────────────────── */
+  .term-wrap {
+    background: var(--term-bg); border-radius: 5px;
+    border: 1px solid var(--rule); margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+  .term-label {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.7rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--body); background: var(--rule);
+    padding: 0.3rem 0.9rem; display: block;
+    border-bottom: 1px solid var(--rule);
+  }
+  pre.term {
+    font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.75;
+    padding: 1rem 1.2rem; white-space: pre; color: var(--mid);
+    background: none; border: none; margin: 0;
+  }
+  span.pc { color: var(--accent); font-weight: 500; }
+  span.out { color: var(--mid); }
+  span.cmt { color: var(--body); font-style: italic; }
+
+  /* ── CODE / CONFIG BLOCKS ────────────────────────────── */
+  .code-wrap {
+    background: var(--code-bg); border-radius: 5px;
+    border: 1px solid var(--rule); margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+  .code-label {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.7rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--body); background: var(--rule);
+    padding: 0.3rem 0.9rem; display: block;
+    border-bottom: 1px solid var(--rule);
+  }
+  pre.code {
+    font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.75;
+    padding: 1rem 1.2rem; white-space: pre; color: var(--mid);
+    background: none; border: none; margin: 0;
+  }
+  span.lbl { color: var(--body); font-style: italic; }
+  span.kw  { color: var(--accent); font-weight: 500; }
+  span.cm  { color: var(--body); font-style: italic; }
+  span.st  { color: var(--mid); }
+
+  /* ── INLINE CODE ─────────────────────────────────────── */
+  code {
+    font-family: var(--font-mono); font-size: 0.82em;
+    background: var(--code-bg); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 0.1em 0.4em; color: var(--mid);
+  }
+
+  /* ── CALLOUTS ────────────────────────────────────────── */
+  .callout {
+    border-radius: 5px; padding: 1rem 1.2rem;
+    margin: 1.4rem 0; font-size: 0.9rem;
+  }
+  .callout-label {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    display: block; margin-bottom: 0.4rem;
+  }
+  .callout p { margin: 0; font-size: 0.9rem; }
+  .callout p + p { margin-top: 0.5rem; }
+
+  .gotcha {
+    background: var(--card);
+    border-left: 3px solid var(--gotcha);
+  }
+  .gotcha .callout-label { color: var(--gotcha); }
+
+  .didnt-work {
+    background: var(--code-bg);
+    border-left: 3px solid var(--rule);
+  }
+  .didnt-work .callout-label { color: var(--body); }
+
+  .defender {
+    background: var(--card);
+    border-left: 3px solid var(--defender);
+  }
+  .defender .callout-label { color: var(--defender); }
+
+  /* ── SVG DIAGRAM WRAPPER ─────────────────────────────── */
+  .diagram-wrap {
+    margin: 1.6rem 0; border-radius: 6px;
+    border: 1px solid var(--rule); overflow: hidden;
+    background: var(--card);
+  }
+  .diagram-wrap svg { display: block; width: 100%; height: auto; }
+
+  /* ── TAKEAWAYS ───────────────────────────────────────── */
+  .takeaways {
+    background: var(--card); border-radius: 6px;
+    padding: 1.6rem 1.8rem; margin: 2.4rem 0;
+  }
+  .takeaways-title {
+    font-family: var(--font-disp); font-weight: 800; font-size: 1.1rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--head); margin-bottom: 1rem;
+  }
+  .takeaways ol { padding-left: 1.4rem; }
+  .takeaways li {
+    font-size: 0.92rem; color: var(--mid); margin-bottom: 0.55rem;
+    line-height: 1.55;
+  }
+  .takeaways li strong { color: var(--mid); }
+
+  /* ── CTA CARD ────────────────────────────────────────── */
+  .cta-card {
+    background: var(--card); border-radius: 6px;
+    border-top: 3px solid var(--accent);
+    padding: 1.8rem 2rem; margin-top: 2.8rem; text-align: center;
+  }
+  .cta-card h3 {
+    font-family: var(--font-disp); font-weight: 800; font-size: 1.5rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--head); margin-bottom: 0.6rem;
+  }
+  .cta-card p {
+    font-size: 0.93rem; color: var(--mid); max-width: 520px;
+    margin: 0 auto 1.2rem;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: var(--accent); color: #fff;
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.85rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.65em 1.8em; border-radius: 4px;
+    transition: opacity 0.15s;
+  }
+  .cta-btn:hover { opacity: 0.88; text-decoration: none; }
+
+  /* ── IMAGES ──────────────────────────────────────────── */
+  .hero-img {
+    width: 100%; border-radius: 6px; margin-bottom: 2rem;
+    border: 1px solid var(--rule);
+    display: block; object-fit: cover; max-height: 340px;
+    filter: saturate(0.88) contrast(1.04);
+  }
+  .inline-img-wrap {
+    margin: 1.4rem 0; border-radius: 5px;
+    border: 1px solid var(--rule); overflow: hidden;
+    background: var(--card);
+  }
+  .inline-img-label {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.7rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--body); background: var(--rule);
+    padding: 0.3rem 0.9rem; display: block;
+    border-bottom: 1px solid var(--rule);
+  }
+  .inline-img-wrap img {
+    width: 100%; display: block; object-fit: cover;
+    filter: saturate(0.88) contrast(1.02);
+  }
+  .inline-img-caption {
+    font-size: 0.78rem; color: var(--body); font-style: italic;
+    padding: 0.45rem 0.9rem;
+    border-top: 1px solid var(--rule);
+    background: var(--card);
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--rule); margin-top: 4rem;
+    padding: 1.2rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78rem; color: var(--body); letter-spacing: 0.04em;
+  }
+  footer a { color: var(--body); }
+  footer a:hover { color: var(--accent); }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Wake-on-LAN",
+  "description": "Triggering Wake-on-LAN through MikroTik RouterOS — scripts, scheduling, and remote magic packets.",
+  "datePublished": "2026-05-04",
+  "dateModified": "2026-05-04",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/starlink-mikrotik-failover.html",
+  "image": "https://sp1r4.github.io/og/starlink.svg",
+  "keywords": [
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-wol"
+  },
+  "timeRequired": "PT18M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+
+<!-- ── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <span class="nav-brand">NOCTIS</span>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+
+<!-- ── ARTICLE ─────────────────────────────────────────── -->
+<div class="wrap">
+
+  <!-- Header -->
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; June 2026</p>
+  <h1 class="post-title">Starlink + MikroTik<br>Multi-WAN Failover</h1>
+  <p class="post-subtitle">Keep a remote site online when Starlink blips — recursive routing, connection marking, NAT, and netwatch failover on RouterOS v7.</p>
+  <div class="tags">
+    <span class="tag">RouterOS</span>
+    <span class="tag">Multi-WAN</span>
+    <span class="tag">Failover</span>
+    <span class="tag">Starlink</span>
+    <span class="tag">NAT</span>
+    <span class="tag">Netwatch</span>
+    <span class="tag">MTCNA+</span>
+  </div>
+  <hr class="title-rule">
+
+  <!-- Thesis card -->
+  <div class="thesis-card">
+    <p>Starlink is the best connectivity option for a rural villa, farm, or worksite that fixed broadband never reached — but it is not infallible. Obstructions, satellite hand-offs, congestion, and the occasional firmware reboot all produce short dropouts. For a guest house mid-booking or a business taking card payments, even ten seconds offline is a problem. The fix is a <strong>second WAN</strong> — 4G/LTE, DSL, or even a second Starlink — and a router that switches over the instant the primary path dies, then switches back when it recovers.</p>
+    <p>This is exactly the part that separates a clean MikroTik install from a dish bolted to a wall. We will build distance-based <strong>recursive failover</strong> (which detects a dead <em>internet path</em>, not just a live cable), per-WAN <strong>connection marking and NAT</strong> so traffic leaves the right interface, MSS clamping for the secondary link, and a <strong>netwatch</strong> health check that logs and can alert on every switch.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>RouterOS v7.x on any device (hEX, hAP ax, RB5009, CCR — commands are identical)</li>
+      <li>Starlink in <strong>Bypass Mode</strong> so RouterOS terminates the WAN (DHCP, CGNAT)</li>
+      <li>A second WAN: an LTE modem, DSL/PPPoE line, or a second Starlink</li>
+      <li>MTCNA-level comfort with interfaces, DHCP client, firewall chains, and NAT</li>
+    </ul>
+  </div>
+
+  <!-- ── SECTION 01 ── -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Why Starlink Alone Isn't Enough</h2>
+  <p class="section-thesis"><em>The dish reports "online" while the satellite path is already gone — which is exactly why naïve failover fails.</em></p>
+  <p>Starlink delivers a strong connection, but its availability profile is different from a fixed line. Brief outages happen during satellite hand-offs, when an obstruction clips the field of view, during congestion, and on firmware reboots. The Ethernet link between the dish and your router stays <strong>up</strong> through most of these — the cable is fine, the gateway still answers a ping — yet no traffic reaches the wider internet. Any failover scheme that watches only link state or pings the next hop will sit there happily on a dead connection.</p>
+  <p>Starlink also puts you behind <strong>CGNAT</strong>: you get a <code>100.64.0.0/10</code> address, not a public IP. That means no inbound port-forwarding and no classic VPN endpoint on the Starlink side — a constraint we design around, not against.</p>
+
+  <!-- ── SECTION 02 ── -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Topology &amp; Interfaces</h2>
+  <p class="section-thesis"><em>Two WANs into one router, both via DHCP, with default-route management taken away from the DHCP client so we can control failover ourselves.</em></p>
+  <p>Put Starlink on <code>ether1</code> and the secondary line on <code>ether2</code>. Group them into a <code>WAN</code> interface list so firewall and mangle rules can reference both at once. Crucially, tell each DHCP client <strong>not</strong> to install its own default route — we add recursive routes by hand in the next section.</p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — interfaces, lists, and DHCP clients</span>
+    <pre class="term"><span class="pc">[admin@NOCTIS] ></span> <span class="out">/interface ethernet set [find default-name=ether1] name=ether1-starlink</span>
+<span class="out">/interface ethernet set [find default-name=ether2] name=ether2-lte</span>
+<span class="out">/interface list add name=WAN</span>
+<span class="out">/interface list member add list=WAN interface=ether1-starlink</span>
+<span class="out">/interface list member add list=WAN interface=ether2-lte</span>
+<span class="out">/ip dhcp-client add interface=ether1-starlink add-default-route=no use-peer-dns=no</span>
+<span class="out">/ip dhcp-client add interface=ether2-lte add-default-route=no use-peer-dns=no</span>
+<span class="cmt"># add-default-route=no is the key flag: we manage the default routes</span>
+<span class="cmt"># manually so recursive failover can take over the decision.</span></pre>
+  </div>
+
+  <!-- ── SECTION 03 ── -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Recursive Failover Routes</h2>
+  <p class="section-thesis"><em>Probe a real public IP through each WAN. The default route recurses through that probe — lose the path, lose the route.</em></p>
+  <p>The trick that makes Starlink failover reliable is <strong>recursive routing</strong>. We add a <code>/32</code> route to a public test address (say <code>8.8.8.8</code>) that is reachable <em>only</em> via the Starlink gateway, then add a default route whose gateway is <code>8.8.8.8</code> itself. RouterOS resolves the default route recursively through the probe; if Starlink's path to <code>8.8.8.8</code> dies, the probe route goes inactive, the default route deactivates, and the lower-priority route via the secondary WAN takes over. Because the probe is a real internet host, this catches the "dish up, internet down" case that defeats <code>check-gateway</code> on the local gateway.</p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — recursive default routes (primary + backup)</span>
+    <pre class="term"><span class="pc">[admin@NOCTIS] ></span> <span class="out">/ip route add dst-address=8.8.8.8/32 gateway=100.64.0.1 scope=10 \</span>
+<span class="out">    comment="probe-starlink"</span>
+<span class="out">/ip route add dst-address=1.1.1.1/32 gateway=192.168.8.1 scope=10 \</span>
+<span class="out">    comment="probe-lte"</span>
+<span class="out">/ip route add dst-address=0.0.0.0/0 gateway=8.8.8.8 distance=1 target-scope=10 \</span>
+<span class="out">    comment="primary: Starlink"</span>
+<span class="out">/ip route add dst-address=0.0.0.0/0 gateway=1.1.1.1 distance=2 target-scope=10 \</span>
+<span class="out">    comment="backup: LTE"</span>
+<span class="cmt"># 100.64.0.1 is the usual Starlink (CGNAT) gateway; 192.168.8.1 is a</span>
+<span class="cmt"># typical LTE modem gateway. Confirm yours with: /ip dhcp-client print</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — DHCP gateways aren't static</span>
+    <p>Both WAN gateways arrive over DHCP and can change. Hard-coding them as above works in practice (Starlink's CGNAT gateway is stable), but the robust pattern is to read the gateway from the DHCP lease in a script and update the probe route, or use a small scheduler that re-pins it on lease renewal. At minimum, re-check after any ISP swap.</p>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Starlink CGNAT means no inbound</span>
+    <p>You cannot port-forward into a Starlink site. For remote management (Winbox, SSH, or waking a server), terminate a <strong>WireGuard or Tailscale</strong> tunnel from inside the LAN outbound — it punches through CGNAT and gives you a stable address regardless of which WAN is active. See the companion <a href="mikrotik-wol.html">Wake-on-LAN writeup</a> for the Tailscale-over-CGNAT pattern.</p>
+  </div>
+
+  <!-- ── SECTION 04 ── -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Connection Marking &amp; NAT</h2>
+  <p class="section-thesis"><em>Mark which WAN a connection belongs to, and masquerade out of whichever interface is currently active.</em></p>
+  <p>With two WANs you need source NAT on both, and — for any connection initiated from the outside or pinned to a WAN — a connection mark so replies leave the same interface they entered. For a CGNAT Starlink site most traffic is outbound, so the essential pieces are a masquerade rule per WAN plus an MSS clamp to avoid black-holed large packets on the LTE/PPPoE path.</p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — NAT, connection marking, and MSS clamp</span>
+    <pre class="term"><span class="pc">[admin@NOCTIS] ></span> <span class="out">/ip firewall nat add chain=srcnat out-interface=ether1-starlink action=masquerade</span>
+<span class="out">/ip firewall nat add chain=srcnat out-interface=ether2-lte action=masquerade</span>
+<span class="out">/ip firewall mangle add chain=prerouting in-interface-list=WAN \</span>
+<span class="out">    connection-mark=no-mark action=mark-connection new-connection-mark=from-wan</span>
+<span class="out">/ip firewall mangle add chain=forward protocol=tcp tcp-flags=syn \</span>
+<span class="out">    action=change-mss new-mss=clamp-to-pmtu out-interface-list=WAN</span>
+<span class="cmt"># MSS clamping prevents stalled TCP sessions on links that can't carry</span>
+<span class="cmt"># 1500-byte frames — common on LTE and PPPoE backups.</span></pre>
+  </div>
+
+  <!-- ── SECTION 05 ── -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Health Checks &amp; Alerts</h2>
+  <p class="section-thesis"><em>Recursive routing handles the switch silently — netwatch makes it visible and lets you alert on every transition.</em></p>
+  <p>The failover above is automatic, but you want to <em>know</em> when it happens — a site living on its LTE backup for three days is burning a data cap. <code>/tool netwatch</code> actively probes a host and runs scripts on state change. Point it at the same public IP your primary path uses and log both directions; pair it with a Telegram or email notification for anything you manage remotely.</p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — netwatch transition logging</span>
+    <pre class="term"><span class="pc">[admin@NOCTIS] ></span> <span class="out">/tool netwatch add host=8.8.8.8 type=icmp interval=10s timeout=1s \</span>
+<span class="out">    up-script="/log info \"WAN: Starlink path UP\"" \</span>
+<span class="out">    down-script="/log warning \"WAN: Starlink DOWN — running on LTE backup\""</span>
+<span class="cmt"># Forward logs to a syslog server and alert on the 'DOWN' line so a</span>
+<span class="cmt"># silent multi-day failover never costs you an LTE overage.</span></pre>
+  </div>
+
+  <!-- ── SECTION 06 ── -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Defender's View — Hardening</h2>
+  <p class="section-thesis"><em>Failover restores availability, not security. The backup WAN is a second front door — treat it like one.</em></p>
+  <div class="callout defender">
+    <span class="callout-label">🛡 Defender's View — both WANs are attack surface</span>
+    <p>It is easy to harden the Starlink interface and forget the LTE modem that only carries traffic a few hours a month. Apply input filtering to the whole <code>WAN</code> interface list, not a single interface, so a new or backup WAN inherits the policy automatically.</p>
+  </div>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — input firewall for the WAN list</span>
+    <pre class="term"><span class="pc">[admin@NOCTIS] ></span> <span class="out">/ip firewall filter add chain=input connection-state=established,related action=accept</span>
+<span class="out">/ip firewall filter add chain=input connection-state=invalid action=drop</span>
+<span class="out">/ip firewall filter add chain=input in-interface-list=WAN action=drop \</span>
+<span class="out">    comment="drop everything else sourced from any WAN"</span>
+<span class="cmt"># Reach the router for management over your WireGuard/Tailscale tunnel</span>
+<span class="cmt"># or the LAN — never by exposing Winbox/SSH/API on a WAN interface.</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — CGNAT is not a firewall</span>
+    <p>Being behind Starlink's CGNAT hides you from casual inbound scans, but the moment you fail over to a public-IP LTE/DSL line, that shield is gone. The firewall above must stand on its own — don't rely on CGNAT for protection, because your backup path may not have it.</p>
+  </div>
+
+  <!-- ── TAKEAWAYS ── -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Probe a public IP, not the gateway.</strong> Recursive routing through <code>8.8.8.8</code> detects a dead internet path; <code>check-gateway=ping</code> on the local gateway does not catch Starlink's "dish up, link down" failure.</li>
+      <li><strong>Take the default route away from the DHCP client.</strong> <code>add-default-route=no</code> on both WANs lets distance-based recursive routes own the failover decision.</li>
+      <li><strong>Masquerade per WAN and clamp MSS.</strong> Two srcnat rules plus an MSS clamp on the <code>WAN</code> list keep both paths usable without stalled sessions on LTE/PPPoE.</li>
+      <li><strong>Make failover observable.</strong> Netwatch + remote logging turns a silent switch into an alert, so you don't discover the backup only when the LTE bill arrives.</li>
+      <li><strong>Harden by interface list, and don't trust CGNAT.</strong> One input rule on <code>WAN</code> protects every WAN; the firewall must hold on its own because the public-IP backup has no CGNAT shield.</li>
+    </ol>
+  </div>
+
+  <!-- ── CTA ── -->
+  <div class="cta-card">
+    <h3>Need this set up in Crete?</h3>
+    <p>NOCTIS installs Starlink and wires it into a proper MikroTik network — multi-WAN failover, VLANs, VPN, and remote monitoring — so a remote villa, farm, or business stays online and secure. From site survey to managed connectivity.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/starlink.html">See Starlink installation &amp; managed connectivity →</a>
+  </div>
+
+</div><!-- /.wrap -->
+
+<!-- ── FOOTER ──────────────────────────────────────────── -->
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

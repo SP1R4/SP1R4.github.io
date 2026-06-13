@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self' https://api.web3forms.com; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://api.web3forms.com https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
 <title>Starlink Installation in Crete — NOCTIS</title>
 <meta name="description" content="Professional Starlink installation across Crete — Heraklion, Chania, Rethymno, Lasithi. Site survey, mounting, and full network integration with MikroTik multi-WAN failover, security, and remote management.">
 <meta name="keywords" content="Starlink Crete, Starlink installation Crete, Starlink εγκατάσταση Κρήτη, satellite internet Crete, Starlink Heraklion, Starlink Chania, Starlink Rethymno, multi-WAN failover, MikroTik">
@@ -53,11 +53,15 @@
   }
 }
 </script>
+<link rel="alternate" hreflang="en" href="https://sp1r4.github.io/starlink.html?lang=en">
+<link rel="alternate" hreflang="el" href="https://sp1r4.github.io/starlink.html?lang=el">
+<link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/starlink.html">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="fonts/display.css">
 <link rel="stylesheet" href="style.css">
@@ -73,6 +77,26 @@
     margin-bottom: 38px;
     opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
   }
+
+  /* ── SATELLITE ORBIT (hero signature) ── */
+  .page-header { position: relative; }
+  .sat-orbit {
+    position: absolute; top: 2px; right: 4px; width: 92px; height: 92px;
+    pointer-events: none; opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards;
+  }
+  .sat-orbit::before { content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 1px dashed color-mix(in srgb, var(--accent) 38%, transparent); }
+  .sat-orbit::after { content: ''; position: absolute; inset: 28px; border-radius: 50%;
+    border: 1px dashed color-mix(in srgb, var(--accent) 20%, transparent); }
+  .sat-core { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px;
+    margin: -3.5px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .sat-spin { position: absolute; inset: 0; animation: sat-rotate 16s linear infinite; }
+  .sat { position: absolute; top: -4.5px; left: 50%; width: 9px; height: 9px;
+    margin-left: -4.5px; border-radius: 2px; background: var(--accent);
+    box-shadow: 0 0 10px var(--accent); }
+  @keyframes sat-rotate { to { transform: rotate(360deg); } }
+  @media (max-width: 560px) { .sat-orbit { display: none; } }
 
   /* ── WHY ── */
   .why { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
@@ -164,6 +188,33 @@
     .cta-pill-item { justify-content: center; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.14); padding: 14px 18px; }
     .cta-pill-item:last-child { border-bottom: none; }
   }
+
+  /* ── SURVEY FORM ── */
+  .survey-form { max-width: 460px; margin: 0 auto 26px; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+  .form-row { display: flex; gap: 10px; }
+  .form-row > * { flex: 1; min-width: 0; }
+  .survey-form input, .survey-form textarea {
+    width: 100%; font-family: inherit; font-size: 13px; color: var(--text-primary);
+    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: 4px;
+    padding: 11px 13px; transition: border-color 0.18s, box-shadow 0.18s; resize: vertical;
+  }
+  .survey-form input::placeholder, .survey-form textarea::placeholder { color: var(--text-muted); }
+  .survey-form input:focus, .survey-form textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .form-submit {
+    font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    color: #fff; background: var(--accent); border: none; border-radius: 4px;
+    padding: 13px 20px; cursor: pointer; transition: transform 0.18s, opacity 0.18s; margin-top: 2px;
+  }
+  .form-submit:hover { transform: translateY(-1px); }
+  .form-submit:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .form-status { font-size: 12px; line-height: 1.5; min-height: 18px; padding-top: 2px; }
+  .form-status.sending { color: var(--text-secondary); }
+  .form-status.ok { color: #2f9e44; }
+  .form-status.err { color: var(--accent); }
+  .cta-or { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
 </style>
 </head>
 <body class="has-nav">
@@ -173,6 +224,7 @@
 
 <main class="container" id="main-content" tabindex="-1">
   <div class="page-header">
+    <div class="sat-orbit" aria-hidden="true"><span class="sat-core"></span><div class="sat-spin"><span class="sat"></span></div></div>
     <div class="page-title" data-i18n="starlink.title">Starlink Installation in Crete</div>
     <div class="page-subtitle" data-i18n="starlink.subtitle">Managed Satellite Connectivity</div>
   </div>
@@ -265,6 +317,23 @@
   <div class="cta">
     <div class="cta-title" data-i18n="starlink.cta.title">Request a free site survey</div>
     <div class="cta-desc" data-i18n="starlink.cta.desc">Tell me your location and what you need the connection for. I'll assess feasibility and send a tailored quote.</div>
+
+    <form id="survey-form" class="survey-form">
+      <input type="hidden" name="access_key" value="REPLACE_WITH_WEB3FORMS_ACCESS_KEY">
+      <input type="hidden" name="subject" value="Starlink site survey request — NOCTIS">
+      <input type="hidden" name="from_name" value="NOCTIS Starlink">
+      <input type="text" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="form-row">
+        <input type="text" name="name" required autocomplete="name" data-i18n-attr-placeholder="starlink.form.name" placeholder="Name">
+        <input type="email" name="email" required autocomplete="email" data-i18n-attr-placeholder="starlink.form.email" placeholder="Email">
+      </div>
+      <input type="text" name="location" required data-i18n-attr-placeholder="starlink.form.location" placeholder="Location (area / village)">
+      <textarea name="message" rows="3" data-i18n-attr-placeholder="starlink.form.message" placeholder="What do you need the connection for?"></textarea>
+      <button type="submit" class="form-submit" data-i18n="starlink.form.submit">Request site survey</button>
+      <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+    </form>
+    <div class="cta-or" data-i18n="starlink.form.or">or reach me directly</div>
+
     <div class="cta-pill" role="group" aria-label="Contact methods">
       <a href="mailto:sp1r4.work@gmail.com?subject=Starlink%20site%20survey" class="cta-pill-item">
         <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
@@ -290,9 +359,10 @@
 </main>
 
 <script src="js/i18n.js" defer></script>
-<script src="js/theme.js" defer></script>
+<script src="js/fx.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/search.js" defer></script>
+<script src="js/form.js" defer></script>
 <script src="js/analytics.js" defer></script>
 </body>
 </html>

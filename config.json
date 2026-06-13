@@ -33,14 +33,6 @@
       "icon": "box"
     },
     {
-      "title": "Starlink Installation",
-      "title_el": "Εγκατάσταση Starlink",
-      "sub": "Satellite internet & managed connectivity in Crete",
-      "sub_el": "Δορυφορικό ίντερνετ & διαχείριση σύνδεσης στην Κρήτη",
-      "url": "starlink.html",
-      "icon": "satellite"
-    },
-    {
       "title": "Services",
       "title_el": "Υπηρεσίες",
       "sub": "Pentesting, security audits & IT consulting",

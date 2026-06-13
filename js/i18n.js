@@ -8,7 +8,6 @@
     en: {
       // Nav
       'nav.services': 'Services',
-      'nav.starlink': 'Starlink',
       'nav.projects': 'Projects',
       'nav.blog': 'Blog',
       'nav.toggleMenu': 'Toggle menu',
@@ -71,6 +70,10 @@
       'services.cert.valid': 'Valid for',
       'services.cert.years': '3 years',
       'services.cert.verify': 'Verify certificate',
+      'services.cert.degree.status': 'Graduate',
+      'services.cert.degree.title': 'Informatics & Telecommunications',
+      'services.cert.degree.org': 'University of Thessaly',
+      'services.cert.degree.desc': 'University degree covering computer networks, programming, telecommunications, systems, and security — the academic foundation behind the hands-on work.',
       'services.cred.htb.org': 'Active player — Penetration testing labs',
       'services.cred.oss.title': 'Open Source Contributor',
       'services.cred.oss.org': 'Security tools & automation projects',
@@ -137,6 +140,15 @@
       'starlink.faq.a4': "Yes — that's the core of what I do. MikroTik, OPNsense or pfSense, VLANs, VPN, guest networks and failover are all standard.",
       'starlink.cta.title': 'Request a free site survey',
       'starlink.cta.desc': "Tell me your location and what you need the connection for. I'll assess feasibility and send a tailored quote.",
+      'starlink.form.name': 'Name',
+      'starlink.form.email': 'Email',
+      'starlink.form.location': 'Location (area / village)',
+      'starlink.form.message': 'What do you need the connection for?',
+      'starlink.form.submit': 'Request site survey',
+      'starlink.form.or': 'or reach me directly',
+      'starlink.form.sending': 'Sending…',
+      'starlink.form.success': "Thanks — I'll get back to you shortly.",
+      'starlink.form.error': 'Something went wrong — please email me directly.',
       'starlink.footer.sub': 'Starlink Installation & Managed Connectivity · Crete',
 
       // Projects page
@@ -169,7 +181,6 @@
     el: {
       // Nav
       'nav.services': 'Υπηρεσίες',
-      'nav.starlink': 'Starlink',
       'nav.projects': 'Έργα',
       'nav.blog': 'Ιστολόγιο',
       'nav.toggleMenu': 'Άνοιγμα μενού',
@@ -232,6 +243,10 @@
       'services.cert.valid': 'Ισχύει για',
       'services.cert.years': '3 χρόνια',
       'services.cert.verify': 'Επαλήθευση πιστοποιητικού',
+      'services.cert.degree.status': 'Απόφοιτος',
+      'services.cert.degree.title': 'Πληροφορική & Τηλεπικοινωνίες',
+      'services.cert.degree.org': 'Πανεπιστήμιο Θεσσαλίας',
+      'services.cert.degree.desc': 'Πανεπιστημιακό πτυχίο με αντικείμενο δίκτυα υπολογιστών, προγραμματισμό, τηλεπικοινωνίες, συστήματα και ασφάλεια — το ακαδημαϊκό υπόβαθρο πίσω από την πρακτική δουλειά.',
       'services.cred.htb.org': 'Ενεργός παίκτης — Εργαστήρια pentesting',
       'services.cred.oss.title': 'Συνεισφέρων Open Source',
       'services.cred.oss.org': 'Εργαλεία ασφαλείας & έργα αυτοματισμού',
@@ -298,6 +313,15 @@
       'starlink.faq.a4': 'Ναι — αυτό είναι το κύριο αντικείμενό μου. MikroTik, OPNsense ή pfSense, VLANs, VPN, δίκτυα επισκεπτών και failover είναι όλα στάνταρ.',
       'starlink.cta.title': 'Ζητήστε δωρεάν αυτοψία',
       'starlink.cta.desc': 'Πείτε μου την τοποθεσία σας και για τι χρειάζεστε τη σύνδεση. Θα αξιολογήσω τη δυνατότητα και θα στείλω εξατομικευμένη προσφορά.',
+      'starlink.form.name': 'Όνομα',
+      'starlink.form.email': 'Email',
+      'starlink.form.location': 'Τοποθεσία (περιοχή / χωριό)',
+      'starlink.form.message': 'Για τι χρειάζεσαι τη σύνδεση;',
+      'starlink.form.submit': 'Ζήτησε αυτοψία',
+      'starlink.form.or': 'ή επικοινώνησε απευθείας',
+      'starlink.form.sending': 'Αποστολή…',
+      'starlink.form.success': 'Ευχαριστώ — θα επικοινωνήσω σύντομα.',
+      'starlink.form.error': 'Κάτι πήγε στραβά — στείλε μου email απευθείας.',
       'starlink.footer.sub': 'Εγκατάσταση Starlink & Διαχείριση Σύνδεσης · Κρήτη',
 
       // Projects page
@@ -329,11 +353,21 @@
     },
   };
 
+  // Greek-speaking regions used for IP-based language defaulting.
+  const GREEK_REGIONS = ['GR', 'CY'];
+  function geoLang(cc) {
+    return GREEK_REGIONS.includes(String(cc).toUpperCase()) ? 'el' : 'en';
+  }
+
   function detectLang() {
+    const param = new URLSearchParams(location.search).get('lang');
+    if (param && SUPPORTED.includes(param)) return param;   // ?lang= (shared / hreflang links)
     const saved = localStorage.getItem('noctis_lang');
-    if (saved && SUPPORTED.includes(saved)) return saved;
+    if (saved && SUPPORTED.includes(saved)) return saved;   // explicit choice wins
+    const geo = localStorage.getItem('noctis_geo');
+    if (geo) return geoLang(geo);                            // cached region from a past visit
     const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase().split('-')[0];
-    return SUPPORTED.includes(nav) ? nav : 'en';
+    return SUPPORTED.includes(nav) ? nav : 'en';            // first-paint fallback: browser language
   }
 
   let currentLang = detectLang();
@@ -370,11 +404,36 @@
     setLang(currentLang === 'en' ? 'el' : 'en');
   }
 
+  // Apply a language WITHOUT recording it as a manual choice (used by geo detection).
+  function applyAutoLang(lang) {
+    if (!SUPPORTED.includes(lang) || lang === currentLang) return;
+    currentLang = lang;
+    applyTranslations();
+    document.dispatchEvent(new CustomEvent('langchange', { detail: { lang, auto: true } }));
+  }
+
+  // Region-based default: visitors whose IP resolves to a Greek-speaking country
+  // default to Greek. Runs at most once per visitor (result cached in localStorage),
+  // never overrides an explicit manual choice, and fails silently if the lookup is blocked.
+  function geoDetect() {
+    if (localStorage.getItem('noctis_lang')) return;   // manual choice already made
+    if (localStorage.getItem('noctis_geo')) return;     // region already resolved before
+    fetch('https://get.geojs.io/v1/ip/country.json', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || !d.country) return;
+        localStorage.setItem('noctis_geo', String(d.country).toUpperCase());
+        if (!localStorage.getItem('noctis_lang')) applyAutoLang(geoLang(d.country));
+      })
+      .catch(() => {});
+  }
+
   window.NoctisI18n = { t, setLang, toggleLang, applyTranslations, getLang: () => currentLang, supported: SUPPORTED };
 
+  function init() { applyTranslations(); geoDetect(); }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => applyTranslations());
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    applyTranslations();
+    init();
   }
 })();

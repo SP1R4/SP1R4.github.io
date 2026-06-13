@@ -5,7 +5,6 @@
 (function () {
   const NAV_LINKS = [
     { href: 'services.html', i18n: 'nav.services' },
-    { href: 'starlink.html', i18n: 'nav.starlink' },
     { href: 'projects.html', i18n: 'nav.projects' },
     { href: 'blog.html', i18n: 'nav.blog' },
   ];
@@ -56,6 +55,8 @@
         updateLangBtn();
       }
     });
+    // Keep the label in sync when language changes automatically (e.g. geo detection).
+    document.addEventListener('langchange', updateLangBtn);
 
     const toggle = target.querySelector('.nav-toggle');
     toggle.addEventListener('click', () => window.toggleTheme && window.toggleTheme());

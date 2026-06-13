@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
 <title>Privacy &amp; Legal — NOCTIS</title>
 <meta name="description" content="Privacy policy and legal information for sp1r4.github.io — NOCTIS / S. Markakis.">
 <meta property="og:title" content="Privacy &amp; Legal — NOCTIS">
@@ -14,11 +14,15 @@
 <meta property="og:image" content="https://sp1r4.github.io/og/index.svg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og/index.svg">
+<link rel="alternate" hreflang="en" href="https://sp1r4.github.io/privacy.html?lang=en">
+<link rel="alternate" hreflang="el" href="https://sp1r4.github.io/privacy.html?lang=el">
+<link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/privacy.html">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="fonts/display.css">
 <link rel="stylesheet" href="style.css">
@@ -96,6 +100,13 @@
       your scroll position is stored in your browser's
       <code>localStorage</code> under the key prefix <code>noctis-resume:</code>
       so you can return to where you left off. It never leaves your device.</li>
+    <li><strong>Language detection</strong>: on your first visit your approximate
+      country is looked up once via
+      <a href="https://www.geojs.io/" target="_blank" rel="noopener">geojs.io</a>
+      to choose a default language (Greek or English). The result is cached in your
+      browser's <code>localStorage</code>; your IP is sent only to that service for
+      this single lookup and is not stored by this site. Picking a language manually
+      always overrides it.</li>
     <li><strong>GitHub Pages access logs</strong> are kept by GitHub for the
       duration of their own retention policy; see their
       <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">privacy statement</a>.</li>
@@ -104,10 +115,13 @@
   <h2 style="--i:2">Contact methods</h2>
   <p style="--i:2">
     The site links to <strong>Email</strong>, <strong>Telegram</strong>,
-    <strong>Viber</strong>, and <strong>X (Twitter)</strong>. When you reach
+    and <strong>X (Twitter)</strong>. When you reach
     out via any of these, the conversation is governed by that service's own
     privacy policy. Messages you send are used only to respond to your inquiry
-    and to set up follow-up work if applicable.
+    and to set up follow-up work if applicable. The Starlink page also offers a
+    short contact form; entries are delivered to me by email through
+    <a href="https://web3forms.com" target="_blank" rel="noopener">Web3Forms</a>,
+    which relays the message and does not retain it.
   </p>
 
   <h2 style="--i:3">Your rights (GDPR)</h2>
@@ -152,7 +166,7 @@
 </main>
 
 <script src="js/i18n.js" defer></script>
-<script src="js/theme.js" defer></script>
+<script src="js/fx.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/search.js" defer></script>
 <script src="js/analytics.js" defer></script>

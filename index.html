@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
 <title>S. Markakis — NOCTIS</title>
 <meta name="description" content="Cybersecurity researcher · Penetration testing · Software development · Crete, Greece">
 <meta property="og:title" content="S. Markakis — NOCTIS">
@@ -32,6 +32,10 @@
     "addressRegion": "Crete",
     "addressCountry": "GR"
   },
+  "alumniOf": {
+    "@type": "CollegeOrUniversity",
+    "name": "University of Thessaly — Department of Informatics and Telecommunications"
+  },
   "sameAs": [
     "https://github.com/SP1R4",
     "https://x.com/_SP1R4",
@@ -49,12 +53,43 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "NOCTIS — Cybersecurity & IT Consulting",
+  "image": "https://sp1r4.github.io/avatar.jpeg",
+  "url": "https://sp1r4.github.io/",
+  "email": "sp1r4.work@gmail.com",
+  "priceRange": "€€",
+  "founder": { "@type": "Person", "name": "S. Markakis" },
+  "address": { "@type": "PostalAddress", "addressRegion": "Crete", "addressCountry": "GR" },
+  "areaServed": { "@type": "AdministrativeArea", "name": "Crete, Greece" },
+  "knowsLanguage": ["en", "el"],
+  "sameAs": [
+    "https://github.com/SP1R4",
+    "https://x.com/_SP1R4",
+    "https://app.hackthebox.com/users/332355",
+    "https://t.me/S_Markakis"
+  ],
+  "makesOffer": [
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Starlink Installation & Managed Connectivity" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Penetration Testing" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Security Audits" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "IT Infrastructure & Automation" } }
+  ]
+}
+</script>
+<link rel="alternate" hreflang="en" href="https://sp1r4.github.io/?lang=en">
+<link rel="alternate" hreflang="el" href="https://sp1r4.github.io/?lang=el">
+<link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f0efe9" media="(prefers-color-scheme: light)">
-<link rel="preload" href="config.json" as="fetch" crossorigin="anonymous"><link rel="stylesheet" href="fonts/inter.css">
+<link rel="preload" href="config.json" as="fetch" crossorigin="anonymous"><script src="js/theme.js"></script>
+<link rel="stylesheet" href="fonts/inter.css">
 <link rel="stylesheet" href="fonts/display.css">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -231,7 +266,7 @@
 </main>
 
 <script src="js/i18n.js" defer></script>
-<script src="js/theme.js" defer></script>
+<script src="js/fx.js" defer></script>
 <script src="js/index.js" defer></script>
 <script src="js/search.js" defer></script>
 <script src="js/analytics.js" defer></script>

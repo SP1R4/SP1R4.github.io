@@ -151,5 +151,17 @@
     ],
     "html": "writeups/htb-sandworm.html",
     "reading_time": 6
+  },
+  {
+    "slug": "starlink-mikrotik-failover",
+    "title": "Starlink + MikroTik Failover",
+    "description": "Multi-WAN failover on RouterOS v7 — keep a remote Starlink site online with recursive routing, connection marking, NAT, and netwatch health checks.",
+    "date": "2026-06-12",
+    "tags": [
+      "mikrotik",
+      "starlink"
+    ],
+    "html": "writeups/starlink-mikrotik-failover.html",
+    "reading_time": 12
   }
 ]
