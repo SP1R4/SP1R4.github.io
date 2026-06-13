@@ -150,6 +150,7 @@
       'starlink.form.success': "Got it ✓ — I'll reply to your email within 24 hours.",
       'starlink.form.error': 'Something went wrong — please email me directly.',
       'starlink.footer.sub': 'Starlink Installation & Managed Connectivity · Crete',
+      'starlink.deepdive': 'Technical deep-dive: how I build Starlink multi-WAN failover on MikroTik →',
 
       // Projects page
       'projects.title': 'Projects',
@@ -323,6 +324,7 @@
       'starlink.form.success': 'Έλαβα το αίτημά σου ✓ — θα απαντήσω εντός 24 ωρών στο email σου.',
       'starlink.form.error': 'Κάτι πήγε στραβά — στείλε μου email απευθείας.',
       'starlink.footer.sub': 'Εγκατάσταση Starlink & Διαχείριση Σύνδεσης · Κρήτη',
+      'starlink.deepdive': 'Τεχνική ανάλυση: πώς στήνω το multi-WAN failover του Starlink σε MikroTik →',
 
       // Projects page
       'projects.title': 'Έργα',
