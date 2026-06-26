@@ -35,8 +35,8 @@
     {
       "title": "Services",
       "title_el": "Υπηρεσίες",
-      "sub": "Pentesting, security audits & IT consulting",
-      "sub_el": "Pentesting, έλεγχοι ασφαλείας & συμβουλευτική IT",
+      "sub": "Pentesting, network engineering & IT consulting",
+      "sub_el": "Pentesting, μηχανική δικτύων & συμβουλευτική IT",
       "url": "services.html",
       "icon": "shield"
     },
