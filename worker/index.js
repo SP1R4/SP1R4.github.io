@@ -1,5 +1,5 @@
-// NOCTIS — Telegram notifier for the Starlink site-survey form.
-// Receives the form submission (browser fetch) and forwards a message to a
+// NOCTIS — Telegram notifier for the site lead forms (Starlink survey, pentest
+// enquiry, …). Receives the form submission (browser fetch) and forwards a message to a
 // Telegram chat via the Bot API. The bot token and chat id live ONLY as
 // Worker secrets (BOT_TOKEN, CHAT_ID) — never in the public site code.
 //
@@ -65,17 +65,20 @@ export default {
 
     const name = clip(data.name, 200);
     const email = clip(data.email, 200);
-    const location = clip(data.location, 300);
+    const location = clip(data.location, 300);   // Starlink form
+    const company = clip(data.company, 300);      // pentest form
     const message = clip(data.message, 2000);
+    const heading = clip(data.subject, 200) || clip(data.from_name, 200) || 'NOCTIS — new enquiry';
 
     if (!name && !email) return json({ ok: false, error: 'empty' }, 400, cors);
 
     const text =
-      '🛰️ Νέο αίτημα αυτοψίας Starlink\n\n' +
-      `👤 Όνομα: ${name}\n` +
-      `✉️ Email: ${email}\n` +
-      `📍 Περιοχή: ${location}\n` +
-      (message ? `📝 Ανάγκη: ${message}\n` : '');
+      `🔔 ${heading}\n\n` +
+      `👤 ${name}\n` +
+      `✉️ ${email}\n` +
+      (location ? `📍 ${location}\n` : '') +
+      (company ? `🏢 ${company}\n` : '') +
+      (message ? `📝 ${message}\n` : '');
 
     const tg = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
       method: 'POST',

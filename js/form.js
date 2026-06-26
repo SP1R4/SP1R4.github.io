@@ -1,10 +1,9 @@
-// Starlink site-survey form -> Web3Forms (AJAX, no page reload, no inline script).
-// On success it also pings a Cloudflare Worker that forwards a Telegram message.
+// Lead forms (Starlink survey, pentest enquiry) -> Web3Forms (AJAX, no page
+// reload, no inline script). On success it also pings a Cloudflare Worker that
+// forwards a Telegram message. Each form declares its i18n key prefix via
+// data-i18n-prefix (e.g. "starlink", "pentest"); status text resolves to
+// <prefix>.form.{sending,success,error}.
 (function () {
-  const form = document.getElementById('survey-form');
-  if (!form) return;
-  const status = document.getElementById('form-status');
-  const btn = form.querySelector('button[type="submit"]');
   const t = (k, fb) => (window.NoctisI18n ? window.NoctisI18n.t(k) : fb);
 
   // Replace with your deployed Worker URL (see worker/README.md). Leave empty to disable.
@@ -16,28 +15,36 @@
     fetch(TELEGRAM_ENDPOINT, { method: 'POST', body: formData }).catch(() => {});
   }
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (form.botcheck && form.botcheck.value) return;          // honeypot tripped
-    if (status) { status.className = 'form-status sending'; status.textContent = t('starlink.form.sending', 'Sending…'); }
-    if (btn) btn.disabled = true;
+  function wire(form) {
+    const prefix = form.getAttribute('data-i18n-prefix') || 'starlink';
+    const status = form.querySelector('.form-status');
+    const btn = form.querySelector('button[type="submit"]');
 
-    const data = new FormData(form);
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-      body: data,
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        if (!res.success) throw new Error(res.message || 'error');
-        notifyTelegram(data);
-        form.reset();
-        if (status) { status.className = 'form-status ok'; status.textContent = t('starlink.form.success', "Thanks — I'll get back to you shortly."); }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (form.botcheck && form.botcheck.value) return;          // honeypot tripped
+      if (status) { status.className = 'form-status sending'; status.textContent = t(prefix + '.form.sending', 'Sending…'); }
+      if (btn) btn.disabled = true;
+
+      const data = new FormData(form);
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: data,
       })
-      .catch(() => {
-        if (status) { status.className = 'form-status err'; status.textContent = t('starlink.form.error', 'Something went wrong — please email me directly.'); }
-      })
-      .finally(() => { if (btn) btn.disabled = false; });
-  });
+        .then((r) => r.json())
+        .then((res) => {
+          if (!res.success) throw new Error(res.message || 'error');
+          notifyTelegram(data);
+          form.reset();
+          if (status) { status.className = 'form-status ok'; status.textContent = t(prefix + '.form.success', "Thanks — I'll get back to you shortly."); }
+        })
+        .catch(() => {
+          if (status) { status.className = 'form-status err'; status.textContent = t(prefix + '.form.error', 'Something went wrong — please email me directly.'); }
+        })
+        .finally(() => { if (btn) btn.disabled = false; });
+    });
+  }
+
+  document.querySelectorAll('form.survey-form').forEach(wire);
 })();
