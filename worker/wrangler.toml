@@ -9,3 +9,12 @@ ALLOWED_ORIGIN = "https://sp1r4.github.io"
 # Secrets are NOT stored here. Set them once after `wrangler login`:
 #   wrangler secret put BOT_TOKEN     # paste the @BotFather token
 #   wrangler secret put CHAT_ID       # your Telegram numeric chat id
+
+# Abuse cap: max 5 requests per 60s per client IP. period must be 10 or 60.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60

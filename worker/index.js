@@ -36,6 +36,13 @@ export default {
       return json({ ok: false, error: 'forbidden' }, 403, cors);
     }
 
+    // Rate limit per client IP (binding configured in wrangler.toml).
+    if (env.RATE_LIMITER) {
+      const ip = request.headers.get('CF-Connecting-IP') || 'anon';
+      const { success } = await env.RATE_LIMITER.limit({ key: ip });
+      if (!success) return json({ ok: false, error: 'rate limited' }, 429, cors);
+    }
+
     // Cap body size — a contact form is tiny; anything large is abuse.
     if (Number(request.headers.get('content-length') || 0) > 16384) {
       return json({ ok: false, error: 'too large' }, 413, cors);
