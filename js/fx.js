@@ -1,29 +1,53 @@
 // NOCTIS visual FX — all opt-in to prefers-reduced-motion.
-//   1. Constellation: a drifting network mesh on a fixed background canvas.
+//   1. Background: a per-page kinetic layer (mesh / rain / flow / aurora).
 //   2. Scroll-reveal: below-the-fold blocks fade up as they enter the viewport.
 //   3. Spotlight: a faint accent glow tracks the cursor across cards.
+//
+// Per-page background is chosen by filename (override with <body data-bg="...">):
+//   pentest → rain · consulting → flow · everything else → mesh
+//   (aurora is available as an opt-in via <body data-bg="aurora">)
 (function () {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── 1. Constellation ─────────────────────────────────────────────── */
+  function accentColor() {
+    return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#c63d1f';
+  }
+  function themeRGB() {
+    return document.body.classList.contains('dark') ? '244,243,239' : '15,15,15';
+  }
+  function mkCanvas(id) {
+    const c = document.createElement('canvas');
+    c.id = id; c.className = 'fx-bg';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.prepend(c);
+    return c;
+  }
+  function dpr() { return Math.min(devicePixelRatio || 1, 2); }
+  // Re-read theme colours when the light/dark class flips.
+  function onThemeChange(fn) {
+    new MutationObserver(fn).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
+  // Pause/resume a rAF loop when the tab visibility changes.
+  function onVisibility(stop, go) {
+    document.addEventListener('visibilitychange', () => {
+      stop();
+      if (!document.hidden && !reduce) go();
+    });
+  }
+
+  /* ── 1a. Constellation (mesh) — Starlink ──────────────────────────── */
   function constellation() {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'fx-constellation';
-    canvas.setAttribute('aria-hidden', 'true');
-    document.body.prepend(canvas);
+    const canvas = mkCanvas('fx-constellation');
     const ctx = canvas.getContext('2d');
-    let w = 0, h = 0, nodes = [], lineRGB = '15,15,15', accent = '#c63d1f', raf = 0;
+    let w = 0, h = 0, nodes = [], line = '15,15,15', accent = '#c63d1f', raf = 0;
     const MAXD = 132;
 
-    function readColors() {
-      lineRGB = document.body.classList.contains('dark') ? '244,243,239' : '15,15,15';
-      accent = (getComputedStyle(document.body).getPropertyValue('--accent').trim()) || '#c63d1f';
-    }
+    function readColors() { line = themeRGB(); accent = accentColor(); }
     function resize() {
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const d = dpr();
       w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.width = w * d; canvas.height = h * d;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
       const count = Math.max(14, Math.min(72, Math.floor((w * h) / 22000)));
       nodes = Array.from({ length: count }, (_, i) => ({
         x: Math.random() * w, y: Math.random() * h,
@@ -38,7 +62,7 @@
           const a = nodes[i], b = nodes[j];
           const dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy);
           if (d < MAXD) {
-            ctx.strokeStyle = `rgba(${lineRGB},${(1 - d / MAXD) * 0.16})`;
+            ctx.strokeStyle = `rgba(${line},${(1 - d / MAXD) * 0.16})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
           }
@@ -46,7 +70,7 @@
       }
       for (const n of nodes) {
         ctx.beginPath(); ctx.arc(n.x, n.y, n.accent ? 1.7 : 1.1, 0, 7);
-        ctx.fillStyle = n.accent ? accent : `rgba(${lineRGB},0.4)`;
+        ctx.fillStyle = n.accent ? accent : `rgba(${line},0.4)`;
         ctx.fill();
       }
     }
@@ -61,14 +85,152 @@
     }
 
     readColors(); resize();
-    if (reduce) { draw(); }
-    else { step(); }
+    if (reduce) draw(); else step();
     addEventListener('resize', () => { readColors(); resize(); if (reduce) draw(); }, { passive: true });
-    new MutationObserver(readColors).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    document.addEventListener('visibilitychange', () => {
-      cancelAnimationFrame(raf);
-      if (!document.hidden && !reduce) step();
-    });
+    onThemeChange(readColors);
+    onVisibility(() => cancelAnimationFrame(raf), step);
+  }
+
+  /* ── 1b. Digital rain — Pentest ───────────────────────────────────── */
+  function rain() {
+    const canvas = mkCanvas('fx-bg-rain');
+    const ctx = canvas.getContext('2d');
+    const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#@$%&*<>/\\|=+-'.split('');
+    const STEP = 16, TAIL = 10, TICK = 75;     // px cell, trail length, ms/row
+    let w = 0, h = 0, cols = 0, heads = [], buf = [], line = '15,15,15', accent = '#c63d1f', raf = 0, last = 0;
+
+    const glyph = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
+    function readColors() { line = themeRGB(); accent = accentColor(); }
+    function resize() {
+      const d = dpr();
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * d; canvas.height = h * d;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+      ctx.font = `600 ${STEP - 2}px 'JetBrains Mono', monospace`;
+      ctx.textBaseline = 'top';
+      cols = Math.ceil(w / STEP) + 1;
+      heads = Array.from({ length: cols }, () => -((Math.random() * 40) | 0) * STEP);
+      buf = Array.from({ length: cols }, () => Array.from({ length: TAIL }, glyph));
+    }
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let c = 0; c < cols; c++) {
+        const x = c * STEP, head = heads[c], col = buf[c];
+        for (let t = 0; t < TAIL; t++) {
+          const y = head - t * STEP;
+          if (y < -STEP || y > h) continue;
+          if (t === 0) {
+            ctx.fillStyle = (c % 7 === 0)
+              ? accent
+              : `rgba(${line},0.92)`;
+          } else {
+            ctx.fillStyle = `rgba(${line},${(1 - t / TAIL) * 0.45})`;
+          }
+          ctx.fillText(col[t], x, y);
+        }
+      }
+    }
+    function advance() {
+      for (let c = 0; c < cols; c++) {
+        heads[c] += STEP;
+        buf[c].pop(); buf[c].unshift(glyph());
+        if (heads[c] - TAIL * STEP > h && Math.random() > 0.975) {
+          heads[c] = -((Math.random() * 16) | 0) * STEP;
+        }
+      }
+    }
+    function step(ts) {
+      raf = requestAnimationFrame(step);
+      if (ts - last < TICK) return;
+      last = ts;
+      advance(); draw();
+    }
+
+    readColors(); resize();
+    if (reduce) draw(); else raf = requestAnimationFrame(step);
+    addEventListener('resize', () => { readColors(); resize(); if (reduce) draw(); }, { passive: true });
+    onThemeChange(() => { readColors(); if (reduce) draw(); });
+    onVisibility(() => cancelAnimationFrame(raf), () => { last = 0; raf = requestAnimationFrame(step); });
+  }
+
+  /* ── 1c. Packet-flow field — Consulting ───────────────────────────── */
+  function flow() {
+    const canvas = mkCanvas('fx-bg-flow');
+    const ctx = canvas.getContext('2d');
+    const HIST = 7, SPEED = 0.7;
+    let w = 0, h = 0, parts = [], line = '15,15,15', accent = '#c63d1f', raf = 0, t = 0;
+
+    function readColors() { line = themeRGB(); accent = accentColor(); }
+    function field(x, y) {                       // smooth trig vector field
+      return (Math.cos(x * 0.0075) + Math.sin(y * 0.0075)) * Math.PI + t * 0.00018;
+    }
+    function spawn(p) {
+      p.x = Math.random() * w; p.y = Math.random() * h;
+      p.life = 120 + (Math.random() * 220 | 0);
+      p.hist = [];
+      p.accent = Math.random() < 0.14;
+    }
+    function resize() {
+      const d = dpr();
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * d; canvas.height = h * d;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+      ctx.lineWidth = 1; ctx.lineCap = 'round';
+      const count = Math.max(24, Math.min(90, Math.floor((w * h) / 18000)));
+      parts = Array.from({ length: count }, () => { const p = {}; spawn(p); return p; });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of parts) {
+        if (p.hist.length < 2) continue;
+        for (let i = 1; i < p.hist.length; i++) {
+          const a = p.hist[i - 1], b = p.hist[i];
+          const alpha = (i / p.hist.length) * (p.accent ? 0.5 : 0.22);
+          ctx.strokeStyle = p.accent ? `rgba(198,61,31,${alpha})` : `rgba(${line},${alpha})`;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+        const head = p.hist[p.hist.length - 1];
+        ctx.beginPath(); ctx.arc(head.x, head.y, p.accent ? 1.6 : 1.0, 0, 7);
+        ctx.fillStyle = p.accent ? accent : `rgba(${line},0.5)`;
+        ctx.fill();
+      }
+    }
+    function step() {
+      t++;
+      for (const p of parts) {
+        const a = field(p.x, p.y);
+        p.x += Math.cos(a) * SPEED; p.y += Math.sin(a) * SPEED;
+        p.hist.push({ x: p.x, y: p.y });
+        if (p.hist.length > HIST) p.hist.shift();
+        if (--p.life < 0 || p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) spawn(p);
+      }
+      draw();
+      raf = requestAnimationFrame(step);
+    }
+
+    readColors(); resize();
+    if (reduce) draw(); else step();
+    addEventListener('resize', () => { readColors(); resize(); if (reduce) draw(); }, { passive: true });
+    onThemeChange(readColors);
+    onVisibility(() => cancelAnimationFrame(raf), step);
+  }
+
+  /* ── 1d. Aurora (calm drifting glows) — default ───────────────────── */
+  function aurora() {
+    const el = document.createElement('div');
+    el.className = 'fx-aurora';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<b class="b1"></b><b class="b2"></b><b class="b3"></b>';
+    document.body.prepend(el);                  // motion + reduced-motion handled in CSS
+  }
+
+  function background() {
+    const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const mode = document.body.dataset.bg || ({
+      'pentest.html': 'rain',
+      'consulting.html': 'flow',
+    }[page] || 'mesh');
+    ({ mesh: constellation, rain, flow, aurora }[mode] || aurora)();
   }
 
   /* ── 2. Scroll-reveal ─────────────────────────────────────────────── */
@@ -104,7 +266,7 @@
     }, { passive: true });
   }
 
-  function start() { constellation(); reveal(); spotlight(); }
+  function start() { background(); reveal(); spotlight(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
