@@ -3,3 +3,8 @@ htb writeups for upload/
 htb writeups for upload.zip
 *.zip
 .DS_Store
+
+# Cloudflare Worker local state / secrets — never commit
+worker/.wrangler/
+worker/.dev.vars
+.dev.vars
