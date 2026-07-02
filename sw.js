@@ -1,5 +1,5 @@
 // NOCTIS service worker — cache-first for static assets, network-first for HTML.
-const VERSION = 'v30';
+const VERSION = 'v31';
 const STATIC_CACHE = `noctis-static-${VERSION}`;
 const RUNTIME_CACHE = `noctis-runtime-${VERSION}`;
 
@@ -33,7 +33,6 @@ const PRECACHE = [
   '/js/index.js',
   '/js/blog.js',
   '/js/projects.js',
-  '/js/analytics.js',
   '/js/search.js',
 ];
 
@@ -64,7 +63,10 @@ self.addEventListener('fetch', (event) => {
         const copy = res.clone();
         caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
         return res;
-      }).catch(() => caches.match(req).then((m) => m || caches.match('/404.html')))
+      }).catch(() =>
+        // ignoreSearch so e.g. /?lang=el falls back to the cached / offline.
+        caches.match(req, { ignoreSearch: true }).then((m) => m || caches.match('/404.html'))
+      )
     );
     return;
   }

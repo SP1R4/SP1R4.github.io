@@ -57,7 +57,9 @@ def render_svg(post: dict) -> str:
 
 def inject_og(html_path: Path, slug: str, post: dict) -> bool:
     text = html_path.read_text()
-    rel = f'assets/og/{slug}.svg'
+    # Platforms don't render SVG og:image, so meta tags point at the PNG
+    # (rendered by generate-writeup-og-png.py); the SVG is the design source.
+    rel = f'assets/og/{slug}.png'
     abs_url = f'{SITE}/writeups/{rel}'
     desc = post['description']
     title = f"{post['title']} — NOCTIS"
@@ -71,9 +73,11 @@ def inject_og(html_path: Path, slug: str, post: dict) -> bool:
         f'<meta property="og:image" content="{abs_url}">\n'
         f'<meta name="twitter:card" content="summary_large_image">\n'
         f'<meta name="twitter:image" content="{abs_url}">\n'
+        f'<link rel="canonical" href="{SITE}/writeups/{slug}.html">\n'
     )
 
     text = re.sub(r'\s*<meta\s+(?:name|property)="(description|og:[^"]+|twitter:[^"]+)"[^>]*>', '', text)
+    text = re.sub(r'\s*<link\s+rel="canonical"[^>]*>', '', text)
     new_text, n = re.subn(
         r'(<title>[^<]*</title>)',
         r'\1\n' + block,

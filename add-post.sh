@@ -68,6 +68,7 @@ python3 inject-jsonld.py
 echo
 echo "─── Generating OG card ───"
 python3 generate-og-images.py
+python3 generate-writeup-og-png.py
 
 echo
 echo "─── Regenerating feed.xml ───"

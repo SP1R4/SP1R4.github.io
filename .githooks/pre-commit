@@ -1,0 +1,29 @@
+#!/bin/sh
+# Auto-bump the service worker cache VERSION whenever committed changes touch
+# assets the SW serves cache-first (CSS/JS/HTML/fonts/config). Without a bump,
+# returning visitors keep the stale cached assets indefinitely.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+
+changed=$(git diff --cached --name-only --diff-filter=ACMRD |
+  grep -E '\.(css|js|html|json|woff2)$' | grep -v '^sw\.js$' | grep -v '^pagefind/')
+
+[ -z "$changed" ] && exit 0
+
+# Already bumped in this commit? Nothing to do.
+if git diff --cached --name-only | grep -qx 'sw.js'; then
+  if git diff --cached sw.js | grep -q "^[+-]const VERSION"; then
+    exit 0
+  fi
+fi
+
+current=$(sed -n "s/^const VERSION = 'v\([0-9]*\)';$/\1/p" sw.js)
+if [ -z "$current" ]; then
+  echo "pre-commit: could not parse VERSION in sw.js — bump it manually" >&2
+  exit 1
+fi
+
+next=$((current + 1))
+sed -i '' "s/^const VERSION = 'v${current}';$/const VERSION = 'v${next}';/" sw.js
+git add sw.js
+echo "pre-commit: sw.js VERSION v${current} → v${next} (cached assets changed)"
