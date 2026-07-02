@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self' https://api.web3forms.com; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://api.web3forms.com https://noctis-telegram.sp1r4.workers.dev https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self' https://api.web3forms.com; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.web3forms.com https://noctis-telegram.sp1r4.workers.dev https://get.geojs.io; worker-src 'self' blob:;">
 <title>IT Consulting & Network Engineering — NOCTIS</title>
 <meta name="description" content="Independent IT consulting and network engineering — MikroTik/OPNsense network design, architecture, infrastructure, and security strategy. Vendor-neutral, hands-on guidance with implementation support. Remote worldwide, based in Crete, Greece.">
 <meta name="keywords" content="IT consulting, network engineering, network design, MikroTik consultant, RouterOS, OPNsense, pfSense, VLAN design, multi-WAN failover, network architecture, infrastructure consulting, security strategy, MTCNA">
@@ -46,6 +46,54 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What networks do you work with?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "MikroTik RouterOS (MTCNA-certified), plus OPNsense/pfSense — VLANs, routing, firewalls, VPN and multi-WAN failover, from single sites to multi-site setups."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you implement, or just advise?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Both. You can get a design to build yourself, have it implemented for you, or have your team overseen — whatever fits."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are you tied to specific vendors?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No — advice is vendor-neutral, recommending what fits your needs and budget, not what earns a commission."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you cover security too?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — every design is security-first. For active testing, see the dedicated penetration testing service."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can you work remotely?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most consulting is delivered fully remotely worldwide. On-site visits are available across Crete, Greece."
+      }
+    }
+  ]
+}
+</script>
 <link rel="alternate" hreflang="en" href="https://sp1r4.github.io/consulting.html?lang=en">
 <link rel="alternate" hreflang="el" href="https://sp1r4.github.io/consulting.html?lang=el">
 <link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/consulting.html">
@@ -60,13 +108,13 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .intro {
-    font-size: 13px; font-weight: 300; color: var(--text-secondary);
+    font-size: 15px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.8; margin-bottom: 10px;
     opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
   }
   .areas {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; letter-spacing: 0.04em; color: var(--accent);
+    font-size: 11px; letter-spacing: 0.04em; color: var(--accent);
     margin-bottom: 38px;
     opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
   }
@@ -95,11 +143,11 @@
   @media (prefers-reduced-motion: reduce) { .ng-links line, .ng-sat { animation: none; } }
 
   /* ── WHY ── */
-  .why { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
+  .why { font-size: 14px; font-weight: 400; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
   .why-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 44px; }
   .why-list li {
     display: flex; align-items: flex-start; gap: 10px;
-    font-size: 12px; color: var(--text-primary);
+    font-size: 13px; color: var(--text-primary);
   }
   .why-list svg {
     width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px;
@@ -113,15 +161,15 @@
   }
   .uc-card {
     padding: 18px; background: var(--card-bg);
-    border: 0.5px solid var(--card-border); border-radius: 4px;
+    border: 0.5px solid var(--card-border); border-radius: var(--radius-m);
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i,0) * 0.06s + 0.2s) forwards;
     transition: transform 0.22s, box-shadow 0.22s;
   }
-  .uc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-  .uc-icon { width: 32px; height: 32px; border-radius: 3px; background: var(--icon-bg); border: 0.5px solid var(--icon-border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .uc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .uc-icon { width: 32px; height: 32px; border-radius: var(--radius-s); background: var(--icon-bg); border: 0.5px solid var(--icon-border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
   .uc-icon svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  .uc-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
-  .uc-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.65; }
+  .uc-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+  .uc-desc { font-size: 12px; font-weight: 400; color: var(--text-secondary); line-height: 1.65; }
 
   /* ── PROCESS ── */
   .process { display: flex; flex-direction: column; gap: 2px; margin-bottom: 44px; }
@@ -132,14 +180,14 @@
     font-size: 22px; line-height: 1; color: var(--accent);
     width: 28px; flex-shrink: 0;
   }
-  .step-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
-  .step-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.6; }
+  .step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; font-weight: 400; color: var(--text-secondary); line-height: 1.6; }
 
   /* ── PACKAGES ── */
   .packages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
   .pkg {
     display: flex; flex-direction: column; padding: 20px 18px;
-    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: 4px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: var(--radius-m);
     position: relative;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i,0) * 0.07s + 0.25s) forwards;
   }
@@ -150,18 +198,18 @@
     text-transform: uppercase; color: #fff; background: var(--accent);
     padding: 2px 8px; border-radius: 2px;
   }
-  .pkg-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-  .pkg-desc { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; min-height: 42px; }
+  .pkg-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .pkg-desc { font-size: 12px; font-weight: 400; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; min-height: 42px; }
   .pkg-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .pkg-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--text-primary); line-height: 1.5; }
+  .pkg-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-primary); line-height: 1.5; }
   .pkg-features svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .pkg-note { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-bottom: 44px; font-style: italic; }
+  .pkg-note { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-bottom: 44px; font-style: italic; }
 
   /* ── FAQ ── */
   .faq { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
   .faq-item { padding: 16px 0; border-bottom: 0.5px solid var(--divider); }
-  .faq-q { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-  .faq-a { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.7; }
+  .faq-q { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+  .faq-a { font-size: 13px; font-weight: 400; color: var(--text-secondary); line-height: 1.7; }
 
   @media (max-width: 560px) {
     .uc-grid { grid-template-columns: 1fr; }
@@ -170,10 +218,10 @@
 
   /* ── CTA ── */
   .cta { text-align: center; padding: 40px 20px; border-top: 0.5px solid var(--divider); opacity: 0; animation: fadeUp 0.4s ease 0.4s forwards; }
-  .cta-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-  .cta-desc { font-size: 12px; font-weight: 300; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
-  .cta-pill { display: inline-flex; align-items: stretch; background: var(--text-primary); border-radius: 999px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.10); transition: transform 0.22s, box-shadow 0.22s; }
-  .cta-pill:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.20); }
+  .cta-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+  .cta-desc { font-size: 13px; font-weight: 400; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
+  .cta-pill { display: inline-flex; align-items: stretch; background: var(--text-primary); border-radius: var(--radius-pill); overflow: hidden; box-shadow: var(--shadow-pill); transition: transform 0.22s, box-shadow 0.22s; }
+  .cta-pill:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover-strong); }
   .cta-pill-item { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; color: var(--bg); text-decoration: none; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; border-right: 1px solid rgba(255,255,255,0.14); transition: background 0.15s; }
   .cta-pill-item:last-child { border-right: none; }
   .cta-pill-item:hover { background: rgba(255,255,255,0.10); }
@@ -191,7 +239,7 @@
   .form-row > * { flex: 1; min-width: 0; }
   .survey-form input, .survey-form textarea {
     width: 100%; font-family: inherit; font-size: 13px; color: var(--text-primary);
-    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: 4px;
+    background: var(--card-bg); border: 0.5px solid var(--card-border); border-radius: var(--radius-m);
     padding: 11px 13px; transition: border-color 0.18s, box-shadow 0.18s; resize: vertical;
   }
   .survey-form input::placeholder, .survey-form textarea::placeholder { color: var(--text-muted); }
@@ -201,7 +249,7 @@
   }
   .form-submit {
     font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
-    color: #fff; background: var(--accent); border: none; border-radius: 4px;
+    color: #fff; background: var(--accent); border: none; border-radius: var(--radius-m);
     padding: 13px 20px; cursor: pointer; transition: transform 0.18s, opacity 0.18s; margin-top: 2px;
   }
   .form-submit:hover { transform: translateY(-1px); }
@@ -386,6 +434,5 @@
 <script src="js/nav.js" defer></script>
 <script src="js/search.js" defer></script>
 <script src="js/form.js" defer></script>
-<script src="js/analytics.js" defer></script>
 </body>
 </html>

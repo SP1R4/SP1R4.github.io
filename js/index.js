@@ -76,6 +76,12 @@ function renderPill(link, container, idx) {
 
 cfgPromise.then(cfg => {
   cachedCfg = cfg;
+  // The HTML ships static fallback content (for no-JS visitors and crawlers);
+  // clear it before re-rendering from config.json.
+  ['avatar-wrap', 'status', 'links-container', 'footer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
   const aw = document.getElementById('avatar-wrap');
   const img = document.createElement('img');
   img.src = cfg.avatar;
@@ -115,7 +121,7 @@ cfgPromise.then(cfg => {
       return;
     }
     const a = document.createElement('a');
-    a.className = 'link-card';
+    a.className = link.primary ? 'link-card link-card-primary' : 'link-card';
     a.dataset.linkIdx = String(i);
     const safeUrl = /^(https?:|mailto:|tel:|tg:|viber:|\/|#|\.|\w[\w\-]*\.html)/i.test(link.url.trim()) ? link.url : '#';
     a.href = safeUrl;

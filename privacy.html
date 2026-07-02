@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://get.geojs.io; worker-src 'self' blob:;">
 <title>Privacy &amp; Legal — NOCTIS</title>
 <meta name="description" content="Privacy policy and legal information for sp1r4.github.io — NOCTIS / S. Markakis.">
 <meta property="og:title" content="Privacy &amp; Legal — NOCTIS">
 <meta property="og:description" content="What we collect, why, and how to reach the data controller.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sp1r4.github.io/privacy.html">
-<meta property="og:image" content="https://sp1r4.github.io/og/index.svg">
+<meta property="og:image" content="https://sp1r4.github.io/og/index.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://sp1r4.github.io/og/index.svg">
+<meta name="twitter:image" content="https://sp1r4.github.io/og/index.png">
+<link rel="canonical" href="https://sp1r4.github.io/privacy.html">
 <link rel="alternate" hreflang="en" href="https://sp1r4.github.io/privacy.html?lang=en">
 <link rel="alternate" hreflang="el" href="https://sp1r4.github.io/privacy.html?lang=el">
 <link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/privacy.html">
@@ -36,7 +37,7 @@
   }
   .legal h2:first-of-type { margin-top: 8px; }
   .legal p, .legal li {
-    font-size: 13px; font-weight: 300;
+    font-size: 14px; font-weight: 400;
     color: var(--text-secondary); line-height: 1.75;
     margin-bottom: 10px;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.05s + 0.25s) forwards;
@@ -48,7 +49,7 @@
   .legal-imprint {
     margin-top: 36px; padding: 22px;
     background: var(--card-bg); border: 0.5px solid var(--card-border);
-    border-radius: 6px;
+    border-radius: var(--radius-m);
     opacity: 0; animation: fadeUp 0.4s ease 0.5s forwards;
   }
   .legal-imprint .label {
@@ -90,9 +91,8 @@
     set cookies, use third-party tracking, or build a profile of you.
   </p>
   <ul style="--i:1">
-    <li><strong>Anonymous analytics</strong> (optional, may be enabled): page
-      views via GoatCounter — no cookies, no fingerprinting, no IP storage
-      after a short hash. Respects your <code>Do-Not-Track</code> header.</li>
+    <li><strong>No analytics</strong>: the site runs no analytics or
+      measurement scripts of any kind — not even "privacy-friendly" ones.</li>
     <li><strong>Service worker cache</strong>: stored locally in your browser
       to make the site work offline. You can clear it via
       DevTools → Application → Storage → Clear site data.</li>
@@ -147,7 +147,7 @@
   <p style="--i:5">
     Material changes are versioned through the public git history at
     <a href="https://github.com/SP1R4/SP1R4.github.io" target="_blank" rel="noopener">SP1R4/SP1R4.github.io</a>.
-    Last reviewed: <strong>May 2026</strong>.
+    Last reviewed: <strong>July 2026</strong>.
   </p>
 
   <div class="legal-imprint">
@@ -172,7 +172,6 @@
 <script src="js/fx.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/search.js" defer></script>
-<script src="js/analytics.js" defer></script>
 
 </body>
 </html>

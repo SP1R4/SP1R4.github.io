@@ -28,7 +28,7 @@
     target.setAttribute('data-i18n-attr-aria-label', 'nav.main');
     target.innerHTML = `
       <a href="index.html" class="nav-brand">NOCTIS</a>
-      <button class="nav-hamburger" data-i18n-attr-aria-label="nav.toggleMenu" type="button">
+      <button class="nav-hamburger" data-i18n-attr-aria-label="nav.toggleMenu" type="button" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <div class="nav-links">${links}</div>
@@ -40,8 +40,10 @@
       </div>
     `;
 
-    target.querySelector('.nav-hamburger').addEventListener('click', () => {
-      target.classList.toggle('nav-open');
+    const hamburger = target.querySelector('.nav-hamburger');
+    hamburger.addEventListener('click', () => {
+      const open = target.classList.toggle('nav-open');
+      hamburger.setAttribute('aria-expanded', String(open));
     });
 
     const langBtn = target.querySelector('.nav-lang');

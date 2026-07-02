@@ -215,7 +215,150 @@
     onVisibility(() => cancelAnimationFrame(raf), step);
   }
 
-  /* ── 1d. Aurora (calm drifting glows) — default ───────────────────── */
+  /* ── 1d. Sonar — quiet concentric rings + expanding pings ─────────── */
+  function sonar() {
+    const canvas = mkCanvas('fx-bg-sonar');
+    const ctx = canvas.getContext('2d');
+    const RINGS = 5, RING_GAP = 150, PING_EVERY = 2600, PING_LIFE = 2400, MAX_PINGS = 3;
+    let w = 0, h = 0, cx = 0, cy = 0, contacts = [], pings = [], line = '15,15,15', accent = '#c63d1f', raf = 0, lastPing = 0;
+
+    function readColors() { line = themeRGB(); accent = accentColor(); }
+    function resize() {
+      const d = dpr();
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * d; canvas.height = h * d;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+      cx = w * 0.5; cy = h * 0.44;
+      const count = Math.max(6, Math.min(16, Math.floor((w * h) / 90000)));
+      contacts = Array.from({ length: count }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        phase: Math.random() * Math.PI * 2,
+        accent: Math.random() < 0.2,
+      }));
+    }
+    function draw(ts) {
+      ctx.clearRect(0, 0, w, h);
+      // static rings
+      for (let r = 1; r <= RINGS; r++) {
+        ctx.beginPath(); ctx.arc(cx, cy, r * RING_GAP, 0, 7);
+        ctx.strokeStyle = `rgba(${line},0.05)`;
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      }
+      // crosshair
+      ctx.strokeStyle = `rgba(${line},0.04)`;
+      ctx.beginPath(); ctx.moveTo(cx - RINGS * RING_GAP, cy); ctx.lineTo(cx + RINGS * RING_GAP, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - RINGS * RING_GAP); ctx.lineTo(cx, cy + RINGS * RING_GAP); ctx.stroke();
+      // blinking contacts
+      for (const c of contacts) {
+        const a = 0.12 + 0.22 * Math.abs(Math.sin(ts / 1600 + c.phase));
+        ctx.beginPath(); ctx.arc(c.x, c.y, c.accent ? 1.8 : 1.2, 0, 7);
+        ctx.fillStyle = c.accent ? `rgba(198,61,31,${a + 0.1})` : `rgba(${line},${a})`;
+        ctx.fill();
+      }
+      // expanding pings
+      for (const p of pings) {
+        const t = (ts - p.born) / PING_LIFE;
+        if (t >= 1) continue;
+        const r = 6 + t * 130;
+        const a = (1 - t) * (p.accent ? 0.4 : 0.22);
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 7);
+        ctx.strokeStyle = p.accent ? `rgba(198,61,31,${a})` : `rgba(${line},${a})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      pings = pings.filter((p) => ts - p.born < PING_LIFE);
+    }
+    function step(ts) {
+      raf = requestAnimationFrame(step);
+      if (ts - lastPing > PING_EVERY && pings.length < MAX_PINGS) {
+        lastPing = ts + Math.random() * 1400;
+        const src = contacts[(Math.random() * contacts.length) | 0];
+        pings.push({ x: src.x, y: src.y, born: ts, accent: src.accent });
+      }
+      draw(ts);
+    }
+
+    readColors(); resize();
+    if (reduce) draw(0); else raf = requestAnimationFrame(step);
+    addEventListener('resize', () => { readColors(); resize(); if (reduce) draw(0); }, { passive: true });
+    onThemeChange(() => { readColors(); if (reduce) draw(0); });
+    onVisibility(() => cancelAnimationFrame(raf), () => { raf = requestAnimationFrame(step); });
+  }
+
+  /* ── 1e. Scanline — a slow sweep down the page with target hits ───── */
+  function scan() {
+    const canvas = mkCanvas('fx-bg-scan');
+    const ctx = canvas.getContext('2d');
+    const PERIOD = 16000, TRAIL = 140, HIT_LIFE = 900;
+    let w = 0, h = 0, targets = [], hits = [], line = '15,15,15', accent = '#c63d1f', raf = 0, prevY = -1;
+
+    function readColors() { line = themeRGB(); accent = accentColor(); }
+    function resize() {
+      const d = dpr();
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * d; canvas.height = h * d;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+      const count = Math.max(8, Math.min(22, Math.floor((w * h) / 65000)));
+      targets = Array.from({ length: count }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        accent: Math.random() < 0.25,
+      }));
+    }
+    function draw(ts) {
+      ctx.clearRect(0, 0, w, h);
+      const y = ((ts % PERIOD) / PERIOD) * (h + TRAIL) - TRAIL / 2;
+      // faint dot grid rows near the beam feel "revealed" by it
+      for (const t of targets) {
+        ctx.beginPath(); ctx.arc(t.x, t.y, 1.1, 0, 7);
+        ctx.fillStyle = `rgba(${line},0.10)`;
+        ctx.fill();
+      }
+      // trailing glow above the line
+      const grad = ctx.createLinearGradient(0, y - TRAIL, 0, y);
+      grad.addColorStop(0, `rgba(${line},0)`);
+      grad.addColorStop(1, `rgba(${line},0.05)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, y - TRAIL, w, TRAIL);
+      // the scan line itself
+      ctx.fillStyle = `rgba(198,61,31,0.28)`;
+      ctx.fillRect(0, y, w, 1);
+      // register hits when the beam crosses a target
+      if (prevY >= 0 && y > prevY) {
+        for (const t of targets) {
+          if (t.y > prevY && t.y <= y) hits.push({ x: t.x, y: t.y, born: ts, accent: t.accent });
+        }
+      }
+      prevY = y < prevY ? -1 : y;                 // reset at wrap-around
+      // hit blips: a brief expanding tick
+      for (const hit of hits) {
+        const t = (ts - hit.born) / HIT_LIFE;
+        if (t >= 1) continue;
+        const a = (1 - t) * (hit.accent ? 0.55 : 0.3);
+        const r = 2 + t * 10;
+        ctx.beginPath(); ctx.arc(hit.x, hit.y, r, 0, 7);
+        ctx.strokeStyle = hit.accent ? `rgba(198,61,31,${a})` : `rgba(${line},${a})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.beginPath(); ctx.arc(hit.x, hit.y, 1.4, 0, 7);
+        ctx.fillStyle = hit.accent ? `rgba(198,61,31,${a + 0.2})` : `rgba(${line},${a + 0.15})`;
+        ctx.fill();
+      }
+      hits = hits.filter((hh) => ts - hh.born < HIT_LIFE);
+    }
+    function step(ts) {
+      raf = requestAnimationFrame(step);
+      draw(ts);
+    }
+
+    readColors(); resize();
+    if (reduce) draw(PERIOD * 0.35); else raf = requestAnimationFrame(step);
+    addEventListener('resize', () => { readColors(); resize(); if (reduce) draw(PERIOD * 0.35); }, { passive: true });
+    onThemeChange(() => { readColors(); if (reduce) draw(PERIOD * 0.35); });
+    onVisibility(() => cancelAnimationFrame(raf), () => { raf = requestAnimationFrame(step); });
+  }
+
+  /* ── 1f. Aurora (calm drifting glows) — default ───────────────────── */
   function aurora() {
     const el = document.createElement('div');
     el.className = 'fx-aurora';
@@ -226,11 +369,12 @@
 
   function background() {
     const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    const mode = document.body.dataset.bg || ({
-      'pentest.html': 'rain',
+    // ?bg= wins (handy for previewing), then <body data-bg>, then the page default.
+    const qbg = new URLSearchParams(location.search).get('bg');
+    const mode = qbg || document.body.dataset.bg || ({
       'consulting.html': 'flow',
     }[page] || 'mesh');
-    ({ mesh: constellation, rain, flow, aurora }[mode] || aurora)();
+    ({ mesh: constellation, rain, flow, aurora, sonar, scan }[mode] || aurora)();
   }
 
   /* ── 2. Scroll-reveal ─────────────────────────────────────────────── */

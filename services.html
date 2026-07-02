@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://get.geojs.io; worker-src 'self' blob:;">
 <title>Services — NOCTIS</title>
 <meta name="description" content="Cybersecurity & IT services by S. Markakis — penetration testing, IT consulting & network engineering, and Starlink deployment. Based in Crete, Greece; remote worldwide.">
 <meta property="og:title" content="Services — NOCTIS">
@@ -14,6 +14,7 @@
 <meta property="og:image" content="https://sp1r4.github.io/og/services.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og/services.png">
+<link rel="canonical" href="https://sp1r4.github.io/services.html">
 <link rel="alternate" hreflang="en" href="https://sp1r4.github.io/services.html?lang=en">
 <link rel="alternate" hreflang="el" href="https://sp1r4.github.io/services.html?lang=el">
 <link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/services.html">
@@ -29,7 +30,7 @@
 <style>
   /* ── INTRO ── */
   .intro {
-    font-size: 13px; font-weight: 300; color: var(--text-secondary);
+    font-size: 15px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.8; margin-bottom: 36px;
     opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards;
   }
@@ -40,16 +41,16 @@
   .service-card {
     display: flex; gap: 16px; padding: 22px;
     background: var(--card-bg); border: 0.5px solid var(--card-border);
-    border-radius: 4px;
+    border-radius: var(--radius-m);
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.18s, border-color 0.18s;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.07s + 0.25s) forwards;
   }
   .service-card:hover {
-    transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+    transform: translateY(-2px); box-shadow: var(--shadow-hover);
   }
 
   .service-icon {
-    width: 40px; height: 40px; border-radius: 3px;
+    width: 40px; height: 40px; border-radius: var(--radius-s);
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -58,11 +59,11 @@
 
   .service-content { flex: 1; min-width: 0; }
   .service-title {
-    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
     margin-bottom: 6px;
   }
   .service-desc {
-    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    font-size: 13px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.7;
   }
 
@@ -71,7 +72,7 @@
     display: flex; flex-wrap: wrap; gap: 6px;
   }
   .service-items li {
-    font-size: 10px; padding: 3px 10px; border-radius: 2px;
+    font-size: 11px; padding: 3px 10px; border-radius: 2px;
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     color: var(--text-secondary); letter-spacing: 0.02em;
   }
@@ -109,19 +110,19 @@
   .credential-card {
     display: flex; align-items: center; gap: 12px;
     padding: 14px 18px; background: var(--card-bg);
-    border: 0.5px solid var(--card-border); border-radius: 4px;
+    border: 0.5px solid var(--card-border); border-radius: var(--radius-m);
     flex: 1 1 280px; min-width: 0;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.06s + 0.6s) forwards;
   }
   .credential-icon {
-    width: 36px; height: 36px; border-radius: 3px;
+    width: 36px; height: 36px; border-radius: var(--radius-s);
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .credential-icon svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  .credential-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-  .credential-org { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-top: 1px; }
+  .credential-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .credential-org { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
 
   /* ── CERTIFICATIONS ── */
   .certs {
@@ -131,7 +132,7 @@
   .cert-card {
     position: relative; padding: 22px;
     background: var(--card-bg); border: 0.5px solid var(--card-border);
-    border-radius: 6px; overflow: hidden;
+    border-radius: var(--radius-m); overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.18s;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.08s + 0.55s) forwards;
   }
@@ -142,7 +143,7 @@
   }
   .cert-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: var(--shadow-hover-strong);
     border-color: var(--accent);
   }
   .cert-header {
@@ -150,7 +151,7 @@
     gap: 12px; margin-bottom: 14px;
   }
   .cert-badge {
-    width: 48px; height: 48px; border-radius: 6px;
+    width: 48px; height: 48px; border-radius: var(--radius-m);
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; position: relative;
@@ -158,7 +159,7 @@
   .cert-badge svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .cert-status {
     font-size: 9px; font-weight: 500; letter-spacing: 0.12em;
-    text-transform: uppercase; padding: 4px 10px; border-radius: 3px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: var(--radius-s);
     background: rgba(198, 61, 31, 0.10); color: var(--accent);
     border: 0.5px solid rgba(198, 61, 31, 0.30);
     white-space: nowrap;
@@ -176,7 +177,7 @@
     margin-bottom: 14px;
   }
   .cert-desc {
-    font-size: 11px; font-weight: 300; color: var(--text-secondary);
+    font-size: 12px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.7; margin-bottom: 14px;
   }
   .cert-dates {
@@ -202,7 +203,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
     color: var(--accent); text-decoration: none;
-    padding: 6px 12px; border-radius: 3px;
+    padding: 6px 12px; border-radius: var(--radius-s);
     border: 0.5px solid var(--accent);
     transition: background 0.18s, color 0.18s;
   }
@@ -216,24 +217,24 @@
     opacity: 0; animation: fadeUp 0.4s ease 0.8s forwards;
   }
   .cta-title {
-    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    font-size: 18px; font-weight: 700; color: var(--text-primary);
     margin-bottom: 8px;
   }
   .cta-desc {
-    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    font-size: 13px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.7; margin-bottom: 20px;
   }
   .cta-link {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 12px 28px; background: var(--text-primary);
     color: var(--bg); font-size: 12px; font-weight: 500;
-    text-decoration: none; border-radius: 4px;
+    text-decoration: none; border-radius: var(--radius-m);
     letter-spacing: 0.04em;
     transition: transform 0.2s, box-shadow 0.2s;
   }
   .cta-link:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-hover-strong);
   }
   .cta-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -241,14 +242,14 @@
   .cta-pill {
     display: inline-flex; align-items: stretch;
     background: var(--text-primary);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    box-shadow: var(--shadow-pill);
     transition: transform 0.22s, box-shadow 0.22s;
   }
   .cta-pill:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.20);
+    box-shadow: var(--shadow-hover-strong);
   }
   .cta-pill-item {
     display: inline-flex; align-items: center; gap: 8px;
@@ -298,7 +299,7 @@
   <div class="section-label" data-i18n="services.section.offer">What I offer</div>
   <div class="services">
 
-    <div class="service-card" style="--i:0">
+    <div class="service-card" style="--i:1">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
@@ -316,7 +317,7 @@
       </div>
     </div>
 
-    <div class="service-card" style="--i:1">
+    <div class="service-card" style="--i:2">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M5 8v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M12 12v4"/></svg>
       </div>
@@ -468,7 +469,6 @@
 <script src="js/fx.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/search.js" defer></script>
-<script src="js/analytics.js" defer></script>
 
 </body>
 </html>

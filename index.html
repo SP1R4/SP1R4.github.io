@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://get.geojs.io; worker-src 'self' blob:;">
 <title>S. Markakis — NOCTIS</title>
 <meta name="description" content="Cybersecurity researcher · Penetration testing · Software development · Crete, Greece">
 <meta property="og:title" content="S. Markakis — NOCTIS">
@@ -80,6 +80,7 @@
   ]
 }
 </script>
+<link rel="canonical" href="https://sp1r4.github.io/">
 <link rel="alternate" hreflang="en" href="https://sp1r4.github.io/?lang=en">
 <link rel="alternate" hreflang="el" href="https://sp1r4.github.io/?lang=el">
 <link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/">
@@ -116,12 +117,12 @@
     opacity: 0; animation: fadeUp 0.4s ease 0.2s forwards;
   }
   .brand-tag {
-    font-size: 9px; color: var(--text-muted); letter-spacing: 0.24em;
+    font-size: 10px; color: var(--text-muted); letter-spacing: 0.24em;
     text-transform: uppercase; margin-bottom: 12px;
     opacity: 0; animation: fadeUp 0.4s ease 0.25s forwards;
   }
   .bio {
-    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    font-size: 14px; font-weight: 400; color: var(--text-secondary);
     text-align: center; line-height: 1.7; max-width: 340px; margin-bottom: 36px;
     opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards;
   }
@@ -142,13 +143,13 @@
     opacity: 0; animation: pulse 2s ease-in-out infinite;
   }
   .status-text {
-    font-size: 10px; font-weight: 400; color: var(--text-secondary);
+    font-size: 11px; font-weight: 400; color: var(--text-secondary);
     letter-spacing: 0.04em;
   }
 
   /* ── SECTION LABEL ── */
   .section-label {
-    font-size: 8px; color: var(--label); letter-spacing: 0.22em;
+    font-size: 10px; color: var(--label); letter-spacing: 0.22em;
     width: 100%; margin-bottom: 10px;
   }
 
@@ -158,7 +159,7 @@
   .link-card {
     width: 100%; display: flex; align-items: center; gap: 14px;
     padding: 14px 18px; background: var(--card-bg);
-    border: 0.5px solid var(--card-border); border-radius: 4px;
+    border: 0.5px solid var(--card-border); border-radius: var(--radius-m);
     text-decoration: none; transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.18s, border-color 0.18s; cursor: pointer;
     position: relative; transform-style: preserve-3d;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.07s + 0.4s) forwards;
@@ -166,7 +167,7 @@
   .link-card:hover {
     background: var(--text-primary); border-color: var(--text-primary);
     transform: translateY(-3px) rotateX(2deg) scale(1.015);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.05);
+    box-shadow: var(--shadow-hover);
   }
   .link-card:hover .link-title { color: var(--bg); }
   .link-card:hover .link-sub { color: var(--text-secondary); }
@@ -175,7 +176,7 @@
   .link-card:hover .link-arrow { color: rgba(255,255,255,0.3); }
 
   .link-icon {
-    width: 36px; height: 36px; border-radius: 3px;
+    width: 36px; height: 36px; border-radius: var(--radius-s);
     background: var(--icon-bg); border: 0.5px solid var(--icon-border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: all 0.18s;
@@ -183,8 +184,8 @@
   .link-icon svg { width: 16px; height: 16px; stroke: var(--icon-stroke); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.18s; }
 
   .link-text { flex: 1; min-width: 0; }
-  .link-title { font-size: 13px; font-weight: 500; color: var(--text-primary); transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .link-sub { font-size: 10px; font-weight: 300; color: var(--text-muted); margin-top: 2px; transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .link-title { font-size: 14px; font-weight: 500; color: var(--text-primary); transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .link-sub { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-top: 2px; transition: color 0.18s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .link-arrow { font-size: 14px; color: var(--divider); transition: color 0.18s; flex-shrink: 0; }
 
   /* ── COMBINED CONTACT PILL (Email · Telegram · X) ── */
@@ -192,21 +193,21 @@
     display: flex; align-items: stretch;
     background: var(--card-bg);
     border: 0.5px solid var(--card-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.18s;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.07s + 0.4s) forwards;
   }
   .link-pill:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    box-shadow: var(--shadow-hover);
     border-color: var(--text-primary);
   }
   .link-pill-item {
     flex: 1; display: inline-flex; align-items: center; justify-content: center;
     gap: 8px; padding: 12px 10px;
     text-decoration: none; color: var(--text-primary);
-    font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+    font-size: 13px; font-weight: 500; letter-spacing: 0.02em;
     border-right: 0.5px solid var(--card-border);
     transition: background 0.15s, color 0.15s;
     min-width: 0;
@@ -231,11 +232,18 @@
     .link-pill-item { padding: 14px 10px; }
   }
 
+  /* ── PRIMARY CTA CARD (Services — the business-critical link) ── */
+  .link-card-primary { border-left: 2px solid var(--accent); }
+  .link-card-primary .link-icon { border-color: color-mix(in srgb, var(--accent) 45%, var(--icon-border)); }
+  .link-card-primary .link-icon svg { stroke: var(--accent); }
+  .link-card-primary:hover .link-icon svg { stroke: var(--bg); }
+  .link-card-primary:hover { border-left-color: var(--accent); }
+
   /* ── DIVIDER / FOOTER ── */
   .divider { width: 32px; height: 0.5px; background: var(--divider); margin-bottom: 32px; opacity: 0; animation: fadeUp 0.4s ease 0.75s forwards; }
   .footer-brand { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; animation: fadeUp 0.4s ease 0.8s forwards; }
   .footer-noctis { font-size: 18px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; }
-  .footer-sub { font-size: 8px; color: var(--footer-sub); letter-spacing: 0.2em; text-transform: uppercase; }
+  .footer-sub { font-size: 9px; color: var(--footer-sub); letter-spacing: 0.2em; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -253,15 +261,52 @@
 
 <main class="container" id="main-content" tabindex="-1">
 
-  <div class="avatar-wrap" id="avatar-wrap"></div>
-  <div class="name" id="name"></div>
-  <div class="brand-tag" id="brand"></div>
-  <div class="bio" id="bio"></div>
-  <div class="status" id="status"></div>
+  <!-- Static fallback mirrors config.json so the page works without JS
+       (crawlers, preview bots, JS failures). index.js clears and re-renders
+       these containers from config.json when it runs. -->
+  <div class="avatar-wrap" id="avatar-wrap"><img src="avatar.jpeg" alt="S. Markakis"></div>
+  <div class="name" id="name">S. Markakis</div>
+  <div class="brand-tag" id="brand">NOCTIS · Cybersecurity &amp; IT</div>
+  <div class="bio" id="bio">I design resilient networks and break the ones that aren’t. MikroTik RouterOS, multi-WAN, VLANs, VPN tunnels and firewalls — plus Starlink installs across Crete that actually stay online. Hardened with backups, automation, and the occasional pentest.</div>
+  <div class="status" id="status"><span class="status-dot" style="background:#34d399"></span><span class="status-text">Open for freelance &amp; consulting</span></div>
   <div class="section-label" data-i18n="index.section.connect">Connect</div>
-  <div class="links" id="links-container"></div>
+  <div class="links" id="links-container">
+    <a class="link-card" href="https://github.com/SP1R4" target="_blank" rel="noopener" style="--i:0">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></div>
+      <div class="link-text"><div class="link-title">GitHub</div><div class="link-sub">Open source security &amp; automation tools</div></div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-card" href="https://app.hackthebox.com/users/332355" target="_blank" rel="noopener" style="--i:1">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg></div>
+      <div class="link-text"><div class="link-title">HackTheBox</div><div class="link-sub">Penetration testing &amp; ethical hacking</div></div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-card link-card-primary" href="services.html" rel="noopener" style="--i:2">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div class="link-text"><div class="link-title">Services</div><div class="link-sub">Pentesting, network engineering &amp; IT consulting</div></div>
+      <span class="link-arrow">›</span>
+    </a>
+    <a class="link-card" href="projects.html" rel="noopener" style="--i:3">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div class="link-text"><div class="link-title">Projects</div><div class="link-sub">Open source tools &amp; research</div></div>
+      <span class="link-arrow">›</span>
+    </a>
+    <a class="link-card" href="blog.html" rel="noopener" style="--i:4">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+      <div class="link-text"><div class="link-title">Blog</div><div class="link-sub">Research, writeups &amp; development notes</div></div>
+      <span class="link-arrow">›</span>
+    </a>
+    <div class="link-pill" style="--i:5">
+      <a class="link-pill-item" href="mailto:sp1r4.work@gmail.com" rel="noopener"><span class="link-pill-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></span><span class="link-pill-label">Email</span></a>
+      <a class="link-pill-item" href="https://t.me/S_Markakis" target="_blank" rel="noopener"><span class="link-pill-icon"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2z"/></svg></span><span class="link-pill-label">Telegram</span></a>
+      <a class="link-pill-item" href="https://x.com/_SP1R4" target="_blank" rel="noopener"><span class="link-pill-icon"><svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></span><span class="link-pill-label">X</span></a>
+    </div>
+  </div>
   <div class="divider"></div>
-  <div class="footer-brand" id="footer"></div>
+  <div class="footer-brand" id="footer">
+    <div class="footer-noctis">NOCTIS</div>
+    <div class="footer-sub">Cybersecurity &amp; IT Consulting · Crete</div>
+  </div>
 
 </main>
 
@@ -269,7 +314,6 @@
 <script src="js/fx.js" defer></script>
 <script src="js/index.js" defer></script>
 <script src="js/search.js" defer></script>
-<script src="js/analytics.js" defer></script>
 
 </body>
 </html>

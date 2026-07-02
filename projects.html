@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://gc.zgo.at https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://get.geojs.io https://api.github.com https://gc.zgo.at https://*.goatcounter.com; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://get.geojs.io https://api.github.com; worker-src 'self' blob:;">
 <title>Projects — NOCTIS</title>
 <meta name="description" content="Open source projects by S. Markakis — cybersecurity tools, research, and development.">
 <meta property="og:title" content="Projects — NOCTIS">
@@ -15,6 +15,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://sp1r4.github.io/og/projects.png">
 <link rel="alternate" type="application/rss+xml" title="NOCTIS Blog" href="feed.xml">
+<link rel="canonical" href="https://sp1r4.github.io/projects.html">
 <link rel="alternate" hreflang="en" href="https://sp1r4.github.io/projects.html?lang=en">
 <link rel="alternate" hreflang="el" href="https://sp1r4.github.io/projects.html?lang=el">
 <link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/projects.html">
@@ -48,7 +49,7 @@
   .project-card {
     display: flex; flex-direction: column; padding: 20px;
     background: var(--card-bg); border: 0.5px solid var(--card-border);
-    border-radius: 4px; text-decoration: none;
+    border-radius: var(--radius-m); text-decoration: none;
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.18s, border-color 0.18s;
     opacity: 0; animation: fadeUp 0.4s ease calc(var(--i, 0) * 0.06s + 0.2s) forwards;
   }
@@ -71,7 +72,7 @@
   .project-card:hover .proj-name svg { stroke: var(--bg); }
 
   .proj-desc {
-    font-size: 12px; font-weight: 300; color: var(--text-secondary);
+    font-size: 13px; font-weight: 400; color: var(--text-secondary);
     line-height: 1.6; flex: 1; margin-bottom: 14px; transition: color 0.18s;
   }
 
@@ -86,7 +87,7 @@
 
   .loading {
     text-align: center; padding: 60px 20px;
-    color: var(--text-muted); font-size: 12px; font-weight: 300;
+    color: var(--text-muted); font-size: 14px; font-weight: 400;
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 </style>
@@ -121,7 +122,6 @@
 <script src="js/nav.js" defer></script>
 <script src="js/projects.js" defer></script>
 <script src="js/search.js" defer></script>
-<script src="js/analytics.js" defer></script>
 
 </body>
 </html>
