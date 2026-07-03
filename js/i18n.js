@@ -644,6 +644,10 @@
   }
 
   function detectLang() {
+    // Static single-language editions (e.g. starlink-el.html) pin their
+    // language via <body data-lang="..."> — nothing may override it.
+    const forced = document.body && document.body.dataset.lang;
+    if (forced && SUPPORTED.includes(forced)) return forced;
     const param = new URLSearchParams(location.search).get('lang');
     if (param && SUPPORTED.includes(param)) return param;   // ?lang= (shared / hreflang links)
     const saved = localStorage.getItem('noctis_lang');
@@ -700,6 +704,7 @@
   // default to Greek. Runs at most once per visitor (result cached in localStorage),
   // never overrides an explicit manual choice, and fails silently if the lookup is blocked.
   function geoDetect() {
+    if (document.body && document.body.dataset.lang) return;  // pinned edition
     if (localStorage.getItem('noctis_lang')) return;   // manual choice already made
     if (localStorage.getItem('noctis_geo')) return;     // region already resolved before
     fetch('https://get.geojs.io/v1/ip/country.json', { cache: 'no-store' })

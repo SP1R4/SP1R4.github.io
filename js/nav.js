@@ -52,8 +52,26 @@
     }
     updateLangBtn();
     langBtn.addEventListener('click', () => {
-      if (window.NoctisI18n) {
-        window.NoctisI18n.toggleLang();
+      // Pages with a static counterpart edition (data-lang-target) navigate
+      // to it when switching INTO its language, persisting the choice via
+      // setLang so the rest of the site follows. Switching the other way on
+      // a bilingual page (e.g. geo-detected Greek on starlink.html) falls
+      // back to the client-side toggle — the counterpart would be the same
+      // language the visitor is leaving.
+      const counterpart = document.body.dataset.langTarget;
+      const i18n = window.NoctisI18n;
+      if (counterpart) {
+        const pageLang = document.body.dataset.lang || 'en';
+        const counterpartLang = pageLang === 'el' ? 'en' : 'el';
+        const want = (i18n && i18n.getLang() === 'el') ? 'en' : 'el';
+        if (!i18n || want === counterpartLang) {
+          if (i18n) i18n.setLang(want);
+          location.href = counterpart;
+          return;
+        }
+      }
+      if (i18n) {
+        i18n.toggleLang();
         updateLangBtn();
       }
     });

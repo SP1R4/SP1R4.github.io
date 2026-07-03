@@ -19,6 +19,7 @@ static = [
     ('/', '1.0'),
     ('/services.html', '0.8'),
     ('/starlink.html', '0.9'),
+    ('/starlink-el.html', '0.9'),
     ('/pentest.html', '0.9'),
     ('/consulting.html', '0.9'),
     ('/projects.html', '0.8'),
