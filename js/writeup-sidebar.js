@@ -75,6 +75,13 @@
         body { padding-left: var(--noctis-sb-width) !important; }
         .site-nav { left: var(--noctis-sb-width) !important; }
         .writeup-back-link { left: calc(var(--noctis-sb-width) + 18px) !important; }
+        /* Center the reading column on the full viewport (not just the space
+           right of the sidebar) whenever there's room to do so without
+           sliding under the sidebar; falls back to flush-left otherwise. */
+        .wrap, .wrapper {
+          margin-left: max(0px, calc((100vw - 780px) / 2 - var(--noctis-sb-width))) !important;
+          margin-right: auto !important;
+        }
       }
       @media (max-width: 1099px) {
         .noctis-sidebar {
