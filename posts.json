@@ -184,8 +184,6 @@
       "cisco"
     ],
     "html": "writeups/cisco-index.html",
-    "series": "cisco-ios",
-    "series_name": "Cisco IOS Fundamentals",
     "reading_time": 5
   },
   {

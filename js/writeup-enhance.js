@@ -33,9 +33,9 @@
         will-change: width;
       }
 
-      /* Floating TOC */
+      /* Floating TOC — sits below the fixed 48px site nav. */
       .noctis-toc-toggle {
-        position: fixed; top: 18px; right: 18px; z-index: 9999;
+        position: fixed; top: 66px; right: 18px; z-index: 51;
         width: 38px; height: 38px;
         background: rgba(26,26,24,0.92); color: #eae8e3;
         border: 1px solid rgba(234,232,227,0.15); border-radius: 4px;
@@ -47,8 +47,8 @@
       .noctis-toc-toggle svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
       .noctis-toc-panel {
-        position: fixed; top: 64px; right: 18px; z-index: 9999;
-        width: 280px; max-height: calc(100vh - 96px);
+        position: fixed; top: 112px; right: 18px; z-index: 51;
+        width: 280px; max-height: calc(100vh - 144px);
         background: rgba(20,20,20,0.96);
         border: 1px solid rgba(255,255,255,0.10); border-radius: 6px;
         backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);

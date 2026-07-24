@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
 <title>Cisco IOS: Static Routing &amp; OSPF — SP1R4 / NOCTIS</title>
 <meta name="description" content="How a Cisco router chooses paths — reading the routing table, static and default routes, floating statics for failover, and single-area OSPF that maintains itself.">
 <meta property="og:title" content="Cisco IOS: Static Routing &amp; OSPF — NOCTIS">
@@ -21,18 +21,14 @@
 
 <link rel="stylesheet" href="../fonts/inter.css">
 <link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
 <style>
-  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html{font-size:16px;background:var(--bg);color:var(--body);}
   body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
   a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
-  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
-  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
-  .nav-links{display:flex;gap:1.6rem;}
-  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
-  .nav-links a:hover{color:var(--accent);text-decoration:none;}
-  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
   .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
   .post-meta span{color:var(--accent);font-weight:600;}
   h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
@@ -100,16 +96,9 @@
 <script src="../js/theme.js"></script>
 <style>
   body.dark {
-    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
-    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
     --gotcha:#d9a441; --defender:#6f9fc9;
-  }
-  @media (min-width: 1100px) {
-    .nav-links { margin-right: 44px; }
-  }
-  @media (max-width: 1099px) {
-    nav { display: none; }
-    .wrap { padding-top: 4.75rem; }
   }
 </style>
 <script id="noctis-jsonld" type="application/ld+json">
@@ -143,17 +132,10 @@
 }
 </script>
 </head>
-<body>
-<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
 
-<nav>
-  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
-  <div class="nav-links">
-    <a href="https://sp1r4.github.io/services.html">Services</a>
-    <a href="https://sp1r4.github.io/projects.html">Projects</a>
-    <a href="https://sp1r4.github.io/blog.html">Blog</a>
-  </div>
-</nav>
 <div class="wrap">
 
   <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
@@ -168,12 +150,6 @@
     <span class="tag">CCNA</span>
   </div>
   <hr class="title-rule">
-  <!-- series-top -->
-  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
-    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
-    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 7 of 27</span>
-  </div>
-
 
   <!-- Hero diagram: route selection -->
   <div class="diagram-wrap" style="margin-bottom:2rem;">
@@ -407,18 +383,13 @@ Gi0/1        1     0      192.168.10.1/24     1     DR    0/0</span></pre>
     <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
   </div>
 
-  <!-- series-nav -->
-  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
-    <a href="cisco-switch-security.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 6</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Switch Security</span></a>
-    <a href="cisco-stp-etherchannel.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 8 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">STP &amp; EtherChannel</span></a>
-  </nav>
-  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
-
 </div>
 <footer>
   <span>© 2026 NOCTIS — SP1R4</span>
   <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
 </footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
 <script src="../js/writeup-sidebar.js" defer></script>
 <script src="../js/writeup-enhance.js" defer></script>
 </body>

@@ -54,7 +54,7 @@
         color: rgba(255,255,255,0.35);
       }
       .noctis-sidebar-toggle {
-        position: fixed; top: 18px; left: 18px; z-index: 9999;
+        position: fixed; top: 66px; left: 18px; z-index: 51;
         display: none; width: 38px; height: 38px;
         background: rgba(20,20,20,0.94); color: #eae8e3;
         border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;
@@ -69,9 +69,11 @@
       }
       .noctis-sidebar-shadow.open { opacity: 1; pointer-events: auto; }
 
-      /* Push the writeup body so it doesn't sit under the sidebar. */
+      /* Push the writeup body (and the fixed site nav) so neither sits under
+         the always-open sidebar at desktop widths. */
       @media (min-width: 1100px) {
         body { padding-left: var(--noctis-sb-width) !important; }
+        .site-nav { left: var(--noctis-sb-width) !important; }
         .writeup-back-link { left: calc(var(--noctis-sb-width) + 18px) !important; }
       }
       @media (max-width: 1099px) {

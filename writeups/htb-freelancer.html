@@ -22,6 +22,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
 <style>
   :root {
     --bg:        #eae8e3;
@@ -61,35 +62,11 @@
   }
 
   /* ── NAV ── */
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.4rem 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-logo {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: var(--text-dark);
-    text-decoration: none;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-  }
-  .nav-links { display: flex; gap: 2rem; }
-  .nav-links a {
-    color: var(--text);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: .02em;
-    transition: color .15s;
-  }
-  .nav-links a:hover { color: var(--text-dark); }
 
   /* ── WRAPPER ── */
   .wrapper {
+    position: relative;
+    z-index: 1;
     max-width: 780px;
     margin: 0 auto;
     padding: 4rem 2rem 8rem;
@@ -390,31 +367,18 @@
 <script src="../js/theme.js"></script>
 <style>
   body.dark {
-    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
-    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
-    --gotcha:#d9a441; --defender:#6f9fc9;
-  }
-  @media (min-width: 1100px) {
-    .nav-links { margin-right: 44px; }
-  }
-  @media (max-width: 1099px) {
-    nav { display: none; }
-    .wrap { padding-top: 4.75rem; }
+    --bg:#0f0f0f; --bg-code:#161616; --bg-term:#161616; --border:#2a2a2a;
+    --text:#959086; --text-dark:#f4f3ef; --text-mid:#d4d2cc;
+    --tag-bg:#1e1e1e; --tag-text:#999690; --accent:#f4f3ef;
+    --t-user:#6a9c79; --t-host:#7a8eaa; --t-path:#9a8060; --t-cmd:#f4f3ef;
+    --t-out:#a6a69c; --t-yellow:#aa9050; --t-red:#aa5050; --t-green:#5a8a68;
+    --t-comment:#7a7870; --t-blue:#5a7a9a;
   }
 </style>
 </head>
-<body>
-<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
-
-
-<nav>
-  <a class="nav-logo" href="https://sp1r4.github.io/index.html">NOCTIS</a>
-  <div class="nav-links">
-    <a href="https://sp1r4.github.io/services.html">Services</a>
-    <a href="https://sp1r4.github.io/projects.html">Projects</a>
-    <a href="https://sp1r4.github.io/blog.html">Blog</a>
-  </div>
-</nav>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
 
 <div class="wrapper">
   <a class="back" href="https://sp1r4.github.io/blog.html">&#8592; Back to posts</a>
@@ -739,6 +703,8 @@ The file is on the Desktop.</span></div>
   <span><a href="https://sp1r4.github.io/blog.html">&#8592; All posts</a></span>
 </footer>
 
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
 <script src="../js/writeup-sidebar.js" defer></script>
 <script src="../js/writeup-enhance.js" defer></script>
 </body>
