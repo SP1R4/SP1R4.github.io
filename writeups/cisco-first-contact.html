@@ -104,12 +104,11 @@
     --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
     --gotcha:#d9a441; --defender:#6f9fc9;
   }
-  /* Mobile header: the floating Back-to-blog pill overlapped the site nav and
-     the nav links overflowed. Drop the nav on small screens, keep the pill,
-     and clear room for it. */
-  @media (max-width: 600px) {
+  @media (min-width: 1100px) {
+    .nav-links { margin-right: 44px; }
+  }
+  @media (max-width: 1099px) {
     nav { display: none; }
-    .writeup-back-link { top: 12px !important; left: 12px !important; }
     .wrap { padding-top: 4.75rem; }
   }
 </style>
