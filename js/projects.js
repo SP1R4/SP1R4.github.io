@@ -11,7 +11,7 @@ const LANG_COLORS = {
 };
 
 const EXCLUDE = ['SP1R4', 'noctis-linktree', 'sp1r4.github.io'];
-const FEATURED = ['BackupHandler', 'PhantomTrap', 'Qsafe', 'hashcracker'];
+const FEATURED = ['BackupHandler', 'PhantomTrap', 'Qsafe', 'hashcracker', 'sentrynotch'];
 
 const FALLBACK_REPOS = [
   { name: 'BackupHandler', description: 'Full-featured backup solution with local/SSH/S3/MySQL support, Tailscale VPN, system snapshots for OS rebuild, AES-256 encryption, dedup, scheduling, and Telegram notifications', language: 'Python', stargazers_count: 0, forks_count: 0, html_url: 'https://github.com/SP1R4/BackupHandler', topics: ['automation', 'backup', 'encryption', 'linux', 'python', 'restore', 'sftp', 'snapshot', 'ssh', 'sysadmin', 'tailscale', 'telegram'] },
