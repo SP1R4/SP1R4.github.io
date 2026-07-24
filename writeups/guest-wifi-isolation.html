@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Why Guest Wi-Fi Needs Its Own Network — SP1R4 / NOCTIS</title>
+<meta name="description" content="A plain-language guide for hotel and business owners: what network segmentation is, why a Wi-Fi password protects nothing by itself, and the five things to ask your IT person for — including proof.">
+<meta property="og:title" content="Why Guest Wi-Fi Needs Its Own Network — NOCTIS">
+<meta property="og:description" content="A plain-language guide for hotel and business owners: what network segmentation is, why a Wi-Fi password protects nothing by itself, and the five things to ask your IT person for — including proof.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/guest-wifi-isolation.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/guest-wifi-isolation.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  ul.plain{padding-left:1.4rem;margin-bottom:1.2rem;}
+  ul.plain li{font-size:.96rem;color:var(--body);margin-bottom:.5rem;line-height:1.6;}
+  ol.plain{padding-left:1.4rem;margin-bottom:1.2rem;}
+  ol.plain li{font-size:.96rem;color:var(--body);margin-bottom:.5rem;line-height:1.6;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Why Guest Wi-Fi Needs Its Own Network",
+  "description": "A plain-language guide for hotel and business owners: what network segmentation is, why a Wi-Fi password protects nothing by itself, and the five things to ask your IT person for — including proof.",
+  "datePublished": "2026-09-07",
+  "dateModified": "2026-09-07",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/guest-wifi-isolation.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png",
+  "keywords": [
+    "security"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#guest-wifi-isolation"
+  },
+  "timeRequired": "PT4M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Security</span> &nbsp;·&nbsp; Guide &nbsp;·&nbsp; September 2026</p>
+  <h1 class="post-title">Why Guest Wi-Fi<br>Needs Its Own Network</h1>
+  <p class="post-subtitle">A plain-language guide for hotel and business owners: what network segmentation actually means, why a Wi-Fi password alone protects nothing, and the five things to ask your IT person for.</p>
+  <div class="tags">
+    <span class="tag">Wi-Fi</span>
+    <span class="tag">Segmentation</span>
+    <span class="tag">Hospitality</span>
+    <span class="tag">GDPR</span>
+    <span class="tag">Non-technical</span>
+  </div>
+  <hr class="title-rule">
+
+  <p>We see it in every second property we take on: one router, one Wi-Fi password, and everything on the same network — guests' phones next to the front-desk POS, the cameras, the booking system. It works, right up until the day it doesn't. This article explains, without jargon, why guest Wi-Fi must live on its own separate network — and exactly what to ask your IT person for.</p>
+  <h2 class="section-title">The scenario that should worry you</h2>
+  <p>A guest sits in your lobby with a laptop carrying malware — they don't even know it themselves. They join your Wi-Fi. If everything lives on one network, that laptop can "see" your till, your cameras, the reception PC with your customers' details. No hooded hacker required — an infected machine and a flat network are enough.</p>
+  <p>The reverse is just as true: a cheap camera with outdated firmware or a "smart" water heater can become the door through which someone reaches your genuinely sensitive systems.</p>
+  <h2 class="section-title">What segmentation means — in plain terms</h2>
+  <p>Segmentation means the network is cut into watertight compartments. In the properties we build, the rule is four:</p>
+  <ul class="plain">
+    <li><strong>Guests</strong> — see the internet and nothing else. Not each other, not anything of yours.</li>
+    <li><strong>Staff</strong> — reception, POS, booking system. Internet and, where needed, camera viewing.</li>
+    <li><strong>Cameras</strong> — a closed circuit with <strong>no internet access at all</strong>. Remote viewing happens over a secure VPN, not by opening ports.</li>
+    <li><strong>Management</strong> — the router, switches and access points. Reachable only from authorised devices.</li>
+  </ul>
+  <p>An infected laptop on the guest network stays there: it sees the internet and nothing else. A guest's problem stops being your business's problem.</p>
+  <h2 class="section-title">"But our Wi-Fi has a password"</h2>
+  <p>The password controls <strong>who gets onto</strong> the network — not <strong>what they can see</strong> once they're on. The moment you hand the password to every guest (and print it on the room card), it protects nothing between the people connected. A password without segmentation is a locked front door on a house with no internal doors.</p>
+  <h2 class="section-title">It's not just security — it's quality too</h2>
+  <p>On a flat network, one guest downloading films can choke the POS mid-transaction. Proper segmentation also brings <strong>fairness rules</strong>: every room gets its share, the phone and the till get priority, and the Wi-Fi survives August. "Slow internet" complaints usually don't need a more expensive line — they need a correct setup.</p>
+  <h2 class="section-title">What to ask your IT person for</h2>
+  <p>You don't need to know how it's done — you need to know what to ask for:</p>
+  <ol class="plain">
+    <li>Separate networks for guests, staff, cameras and management.</li>
+    <li>Cameras <strong>with no internet access</strong> — remote viewing only through a VPN.</li>
+    <li>Fair bandwidth per room/user on the guest network.</li>
+    <li><strong>Proof, not reassurance</strong>: have them demonstrate, in front of you, that from the guest Wi-Fi neither the till, nor the cameras, nor the router are visible.</li>
+    <li>Documentation: one diagram and one page explaining what exists and why.</li>
+  </ol>
+  <p>That last item matters most. A network that is "probably fine" isn't fine — if it hasn't been tested, it's an assumption.</p>
+  <h2 class="section-title">And the legal side</h2>
+  <p>Customer details at reception, camera footage of faces, card payments — all of it is data you are obliged to protect (GDPR). An incident that started from open guest Wi-Fi is hard to defend as "we didn't know". Segmentation is one of the cheapest measures with the highest return — half a day to a day of work at most properties, using the equipment you already own.</p>
+  <div class="thesis-card"><p>For technical readers: the full build, command by command, is in our <a href="mikrotik-lab-hotel.html">MikroTik hotel network lab</a> and the matching <a href="cisco-lab-campus.html">Cisco campus lab</a>.</p></div>
+  <p>Want to know how yours is set up? <a href="https://sp1r4.github.io/services.html">Talk to us</a> — a short assessment usually tells the whole story.</p>
+
+  <div class="cta-card">
+    <h3>Not sure how your network is actually segmented?</h3>
+    <p>NOCTIS designs and documents network segmentation for hotels, clinics, and small businesses in Crete — guest, staff, cameras, and management, each properly walled off, with proof it works.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Observability — NTP, Syslog, SNMP &amp; NetFlow — SP1R4 / NOCTIS</title>
+<meta name="description" content="You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.">
+<meta property="og:title" content="Cisco IOS: Observability (NTP, Syslog, SNMP &amp; NetFlow) — NOCTIS">
+<meta property="og:description" content="You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-observability.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-observability.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-observability.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-observability.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Observability (NTP, Syslog, SNMP & NetFlow)",
+  "description": "You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.",
+  "datePublished": "2026-08-01",
+  "dateModified": "2026-08-01",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-observability.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-observability.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-observability"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Observability</h1>
+  <p class="post-subtitle">The least glamorous config on the box, and the one you'll be most grateful for at 3am. Synchronized time so logs line up, centralized syslog so evidence survives a reboot, SNMPv3 so you're monitored, and NetFlow so you can answer "what was using all the bandwidth?" — after it already happened.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">NTP</span>
+    <span class="tag">Syslog</span>
+    <span class="tag">SNMP</span>
+    <span class="tag">NetFlow</span>
+    <span class="tag">Monitoring</span>
+    <span class="tag">Ops</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 14 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="op" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#3a5a78"/></marker>
+      </defs>
+      <rect width="720" height="180" fill="#e1ded7"/>
+      <rect x="290" y="66" width="140" height="48" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="86" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#1a1a18;text-anchor:middle;">Cisco device</text>
+      <text x="360" y="102" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">4 telemetry streams</text>
+      <!-- four outputs -->
+      <line x1="290" y1="76" x2="150" y2="34" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#op)"/>
+      <text x="120" y="30" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;text-anchor:end;font-weight:600;">NTP ← time</text>
+      <line x1="290" y1="90" x2="150" y2="86" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#op)"/>
+      <text x="120" y="88" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;text-anchor:end;font-weight:600;">Syslog → events</text>
+      <line x1="430" y1="76" x2="570" y2="34" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#op)"/>
+      <text x="600" y="30" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;font-weight:600;">SNMP ⇄ health</text>
+      <line x1="430" y1="90" x2="570" y2="86" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#op)"/>
+      <text x="600" y="88" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;font-weight:600;">NetFlow → who used it</text>
+      <text x="360" y="150" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Time makes the other three trustworthy. Configure NTP first, always.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>When something breaks at a client site, the difference between a five-minute diagnosis and a five-hour guess is whether the network was <em>recording</em>. Four services do that recording, and they're the first thing we configure on any device we take over — before VLANs, before routing. <strong>NTP</strong> gives every device the same clock, so a log line here and a log line there can be correlated. <strong>Syslog</strong> ships events off-box to a server that survives the device rebooting (or being wiped). <strong>SNMP</strong> lets a monitoring system poll health and receive alerts. <strong>NetFlow</strong> records who talked to whom, so "the internet was slow at 2pm" becomes an answerable question.</p>
+    <p>None of it is hard, and all of it is invisible until the day you need it — at which point its absence is catastrophic. This post is the "make the box tell you what it's doing" checklist, and it pairs directly with the recovery discipline from the <a href="cisco-backup-restore.html">Backup &amp; Restore post</a>: backups let you rebuild, telemetry tells you why you had to.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>IOS basics and a reachable management network — see <a href="cisco-first-contact.html">First Contact</a></li>
+      <li>A syslog collector and/or SNMP monitor on the LAN (rsyslog, Graylog, LibreNMS, Zabbix — anything)</li>
+      <li>A NetFlow collector for section 04 (nfdump, ntopng, Elastiflow) — optional but recommended</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">NTP — Get the Time Right First</h2>
+  <p class="section-thesis"><em>Every log timestamp, every certificate check, every correlation depends on accurate time. A device with the wrong clock produces logs you can't trust. Configure NTP before anything else that records.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — sync to NTP, timestamp everything</span>
+    <pre class="term"><span class="cmt"># Set the zone so local time reads correctly (Greece = EET, +2, DST +1)</span>
+<span class="pc">R1(config)#</span> <span class="out">clock timezone EET 2 0</span>
+<span class="pc">R1(config)#</span> <span class="out">clock summer-time EEST recurring last Sun Mar 3:00 last Sun Oct 4:00</span>
+
+<span class="cmt"># Point at upstream NTP servers (pool servers, or your own)</span>
+<span class="pc">R1(config)#</span> <span class="out">ntp server 0.gr.pool.ntp.org</span>
+<span class="pc">R1(config)#</span> <span class="out">ntp server 1.gr.pool.ntp.org</span>
+
+<span class="cmt"># CRITICAL: stamp logs and debugs with the real date+time, not "uptime"</span>
+<span class="pc">R1(config)#</span> <span class="out">service timestamps log datetime msec localtime show-timezone</span>
+<span class="pc">R1(config)#</span> <span class="out">service timestamps debug datetime msec localtime show-timezone</span>
+<span class="pc">R1(config)#</span> <span class="out">end</span>
+
+<span class="cmt"># Confirm it locked (may take a few minutes to sync)</span>
+<span class="pc">R1#</span> <span class="out">show ntp status</span>
+<span class="out">Clock is synchronized, stratum 3, reference is 203.0.113.9
+</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Logs Say "*Mar 1 00:04:12" — You Never Set Timestamps</span>
+    <p>Out of the box, IOS stamps log messages with time <em>since boot</em> and a bogus "March 1" date (its epoch), and the leading <code>*</code> means the clock is unsynchronized. Correlating those across devices is impossible. The <code>service timestamps log datetime</code> command is the single most valuable line in this whole post — without it, NTP fixes the clock but your logs still don't show it. Set both <code>log</code> and <code>debug</code> timestamps, and confirm the <code>*</code> disappears from <code>show logging</code> once NTP syncs.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Syslog — Ship Events Off the Box</h2>
+  <p class="section-thesis"><em>The device's local log buffer clears on reboot and holds only a few hundred lines. Send everything to a central syslog server so events survive, aggregate across devices, and can be searched and alerted on.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — local buffer + remote syslog</span>
+    <pre class="term"><span class="cmt"># Keep a decent local buffer too (survives until reboot)</span>
+<span class="pc">R1(config)#</span> <span class="out">logging buffered 64000 informational</span>
+<span class="pc">R1(config)#</span> <span class="out">service sequence-numbers</span>       <span class="cmt"># number lines so gaps are visible</span>
+
+<span class="cmt"># Ship to the central collector, at severity "informational" (6) and above</span>
+<span class="pc">R1(config)#</span> <span class="out">logging host 192.168.1.50</span>
+<span class="pc">R1(config)#</span> <span class="out">logging trap informational</span>
+<span class="pc">R1(config)#</span> <span class="out">logging source-interface Loopback0</span>  <span class="cmt"># stable source IP</span>
+<span class="pc">R1(config)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify the collector is receiving and see the buffer</span>
+<span class="pc">R1#</span> <span class="out">show logging</span>
+<span class="out">    Trap logging: level informational, 842 message lines logged
+        Logging to 192.168.1.50 (udp port 514, audit disabled)</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — Severity Levels and a Loopback Source</span>
+    <p>Syslog severities run 0 (emergencies) to 7 (debugging); <code>logging trap informational</code> (6) is the sweet spot — you get link flaps, config changes, and security events without drowning in debug noise. Two refinements make it production-grade: log from a <strong>Loopback interface</strong> so every message carries the same source IP no matter which physical interface it left by (your collector groups by device cleanly), and remember that <code>logging trap debugging</code> (7) can flood a slow link — only raise it while actively troubleshooting. A config-change log (<code>archive</code> / <code>log config</code>) plus syslog gives you an audit trail of who changed what, when.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">SNMPv3 — Monitoring Without the Cleartext</h2>
+  <p class="section-thesis"><em>SNMP lets your monitoring platform poll interface counters, CPU, and memory, and receive traps. Use v3 — authenticated and encrypted — never v1/v2c, whose "community string" is a cleartext password on the wire.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — read-only SNMPv3 with auth + encryption</span>
+    <pre class="term"><span class="cmt"># A view limiting what can be read, a group using it, and an encrypted user</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server view MON iso included</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server group MONITORING v3 priv read MON</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server user nms MONITORING v3 auth sha AuthPass123 priv aes 128 PrivPass123</span>
+
+<span class="cmt"># Send traps to the monitoring host (link up/down, config changes, etc.)</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server enable traps</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server host 192.168.1.50 version 3 priv nms</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server location Heraklion-Rack-1</span>
+<span class="pc">R1(config)#</span> <span class="out">snmp-server contact noc@noctis.gr</span>
+<span class="pc">R1(config)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — <code>snmp-server community public RO</code> Is a Findings-Report Classic</span>
+    <p>SNMPv1/v2c authenticate with a plaintext "community string" that crosses the network in the clear — and default communities <code>public</code>/<code>private</code> are the first thing any scanner (and any pentester) tries. A readable v2c community leaks your entire config topology; a writable one (<code>private RW</code>) can reconfigure the device. On engagements this is a routine finding. Use <strong>v3 with priv</strong> (auth + encryption), restrict which hosts may poll with an ACL (<code>snmp-server community</code> … `&lt;acl&gt;` if you're truly stuck on v2c), and never leave a default community in place. This is the SNMP half of the management-plane hardening we'll consolidate later in the series.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Flexible NetFlow — Who Used the Bandwidth?</h2>
+  <p class="section-thesis"><em>Interface counters tell you a link was full; NetFlow tells you which conversations filled it. Three objects — a record (what to collect), an exporter (where to send it), and a monitor (tying them together) — applied to an interface.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — Flexible NetFlow, exported to a collector</span>
+    <pre class="term"><span class="cmt"># 1. RECORD — the fields that define a flow and the stats to keep</span>
+<span class="pc">R1(config)#</span> <span class="out">flow record RECORD-1</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">match ipv4 source address</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">match ipv4 destination address</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">match transport source-port</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">match transport destination-port</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">match ipv4 protocol</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">collect counter bytes</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">collect counter packets</span>
+<span class="pc">R1(config-flow-record)#</span> <span class="out">exit</span>
+
+<span class="cmt"># 2. EXPORTER — where to ship the flow data</span>
+<span class="pc">R1(config)#</span> <span class="out">flow exporter EXPORT-1</span>
+<span class="pc">R1(config-flow-exporter)#</span> <span class="out">destination 192.168.1.50</span>
+<span class="pc">R1(config-flow-exporter)#</span> <span class="out">transport udp 2055</span>
+<span class="pc">R1(config-flow-exporter)#</span> <span class="out">exit</span>
+
+<span class="cmt"># 3. MONITOR — bind record + exporter, then apply to the interface</span>
+<span class="pc">R1(config)#</span> <span class="out">flow monitor MONITOR-1</span>
+<span class="pc">R1(config-flow-monitor)#</span> <span class="out">record RECORD-1</span>
+<span class="pc">R1(config-flow-monitor)#</span> <span class="out">exporter EXPORT-1</span>
+<span class="pc">R1(config-flow-monitor)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip flow monitor MONITOR-1 input</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip flow monitor MONITOR-1 output</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — read flows right on the box (no collector needed)</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show flow monitor MONITOR-1 cache sort highest counter bytes top 5</span>
+<span class="out">SRC ADDR        DST ADDR        PROT  SRC  DST    BYTES
+192.168.1.30    93.184.216.34   6     5512 443    248 M   ← the bandwidth hog
+192.168.1.44    140.82.121.4    6     6001 443     31 M
+...</span>
+<span class="cmt"># "What ate the internet at 2pm" — answered from the device itself.</span></pre>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">The Verify Checklist <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Confirm each of the four is actually working — a silently-broken telemetry pipeline is worse than none, because you'll trust data that isn't arriving.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Confirms</th></tr></thead>
+    <tbody>
+      <tr><td>show ntp status / associations</td><td>Clock synchronized, which server, stratum.</td></tr>
+      <tr><td>show logging</td><td>Syslog host, trap level, and the local buffer.</td></tr>
+      <tr><td>show snmp / show snmp user</td><td>SNMP engine up, v3 users and their auth/priv.</td></tr>
+      <tr><td>show flow monitor MONITOR-1 cache</td><td>Flows are being recorded.</td></tr>
+      <tr><td>show flow exporter statistics</td><td>Flow packets actually being sent to the collector.</td></tr>
+      <tr><td>show clock detail</td><td>Time source — "NTP" (good) vs "user configuration" (drifting).</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Same Telemetry</h2>
+  <p class="section-thesis"><em>RouterOS offers every one of these; the crossover is direct.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>/system ntp client</td><td><code>ntp server</code></td></tr>
+      <tr><td>/system logging action remote + rule</td><td><code>logging host</code> + <code>logging trap</code></td></tr>
+      <tr><td>/snmp community (v3 user)</td><td><code>snmp-server user … v3 auth … priv …</code></td></tr>
+      <tr><td>/ip traffic-flow (+ target)</td><td>Flexible NetFlow record/exporter/monitor</td></tr>
+      <tr><td>/tool sniffer, /tool torch</td><td><code>show flow monitor cache</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Configure NTP first.</strong> Every other record is only as trustworthy as the clock. And <code>service timestamps log datetime</code> is the line that actually puts real time on your logs — without it, NTP alone doesn't help.</li>
+      <li><strong>Ship logs off-box.</strong> The local buffer dies on reboot; a central syslog server keeps the evidence and aggregates across devices. <code>logging trap informational</code> is the noise/signal sweet spot.</li>
+      <li><strong>SNMPv3 or nothing.</strong> v1/v2c community strings are cleartext passwords and a standing finding. Use v3 with auth+priv and restrict who can poll.</li>
+      <li><strong>NetFlow answers "who used the bandwidth."</strong> Record + exporter + monitor on an interface turns "the link was full" into a named conversation — readable on the box or in a collector.</li>
+      <li><strong>Log from a loopback.</strong> A stable source IP makes your collector group messages by device instead of by whichever interface they left.</li>
+      <li><strong>Verify the pipeline, don't assume it.</strong> A telemetry stream that silently stopped is worse than none — check the exporter/syslog counters are actually incrementing.</li>
+      <li><strong>This pairs with backups.</strong> Backups let you rebuild the device; telemetry tells you why you had to. Both go on before the network carries anything important.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Flying blind on your network in Crete?</h3>
+    <p>NOCTIS instruments the networks we manage — synced time, central logging, SNMP monitoring, and NetFlow — so an outage comes with evidence, not guesswork. For hotels and SMBs that need answers, not just a reboot.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-site-to-site-vpn.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 13</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Site-to-Site IPsec VPN</span></a>
+    <a href="cisco-ios-upgrade.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 15 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Upgrading Safely</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

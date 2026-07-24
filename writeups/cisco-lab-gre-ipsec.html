@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco Lab: HQ + Branches — GRE over IPsec WAN — SP1R4 / NOCTIS</title>
+<meta name="description" content="A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.">
+<meta property="og:title" content="Cisco Lab: HQ + Branches — GRE over IPsec WAN — NOCTIS">
+<meta property="og:description" content="A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-lab-gre-ipsec.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-lab-gre-ipsec.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-lab-gre-ipsec.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-lab-gre-ipsec.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco Lab: HQ + Branches — GRE over IPsec WAN",
+  "description": "A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.",
+  "datePublished": "2026-08-25",
+  "dateModified": "2026-08-25",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-lab-gre-ipsec.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-lab-gre-ipsec.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-lab-gre-ipsec"
+  },
+  "timeRequired": "PT11M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Lab</span> &nbsp;·&nbsp; Lab Scenario &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco Lab<br>HQ + Branches: GRE over IPsec</h1>
+  <p class="post-subtitle">The internet will happily carry packets between your sites — it just refuses to know anything about your private LANs. This lab builds the classic answer: GRE tunnels that make three routers think they share a cable, OSPF running over those tunnels as if they were physical, and IPsec wrapped around the outside so the ISP sees only ESP noise. All of it works in Packet Tracer.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Packet Tracer</span>
+    <span class="tag">Lab</span>
+    <span class="tag">GRE</span>
+    <span class="tag">IPsec</span>
+    <span class="tag">OSPF</span>
+    <span class="tag">Hub and Spoke</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 26 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: hub and spoke over ISP cloud -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="300" fill="#e1ded7"/>
+      <!-- ISP cloud -->
+      <ellipse cx="360" cy="150" rx="130" ry="58" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="360" y="142" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#3a5a78;text-anchor:middle;">ISP core</text>
+      <text x="360" y="158" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a5a78;text-anchor:middle;">routes public /30s only —</text>
+      <text x="360" y="170" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a5a78;text-anchor:middle;">has never heard of 192.168.x.x</text>
+      <!-- HQ -->
+      <rect x="290" y="18" width="140" height="42" rx="6" fill="#d4d2cc" stroke="#c63d1f" stroke-width="1.4"/>
+      <text x="360" y="36" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">HQ (2911) — hub</text>
+      <text x="360" y="50" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">LAN 192.168.10.0/24 · WAN 198.51.100.2</text>
+      <line x1="360" y1="60" x2="360" y2="92" style="stroke:#888880;stroke-width:1.6;"/>
+      <!-- BR1 -->
+      <rect x="30" y="230" width="150" height="42" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="105" y="248" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">BR1 (2911) — spoke</text>
+      <text x="105" y="262" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">LAN 192.168.20.0/24 · WAN 203.0.113.2</text>
+      <line x1="130" y1="230" x2="252" y2="180" style="stroke:#888880;stroke-width:1.6;"/>
+      <!-- BR2 -->
+      <rect x="540" y="230" width="150" height="42" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="615" y="248" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">BR2 (2911) — spoke</text>
+      <text x="615" y="262" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">LAN 192.168.30.0/24 · WAN 192.0.2.2</text>
+      <line x1="590" y1="230" x2="468" y2="180" style="stroke:#888880;stroke-width:1.6;"/>
+      <!-- tunnels -->
+      <path d="M 330 62 C 220 110, 150 170, 115 228" fill="none" style="stroke:#c63d1f;stroke-width:2.2;stroke-dasharray:8,5;"/>
+      <path d="M 390 62 C 500 110, 570 170, 605 228" fill="none" style="stroke:#c63d1f;stroke-width:2.2;stroke-dasharray:8,5;"/>
+      <text x="185" y="112" style="font-family:'Inter',sans-serif;font-size:9px;fill:#c63d1f;font-weight:700;" transform="rotate(38 185 112)">Tunnel10 — 172.16.0.0/30</text>
+      <text x="466" y="86" style="font-family:'Inter',sans-serif;font-size:9px;fill:#c63d1f;font-weight:700;" transform="rotate(-38 500 96)">Tunnel20 — 172.16.0.4/30</text>
+      <text x="360" y="290" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">dashed = GRE inside IPsec: private subnets ride through a cloud that can't route them</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p><a href="cisco-site-to-site-vpn.html">Part 13</a> built one modern IKEv2 tunnel between two offices. This lab scales the idea into a real <strong>hub-and-spoke WAN</strong> — and adds the ingredient that changes everything: a <strong>routing protocol over the tunnels</strong>. Plain IPsec carries packets between subnets you enumerate by hand; GRE gives you a virtual <em>interface</em>, and anything with an interface can run OSPF. Add a branch subnet and nobody edits crypto ACLs — OSPF just learns it.</p>
+    <p>The lab's secret weapon is the ISP cloud in the middle: three routers that only know the public /30s. Your first end-to-end ping <em>must fail</em> — the internet doesn't route RFC1918 — and that failure is the lesson everything else builds on. Then GRE smuggles the private traffic through in public envelopes, and IPsec makes the envelopes opaque. Every command here is Packet Tracer 8.x-compatible (crypto maps, not the VTI profiles of part 13 — we'll flag the difference).</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li><a href="cisco-site-to-site-vpn.html">Site-to-Site IPsec VPN</a> — phase 1 / phase 2 vocabulary assumed</li>
+      <li><a href="cisco-lab-ospf-areas.html">Lab: Multi-Area OSPF</a> or at least single-area OSPF from part 7</li>
+      <li>Packet Tracer with four 2911s for HQ/BR1/BR2 + one ISP router (or three for a fuller cloud)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Build the Hostile Internet First</h2>
+  <p class="section-thesis"><em>The ISP router(s) get the public /30s and nothing else — no routes to any 192.168 network, ever. Prove the problem exists before solving it.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">ISP + site WANs — public plumbing only</span>
+    <pre class="term"><span class="cmt"># ISP router — three legs, three public /30s. No statics. No OSPF. Nothing.</span>
+<span class="pc">ISP(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">ISP(config-if)#</span> <span class="out">ip address 198.51.100.1 255.255.255.252</span>   <span class="cmt">← toward HQ</span>
+<span class="pc">ISP(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">ISP(config-if)#</span> <span class="out">ip address 203.0.113.1 255.255.255.252</span>    <span class="cmt">← toward BR1</span>
+<span class="pc">ISP(config)#</span> <span class="out">interface GigabitEthernet0/2</span>
+<span class="pc">ISP(config-if)#</span> <span class="out">ip address 192.0.2.1 255.255.255.252</span>      <span class="cmt">← toward BR2</span>
+
+<span class="cmt"># Each site: WAN address + a default toward the ISP (as any customer router)</span>
+<span class="pc">HQ(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">ip address 198.51.100.2 255.255.255.252</span>
+<span class="pc">HQ(config)#</span> <span class="out">ip route 0.0.0.0 0.0.0.0 198.51.100.1</span>
+
+<span class="cmt"># The moment of truth — public works, private cannot:</span>
+<span class="pc">HQ#</span> <span class="out">ping 203.0.113.2</span>            <span class="cmt">← BR1's public WAN</span>
+<span class="out">!!!!!  Success rate is 100 percent</span>
+<span class="pc">HQ#</span> <span class="out">ping 192.168.20.1</span>           <span class="cmt">← BR1's LAN</span>
+<span class="out">.....  Success rate is 0 percent</span>   <span class="cmt">← correct! The ISP has no route
+                                        and would drop RFC1918 anyway</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Why We Bother Simulating the ISP</span>
+    <p>Most VPN labs cheat with a crossover cable between the two routers, and students walk away never having seen the actual constraint: <strong>the underlay routes only what it knows</strong>. With a real cloud in the middle, every later failure gets diagnosed properly — "is this an underlay problem (can the tunnel endpoints reach each other?) or an overlay problem (is the tunnel/OSPF broken?)". That two-layer question is the whole troubleshooting model for VPNs, SD-WAN, and every overlay technology you'll ever touch.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">GRE — a Virtual Cable per Branch</h2>
+  <p class="section-thesis"><em>A tunnel interface has a source (my public IP), a destination (your public IP), and its own private address. Packets entering it get wrapped in a public envelope the ISP can route.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">HQ + BR1 — Tunnel10 (Tunnel20 to BR2 is the same recipe)</span>
+    <pre class="term"><span class="pc">HQ(config)#</span> <span class="out">interface Tunnel10</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">ip address 172.16.0.1 255.255.255.252</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">tunnel source GigabitEthernet0/0</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">tunnel destination 203.0.113.2</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">ip mtu 1400</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">ip tcp adjust-mss 1360</span>
+
+<span class="pc">BR1(config)#</span> <span class="out">interface Tunnel10</span>
+<span class="pc">BR1(config-if)#</span> <span class="out">ip address 172.16.0.2 255.255.255.252</span>
+<span class="pc">BR1(config-if)#</span> <span class="out">tunnel source GigabitEthernet0/0</span>
+<span class="pc">BR1(config-if)#</span> <span class="out">tunnel destination 198.51.100.2</span>
+<span class="pc">BR1(config-if)#</span> <span class="out">ip mtu 1400</span>
+<span class="pc">BR1(config-if)#</span> <span class="out">ip tcp adjust-mss 1360</span>
+
+<span class="cmt"># The virtual cable is up — ping across it:</span>
+<span class="pc">HQ#</span> <span class="out">ping 172.16.0.2</span>
+<span class="out">!!!!!  Success rate is 100 percent</span>
+<span class="cmt"># The ISP carried that ping — as unicast between two PUBLIC addresses,
+# with the private packet hidden inside. That's the entire GRE trick.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The MTU Lines Are Not Optional</span>
+    <p>GRE steals 24 bytes and IPsec will take ~58 more; a full-size 1500-byte packet no longer fits and gets fragmented or — with DF set, which all modern TCP sets — <strong>silently dropped</strong>. The classic symptom: ping works, SSH works, but HTTPS pages hang and file copies stall at 0%. Small packets fit, full segments don't. <code>ip mtu 1400</code> + <code>ip tcp adjust-mss 1360</code> on <em>every tunnel interface, both ends</em> prevents the entire symptom class. When any overlay "works but big things hang", MTU is guilty until proven innocent.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">OSPF over the Tunnels</h2>
+  <p class="section-thesis"><em>Here's the payoff for choosing GRE: the tunnels are interfaces, so OSPF runs on them like on any cable. The branches learn each other's subnets with zero enumeration.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">All three sites — one OSPF area over the overlay</span>
+    <pre class="term"><span class="pc">HQ(config)#</span> <span class="out">router ospf 1</span>
+<span class="pc">HQ(config-router)#</span> <span class="out">router-id 10.10.10.10</span>
+<span class="pc">HQ(config-router)#</span> <span class="out">passive-interface GigabitEthernet0/1</span>       <span class="cmt">← the LAN</span>
+<span class="pc">HQ(config-router)#</span> <span class="out">network 172.16.0.0 0.0.0.7 area 0</span>          <span class="cmt">← both tunnels</span>
+<span class="pc">HQ(config-router)#</span> <span class="out">network 192.168.10.0 0.0.0.255 area 0</span>
+
+<span class="pc">BR1(config)#</span> <span class="out">router ospf 1</span>
+<span class="pc">BR1(config-router)#</span> <span class="out">router-id 20.20.20.20</span>
+<span class="pc">BR1(config-router)#</span> <span class="out">passive-interface GigabitEthernet0/1</span>
+<span class="pc">BR1(config-router)#</span> <span class="out">network 172.16.0.0 0.0.0.3 area 0</span>
+<span class="pc">BR1(config-router)#</span> <span class="out">network 192.168.20.0 0.0.0.255 area 0</span>
+
+<span class="cmt"># NEVER put the WAN /30s or the default route into OSPF here —
+# the underlay must stay ignorant of the overlay (see gotcha below).</span>
+
+<span class="pc">BR1#</span> <span class="out">show ip route ospf</span>
+<span class="out">O    192.168.10.0/24 [110/1001] via 172.16.0.1, 00:01:12, Tunnel10
+O    192.168.30.0/24 [110/2001] via 172.16.0.1, 00:01:02, Tunnel10  ← BR2's LAN,
+                                                                       via the hub</span>
+<span class="pc">BR1#</span> <span class="out">ping 192.168.30.1 source 192.168.20.1</span>
+<span class="out">!!!!!</span>   <span class="cmt">← branch-to-branch, hairpinned through HQ. The full WAN works.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Recursive Routing Kills the Tunnel</span>
+    <p>If OSPF ever learns a route to the <strong>tunnel destination itself</strong> (BR1's public 203.0.113.2) <em>through the tunnel</em>, the router tries to deliver the tunnel's envelopes into the tunnel — and IOS tears the interface down with <code>%TUN-5-RECURDOWN: Tunnel10 temporarily disabled due to recursive routing</code>. The tunnel flaps forever: down → route withdrawn → up → route relearned → down. The rule that prevents it: <strong>tunnel endpoints are reached only via the underlay</strong> (the static default), and the underlay's prefixes never enter the overlay's routing protocol. If you ever see RECURDOWN, you advertised something you shouldn't have.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Wrap It in IPsec</h2>
+  <p class="section-thesis"><em>GRE is a clear envelope — the ISP can read every LAN packet inside. An IPsec transform in transport mode encrypts exactly the GRE stream between each pair of public endpoints.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">HQ + BR1 — ISAKMP, transform set, crypto map (PT-compatible)</span>
+    <pre class="term"><span class="cmt"># Phase 1 — identical policy both ends</span>
+<span class="pc">HQ(config)#</span> <span class="out">crypto isakmp policy 10</span>
+<span class="pc">HQ(config-isakmp)#</span> <span class="out">encryption aes 256</span>
+<span class="pc">HQ(config-isakmp)#</span> <span class="out">hash sha</span>
+<span class="pc">HQ(config-isakmp)#</span> <span class="out">authentication pre-share</span>
+<span class="pc">HQ(config-isakmp)#</span> <span class="out">group 5</span>
+<span class="pc">HQ(config)#</span> <span class="out">crypto isakmp key N0ctis-Lab-Key address 203.0.113.2</span>
+
+<span class="cmt"># Phase 2 — transport mode: we're only protecting router-to-router GRE</span>
+<span class="pc">HQ(config)#</span> <span class="out">crypto ipsec transform-set TS-GRE esp-aes 256 esp-sha-hmac</span>
+<span class="pc">HQ(cfg-crypto-trans)#</span> <span class="out">mode transport</span>
+
+<span class="cmt"># Interesting traffic = the GRE stream itself (protocol 47)</span>
+<span class="pc">HQ(config)#</span> <span class="out">ip access-list extended VPN-BR1</span>
+<span class="pc">HQ(config-ext-nacl)#</span> <span class="out">permit gre host 198.51.100.2 host 203.0.113.2</span>
+
+<span class="pc">HQ(config)#</span> <span class="out">crypto map CMAP 10 ipsec-isakmp</span>
+<span class="pc">HQ(config-crypto-map)#</span> <span class="out">set peer 203.0.113.2</span>
+<span class="pc">HQ(config-crypto-map)#</span> <span class="out">set transform-set TS-GRE</span>
+<span class="pc">HQ(config-crypto-map)#</span> <span class="out">match address VPN-BR1</span>
+<span class="cmt"># (map entry 20 = the same for BR2, then apply once:)</span>
+<span class="pc">HQ(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">HQ(config-if)#</span> <span class="out">crypto map CMAP</span>
+
+<span class="cmt"># Mirror everything on BR1 (peer/ACL reversed), then verify counters move:</span>
+<span class="pc">HQ#</span> <span class="out">show crypto ipsec sa | include pkts</span>
+<span class="out">  #pkts encaps: 214, #pkts encrypt: 214
+  #pkts decaps: 209, #pkts decrypt: 209</span>   <span class="cmt">← OSPF hellos being encrypted, live</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Real IOS Does This in One Line</span>
+    <p>On real IOS/IOS-XE you'd skip crypto maps entirely: build an <code>crypto ipsec profile</code> and put <code>tunnel protection ipsec profile X</code> straight on the tunnel interface — the part-13 approach, extended per tunnel. Packet Tracer doesn't support tunnel protection, so this lab uses the older crypto-map-matching-GRE pattern, which is also exactly what you'll find on thousands of surviving production routers. Learning both idioms means you can read old configs <em>and</em> write modern ones. (In PT, remember the 2911 needs the security license: <code>license boot module c2900 technology-package securityk9</code>, accept, save, reload.)</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Verify Both Layers <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Every fault in an encrypted overlay is at one of four layers: underlay reachability, crypto, tunnel, routing. Test them in that order, always.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Layer it proves</th></tr></thead>
+    <tbody>
+      <tr><td>ping &lt;peer public IP&gt;</td><td>1 — Underlay: can the endpoints even reach each other?</td></tr>
+      <tr><td>show crypto isakmp sa</td><td>2 — Phase 1 up? State must be QM_IDLE / ACTIVE.</td></tr>
+      <tr><td>show crypto ipsec sa</td><td>2 — Phase 2: encaps/decaps counters must both climb.</td></tr>
+      <tr><td>show interface Tunnel10</td><td>3 — Tunnel up/up? (up/down = source/destination unreachable)</td></tr>
+      <tr><td>show ip ospf neighbor</td><td>4 — Overlay routing: FULL across each tunnel.</td></tr>
+      <tr><td>show ip route ospf</td><td>4 — Remote LANs present, next-hop = tunnel address.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The order matters because each layer depends on the one before: OSPF can't form without the tunnel, the tunnel carries nothing if crypto eats the packets, and crypto can't negotiate without underlay reachability. When branch traffic dies at 3 a.m., <strong>start at layer 1 and climb</strong> — never start at the layer you <em>suspect</em>.</p>
+
+  <h3 class="sub">Failure drill</h3>
+  <p>Start a continuous ping BR1-LAN → BR2-LAN, then delete the HQ–ISP cable. Everything dies — hub-and-spoke's honest weakness, both tunnels transit HQ. Reconnect and watch the layers rebuild in dependency order: ISAKMP renegotiates, tunnels return to up/up, OSPF re-FULLs, pings resume — about 40 seconds in PT, dominated by OSPF's dead-interval. Then ask the design question this drill teaches: what would it take for BR1→BR2 to survive an HQ failure? (A BR1–BR2 tunnel — turning the hub-and-spoke into a triangle. In the real world at scale: DMVPN or SD-WAN, both of which are exactly this lab's pattern with the tunnel-building automated.)</p>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — the Same Overlay</h2>
+  <p class="section-thesis"><em>RouterOS builds the identical design — a mixed fleet interoperates fine, and we run several.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>This lab (Cisco)</th><th>MikroTik / RouterOS</th></tr></thead>
+    <tbody>
+      <tr><td>interface Tunnel10 (GRE)</td><td>/interface gre add remote-address=…</td></tr>
+      <tr><td>ip mtu 1400 + adjust-mss</td><td>mtu= on the GRE interface + mangle change-mss rule</td></tr>
+      <tr><td>OSPF over tunnels</td><td>/routing ospf interface-template on the gre interfaces</td></tr>
+      <tr><td>crypto map + isakmp key</td><td>/ip ipsec policy + peer + identity (or ipsec-secret= right on the GRE interface — one-liner)</td></tr>
+      <tr><td>show crypto ipsec sa</td><td>/ip ipsec installed-sa print (watch the byte counters)</td></tr>
+      <tr><td>DMVPN (the scaled version)</td><td>No direct equivalent — WireGuard mesh or ZeroTier fill the niche</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Underlay vs overlay is the mental model.</strong> The ISP routes public envelopes; GRE puts private packets inside them; IPsec makes the envelopes opaque. Every VPN and SD-WAN is a variation of this.</li>
+      <li><strong>GRE's gift is the interface.</strong> Interfaces run routing protocols — so new subnets propagate via OSPF instead of hand-edited crypto ACLs at every site.</li>
+      <li><strong>Set ip mtu 1400 and adjust-mss 1360 on every tunnel, both ends</strong> — or enjoy the "ping works, HTTPS hangs" ticket. Overlay MTU is guilty until proven innocent.</li>
+      <li><strong>Never let the overlay learn the underlay.</strong> Tunnel endpoints must be reached via the physical default route only, or RECURDOWN flaps the tunnel forever.</li>
+      <li><strong>Transport mode + a GRE-matching ACL</strong> is the classic crypto-map idiom (and PT's only one); real IOS prefers <code>tunnel protection</code> with an IPsec profile. Know both.</li>
+      <li><strong>Troubleshoot in layer order</strong> — underlay ping, ISAKMP SA, IPsec counters, tunnel state, OSPF neighbors. Each depends on the previous; start at 1 even when you suspect 4.</li>
+      <li><strong>Hub-and-spoke fails with the hub</strong> — the drill proves it. Spoke-to-spoke tunnels, DMVPN, or SD-WAN are the graduated answers.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Connecting offices, hotels, or a warehouse to HQ?</h3>
+    <p>NOCTIS builds encrypted multi-site WANs on Cisco and MikroTik — with dynamic routing over the tunnels, MTU done right the first time, and failover we've actually tested by pulling the cable.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-lab-ospf-areas.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 25</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: Multi-Area OSPF</span></a>
+    <a href="cisco-lab-troubleshooting.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 27 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: The Broken Campus</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: IPv6 Fundamentals — SP1R4 / NOCTIS</title>
+<meta name="description" content="IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.">
+<meta property="og:title" content="Cisco IOS: IPv6 Fundamentals — NOCTIS">
+<meta property="og:description" content="IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-ipv6.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ipv6.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ipv6.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-ipv6.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: IPv6 Fundamentals",
+  "description": "IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.",
+  "datePublished": "2026-08-13",
+  "dateModified": "2026-08-13",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-ipv6.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-ipv6.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-ipv6"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>IPv6 Fundamentals</h1>
+  <p class="post-subtitle">The address that scares people because it's long and hexadecimal — but IPv6 is genuinely simpler than IPv4 once the vocabulary clicks. Address types, link-local, how hosts get addresses without DHCP, enabling routing, OSPFv3, and the big mindset shift: no NAT, so the firewall does the hiding.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">IPv6</span>
+    <span class="tag">SLAAC</span>
+    <span class="tag">DHCPv6</span>
+    <span class="tag">OSPFv3</span>
+    <span class="tag">NDP</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 20 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: address anatomy -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="150" fill="#e1ded7"/>
+      <text x="360" y="28" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">A GLOBAL UNICAST ADDRESS — /64 everywhere</text>
+      <rect x="60" y="44" width="600" height="34" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="66" style="font-family:ui-monospace,monospace;font-size:15px;fill:#555550;text-anchor:middle;"><tspan fill="#c63d1f">2001:0db8:acad:0010</tspan>:<tspan fill="#3a5a78">0000:0000:0000:0001</tspan></text>
+      <!-- brackets -->
+      <text x="200" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#c63d1f;text-anchor:middle;">64-bit PREFIX (network)</text>
+      <text x="200" y="110" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">from ISP; last 16 bits = your subnet</text>
+      <text x="520" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#3a5a78;text-anchor:middle;">64-bit INTERFACE ID (host)</text>
+      <text x="520" y="110" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">auto (EUI-64/random) or manual</text>
+      <text x="360" y="138" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Every LAN is a /64. Subnetting is just the 16 bits between the ISP prefix and the host — no VLSM headaches.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>IPv6 looks intimidating — 128 bits, hex, colons — but it removes more complexity than it adds. There's no subnet-mask arithmetic (every LAN is a <strong>/64</strong>, full stop), no address scarcity, no broadcast storms (broadcast is gone, replaced by targeted multicast), and — the big one — <strong>no NAT</strong>. Every device can have a globally routable address, which means end-to-end connectivity is back and the network is simpler, but the security model shifts: NAT was never a firewall, and in IPv6 you can't pretend it was.</p>
+    <p>This post is the "get comfortable" tour for someone fluent in IPv4 Cisco. We'll decode the address types (global, link-local, ULA), give an interface addresses, let hosts self-configure with SLAAC or take a DHCPv6 assignment, turn on routing, and stand up OSPFv3 — every piece mapped to the IPv4 command you already know. And we'll be honest about where IPv6 actually matters for an SMB versus where dual-stack is the pragmatic answer. Notice the addressing here uses <code>2001:db8::/32</code> — the documentation range, like <code>192.0.2.0/24</code> for v4.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Solid IPv4 on Cisco — interfaces, static routes, OSPF (see <a href="cisco-routing-ospf.html">Routing &amp; OSPF</a>)</li>
+      <li>Willingness to read hex and abbreviate zeros (<code>::</code> collapses consecutive zero groups)</li>
+      <li>An IPv6 prefix from your ISP, or the documentation range for a lab</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Address Types</h2>
+  <p class="section-thesis"><em>An IPv6 interface has several addresses at once, each with a job. Learn the four prefixes and you can read any address at a glance.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Type</th><th>Range</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>Global Unicast (GUA)</td><td>2000::/3</td><td>Internet-routable — the public IP. Like a v4 public address, but every device gets one.</td></tr>
+      <tr><td>Link-Local</td><td>fe80::/10</td><td>Auto-created on every v6 interface, valid on that link only. Routing protocols and NDP live here.</td></tr>
+      <tr><td>Unique Local (ULA)</td><td>fd00::/8</td><td>Private, not internet-routed — the v6 equivalent of RFC1918 (10.x/192.168.x).</td></tr>
+      <tr><td>Multicast</td><td>ff00::/8</td><td>Replaces broadcast. e.g. ff02::1 = all nodes, ff02::2 = all routers on the link.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Link-Local Is Always There, and You'll Use It Constantly</span>
+    <p>The moment IPv6 is enabled on an interface, it auto-generates a <strong>link-local</strong> address (<code>fe80::…</code>) — you don't configure it, and it never leaves the link. This isn't a curiosity: OSPFv3 neighbors form over link-local, NDP (the ARP replacement) uses it, and static routes to a directly-connected next hop are often written to the neighbor's <em>link-local</em> address plus the exit interface. Getting comfortable that "every v6 interface has both a global and a link-local address, and they do different jobs" is 80% of the mental adjustment from IPv4.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Enable Routing &amp; Address an Interface</h2>
+  <p class="section-thesis"><em>IPv6 routing is off by default — one global command turns it on. Then addressing an interface is just like IPv4, with a couple of v6-only conveniences.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the one command everyone forgets, then addressing</span>
+    <pre class="term"><span class="cmt"># THE command — without it, the router won't route v6 at all</span>
+<span class="pc">R1(config)#</span> <span class="out">ipv6 unicast-routing</span>
+
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="cmt"># Manual global address (host part = ::1)</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 address 2001:db8:acad:10::1/64</span>
+<span class="cmt"># Or let the router pick the host part from its MAC (EUI-64):</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 address 2001:db8:acad:10::/64 eui-64</span>
+<span class="cmt"># Link-local is auto-made, but you can pin a friendly one:</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 address fe80::1 link-local</span>
+<span class="pc">R1(config-if)#</span> <span class="out">no shutdown</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span>
+
+<span class="pc">R1#</span> <span class="out">show ipv6 interface brief</span>
+<span class="out">GigabitEthernet0/1     [up/up]
+    FE80::1                    ← link-local
+    2001:DB8:ACAD:10::1        ← global</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Forgetting <code>ipv6 unicast-routing</code></span>
+    <p>You can address every interface perfectly, watch link-local come up, ping directly-connected neighbors — and still find the router won't forward v6 between subnets or run a routing protocol, because <code>ipv6 unicast-routing</code> is off. It's the exact analog of needing <code>ip routing</code> on a switch (from the <a href="cisco-vlans-trunking.html">VLAN post</a>), and it's the number-one "my IPv6 lab doesn't route" cause. Turn it on first, globally, before anything else.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">How Hosts Get Addresses — SLAAC vs DHCPv6</h2>
+  <p class="section-thesis"><em>IPv6 hosts can address themselves with zero DHCP — the router just advertises the prefix and they build their own address. Or you use DHCPv6 for more control. Most networks use a mix.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — SLAAC (router advertises, hosts self-configure)</span>
+    <pre class="term"><span class="cmt"># With a global address on the interface and unicast-routing on, the router
+# already sends Router Advertisements (RAs) — hosts hear the /64 prefix and
+# build their own address automatically. That's SLAAC; nothing more needed.</span>
+
+<span class="cmt"># Stateless DHCPv6: SLAAC for the address, DHCPv6 for DNS/domain only</span>
+<span class="pc">R1(config)#</span> <span class="out">ipv6 dhcp pool STATELESS</span>
+<span class="pc">R1(config-dhcpv6)#</span> <span class="out">dns-server 2001:4860:4860::8888</span>
+<span class="pc">R1(config-dhcpv6)#</span> <span class="out">domain-name noctis.lan</span>
+<span class="pc">R1(config-dhcpv6)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 nd other-config-flag</span>    <span class="cmt"># "get extras from DHCPv6"</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 dhcp server STATELESS</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <table class="cheat">
+    <thead><tr><th>Method</th><th>Address from</th><th>DNS/extras from</th></tr></thead>
+    <tbody>
+      <tr><td>SLAAC (pure)</td><td>Host self-builds from RA prefix</td><td>RDNSS in the RA (modern) or none</td></tr>
+      <tr><td>Stateless DHCPv6</td><td>SLAAC (host self-builds)</td><td>DHCPv6 (<code>other-config-flag</code>)</td></tr>
+      <tr><td>Stateful DHCPv6</td><td>DHCPv6 assigns it (<code>managed-config-flag</code>)</td><td>DHCPv6</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">NDP — the ARP Replacement <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>There's no ARP in IPv6. The Neighbor Discovery Protocol does the same job — mapping addresses to MACs — plus router discovery and address autoconfiguration, all over multicast.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the NDP neighbor table (v6's ARP table)</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show ipv6 neighbors</span>
+<span class="out">IPv6 Address              Age  Link-layer Addr  State  Interface
+2001:DB8:ACAD:10::10       0    0012.7f3a.1b2c   REACH  Gi0/1
+FE80::212:7FFF:FE3A:1B2C   3    0012.7f3a.1b2c   STALE  Gi0/1</span>
+
+<span class="cmt"># Ping the "all-nodes" multicast to discover who's on the link:</span>
+<span class="pc">R1#</span> <span class="out">ping ff02::1</span>            <span class="cmt"># every IPv6 node answers</span>
+<span class="pc">R1#</span> <span class="out">ping ff02::2</span>            <span class="cmt"># every router answers</span>
+
+<span class="pc">R1#</span> <span class="out">show ipv6 interface GigabitEthernet0/1 | include joined|link-local</span>
+<span class="cmt"># Shows the multicast groups the interface joined — NDP in action.</span></pre>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Routing — Static &amp; OSPFv3</h2>
+  <p class="section-thesis"><em>Same concepts as IPv4, prefixed with <code>ipv6</code>. A default route to the ISP, and OSPFv3 for dynamic routing — enabled per interface rather than with network statements.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — v6 static default + OSPFv3</span>
+    <pre class="term"><span class="cmt"># Default route toward the ISP (note: often via a LINK-LOCAL next hop
+# plus the exit interface, since that's what NDP resolves)</span>
+<span class="pc">R1(config)#</span> <span class="out">ipv6 route ::/0 GigabitEthernet0/0 FE80::1</span>
+
+<span class="cmt"># OSPFv3 — enabled ON THE INTERFACE, no "network" statements</span>
+<span class="pc">R1(config)#</span> <span class="out">ipv6 router ospf 1</span>
+<span class="pc">R1(config-rtr)#</span> <span class="out">router-id 1.1.1.1</span>          <span class="cmt"># still a 32-bit v4-style ID</span>
+<span class="pc">R1(config-rtr)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 ospf 1 area 0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span>
+
+<span class="pc">R1#</span> <span class="out">show ipv6 route ospf</span>
+<span class="pc">R1#</span> <span class="out">show ipv6 ospf neighbor</span>   <span class="cmt"># neighbors identified by their link-local</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 OSPFv3 Feels Familiar Because It Is</span>
+    <p>OSPFv3 keeps the OSPF you learned in the <a href="cisco-routing-ospf.html">routing post</a> — areas, router-ids (still written as 32-bit dotted quads, oddly), DR/BDR, the same troubleshooting checklist — but enables per-interface with <code>ipv6 ospf 1 area 0</code> instead of <code>network</code> statements, and neighbors are identified by <strong>link-local</strong> address. That per-interface model is actually cleaner: you enable OSPF exactly where you want it, no wildcard-mask matching to get wrong. Most of your IPv4 routing instincts transfer directly.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Security Shift — No NAT</h2>
+  <p class="section-thesis"><em>The most important operational difference. In IPv4, NAT accidentally hid your hosts behind one address. In IPv6 every host is globally addressable — so the firewall, not NAT, must do the protecting. Explicitly.</em></p>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "But NAT Was My Firewall"</span>
+    <p>NAT was never a security control — it just <em>happened</em> to drop unsolicited inbound because there was no translation to match. Take NAT away and, without an explicit firewall, every internal host with a global address is reachable from the internet. That's not an IPv6 flaw; it's IPv6 removing a crutch. The fix is a stateful firewall that does what NAT accidentally did, on purpose: permit established/return traffic, deny unsolicited inbound. On IOS that's a v6 ACL (<code>ipv6 access-list</code>) with <code>reflexive</code>/<code>established</code> handling, or better, the <a href="cisco-zbf.html">Zone-Based Firewall</a> which inspects v6 too. Enable IPv6 and you <strong>must</strong> build the inbound firewall in the same breath — it is not optional.</p>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — a minimal stateful-ish v6 edge ACL</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">ipv6 access-list WAN-IN</span>
+<span class="cmt"># Permit NDP (v6 breaks entirely without ICMPv6 — do NOT block it all)</span>
+<span class="pc">R1(config-ipv6-acl)#</span> <span class="out">permit icmp any any nd-na</span>
+<span class="pc">R1(config-ipv6-acl)#</span> <span class="out">permit icmp any any nd-ns</span>
+<span class="cmt"># Permit replies to sessions we started</span>
+<span class="pc">R1(config-ipv6-acl)#</span> <span class="out">permit tcp any any established</span>
+<span class="cmt"># Deny the rest inbound</span>
+<span class="pc">R1(config-ipv6-acl)#</span> <span class="out">deny ipv6 any any log</span>
+<span class="pc">R1(config-ipv6-acl)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ipv6 traffic-filter WAN-IN in</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Never Block ICMPv6 Wholesale</span>
+    <p>In IPv4 many admins reflexively drop ICMP at the edge. Do that to <strong>ICMPv6 and IPv6 stops working</strong> — NDP (neighbor discovery), RA (address config), and Path MTU Discovery all ride ICMPv6. A blanket <code>deny icmp</code> breaks address resolution and connectivity in ways that look like a routing bug. Permit the essential ICMPv6 types (neighbor solicit/advertise, router advert, packet-too-big) and filter selectively. This single reflex causes more "IPv6 is flaky" tickets than anything else.</p>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">Do SMBs Actually Need It?</h2>
+  <p class="section-thesis"><em>An honest answer, since we get asked. IPv6 is inevitable, but for most small sites dual-stack is the pragmatic path, not a v6-only leap.</em></p>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Our Take</span>
+    <p>For a Cretan hotel or shop, the internal network runs fine on IPv4 + NAT today, and there's rarely a burning reason to renumber. But two things make IPv6 worth knowing now: some <strong>ISPs deliver it by default</strong> (and mobile/Starlink paths increasingly are v6-native), so you'll meet it whether you planned to or not; and <strong>guest devices already speak it</strong> — if your network offers IPv6 you haven't secured, that's an unmonitored path in and out. The pragmatic move for most SMBs is <strong>dual-stack</strong>: keep IPv4 internally, enable IPv6 where the ISP provides it, and — critically — apply the same firewalling and monitoring to both. The failure mode we see isn't "no IPv6," it's "IPv6 quietly enabled and completely unfiltered." Know it so you can secure it, even if you don't lead with it.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>IPv6 removes complexity more than it adds.</strong> Every LAN is a /64 (no mask math), no broadcast, no address scarcity — and no NAT. The hex is just notation.</li>
+      <li><strong>Learn the four address types.</strong> Global (2000::/3, internet), link-local (fe80::/10, on-link only, always present), ULA (fd00::/8, private), multicast (ff00::/8, replaces broadcast).</li>
+      <li><strong>Turn on <code>ipv6 unicast-routing</code> first.</strong> Everything can look configured and still not route without it — the v6 twin of <code>ip routing</code>.</li>
+      <li><strong>Hosts can self-address with SLAAC</strong> from the router's RA; layer DHCPv6 on for DNS (stateless) or full assignment (stateful). Most networks mix.</li>
+      <li><strong>NDP replaces ARP</strong> and runs over ICMPv6/multicast — which is why blocking ICMPv6 wholesale breaks IPv6. Permit the essential types.</li>
+      <li><strong>Your IPv4 routing transfers.</strong> Static routes and OSPFv3 are the same concepts with <code>ipv6</code> prefixes; OSPFv3 enables per-interface and neighbors by link-local.</li>
+      <li><strong>No NAT means the firewall does the hiding — build it.</strong> Every host is globally reachable; a stateful v6 firewall is mandatory, not optional. The real-world SMB risk is IPv6 silently on and unfiltered.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Is IPv6 quietly enabled and unsecured on your network in Crete?</h3>
+    <p>NOCTIS audits and configures dual-stack properly — v6 addressing where your ISP provides it, and the same firewalling and monitoring on IPv6 as IPv4, so it's an asset, not an unwatched back door. For hotels and SMBs getting v6 whether they asked or not.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-span.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 19</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">SPAN &amp; RSPAN</span></a>
+    <a href="cisco-ansible.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 21 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Fleet with Ansible</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

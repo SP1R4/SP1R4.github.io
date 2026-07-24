@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>OSPF on RouterOS 7 — and Talking to Cisco — SP1R4 / NOCTIS</title>
+<meta name="description" content="OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.">
+<meta property="og:title" content="MikroTik: OSPF on RouterOS 7 — and Talking to Cisco — NOCTIS">
+<meta property="og:description" content="OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-ospf.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-ospf.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-ospf.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-ospf.html">
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: OSPF on RouterOS 7 — and Talking to Cisco",
+  "description": "OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.",
+  "datePublished": "2026-09-02",
+  "dateModified": "2026-09-02",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-ospf.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-ospf.png",
+  "keywords": [
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-ospf"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; September 2026</p>
+  <h1 class="post-title">OSPF on RouterOS 7<br>— and Talking to Cisco</h1>
+  <p class="post-subtitle">RouterOS 7 rebuilt the entire routing engine, and OSPF config looks nothing like the ROS6 tutorials still clogging search results. This post teaches the new model — instance, area, interface-template — on a three-router topology with a twist: one of the routers is a Cisco. Because OSPF is a standard, and the proof is watching a hEX and a 2911 become neighbors.</p>
+  <div class="tags">
+    <span class="tag">RouterOS 7</span>
+    <span class="tag">OSPF</span>
+    <span class="tag">Dynamic Routing</span>
+    <span class="tag">Cisco Interop</span>
+    <span class="tag">Multi-Vendor</span>
+    <span class="tag">MTCRE</span>
+  </div>
+  <hr class="title-rule">
+
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="mikrotik-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; MikroTik RouterOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 10 of 13</span>
+  </div>
+
+
+  <!-- Hero diagram: mixed-vendor triangle -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="260" fill="#e1ded7"/>
+      <!-- area badge -->
+      <rect x="250" y="14" width="220" height="24" rx="12" fill="#d9dee6" stroke="#3a5a78"/>
+      <text x="360" y="30" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">one OSPF area 0 — two vendors</text>
+      <!-- MT1 -->
+      <rect x="60" y="70" width="160" height="52" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="140" y="90" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">MT-1 (RB5009)</text>
+      <text x="140" y="104" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">RID 1.1.1.1 · LAN 10.1.0.0/24</text>
+      <text x="140" y="116" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">has the internet — originates default</text>
+      <!-- MT2 -->
+      <rect x="500" y="70" width="160" height="52" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="580" y="90" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">MT-2 (hEX)</text>
+      <text x="580" y="104" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">RID 2.2.2.2 · LAN 10.2.0.0/24</text>
+      <!-- Cisco -->
+      <rect x="280" y="180" width="160" height="52" rx="6" fill="#d4d2cc" stroke="#3a5a78" stroke-width="1.4"/>
+      <text x="360" y="200" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">CSC-1 (Cisco 2911)</text>
+      <text x="360" y="214" style="font-family:ui-monospace,monospace;font-size:8px;fill:#555550;text-anchor:middle;">RID 3.3.3.3 · LAN 10.3.0.0/24</text>
+      <!-- links -->
+      <line x1="220" y1="96" x2="500" y2="96" style="stroke:#558840;stroke-width:2;"/>
+      <text x="360" y="88" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#3a6a28;text-anchor:middle;">10.0.12.0/30</text>
+      <line x1="170" y1="122" x2="310" y2="180" style="stroke:#558840;stroke-width:2;"/>
+      <text x="200" y="160" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#3a6a28;">10.0.13.0/30</text>
+      <line x1="550" y1="122" x2="410" y2="180" style="stroke:#558840;stroke-width:2;"/>
+      <text x="468" y="160" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#3a6a28;">10.0.23.0/30</text>
+      <text x="360" y="250" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">a triangle, so every LAN has two paths — kill any one link and OSPF reroutes around it</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Static routes stop scaling the moment there are two paths — you've felt this if you built the redundant topologies in this series. <strong>OSPF</strong> is the standard answer: every router describes its links, everyone floods the descriptions, and each router computes shortest paths itself. Link dies → new computation → traffic reroutes, no human involved. The <a href="cisco-lab-ospf-areas.html">Cisco multi-area lab</a> covers the protocol theory in depth; this post is about <strong>RouterOS 7's implementation</strong> — and about proving the two vendors interoperate, because most real Greek SMB networks are exactly this mix.</p>
+    <p>ROS7's model takes three objects where Cisco takes one: an <strong>instance</strong> (the process — router-id lives here), an <strong>area</strong> (attached to the instance), and <strong>interface-templates</strong> (which interfaces/networks join which area, with per-interface settings like cost and passive). It's more verbose than <code>network … area 0</code> — and more explicit, which you'll appreciate the first time you read someone else's config.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>RouterOS 7.x on the MikroTik side — the config below does not work on 6.x (see section 05)</li>
+      <li>OSPF basics — <a href="cisco-routing-ospf.html">Cisco part 7</a> or any single-area exposure</li>
+      <li>Lab it first: two CHRs + a Cisco image in GNS3/EVE-NG, or real hardware</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Addressing and the Plan</h2>
+  <p class="section-thesis"><em>A triangle of /30s, one LAN per router, loopback-style router-IDs. Same discipline as every lab in this series: the table first, then the keyboard.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Element</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>MT-1 ↔ MT-2</td><td>10.0.12.0/30 (MT-1 .1, MT-2 .2) — ether1 both sides</td></tr>
+      <tr><td>MT-1 ↔ CSC-1</td><td>10.0.13.0/30 (MT-1 .1, CSC-1 .2) — ether2 / Gi0/0</td></tr>
+      <tr><td>MT-2 ↔ CSC-1</td><td>10.0.23.0/30 (MT-2 .1, CSC-1 .2) — ether2 / Gi0/1</td></tr>
+      <tr><td>LANs</td><td>MT-1: 10.1.0.0/24 · MT-2: 10.2.0.0/24 · CSC-1: 10.3.0.0/24</td></tr>
+      <tr><td>Router-IDs</td><td>1.1.1.1 / 2.2.2.2 / 3.3.3.3 — set explicitly, never auto-derived</td></tr>
+      <tr><td>WAN</td><td>MT-1 only — static default to the ISP, redistributed into OSPF</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Always Set the Router-ID Explicitly</span>
+    <p>Both vendors will auto-pick a router-id from an interface address if you don't set one — and that ID silently changes when addressing changes, which resets adjacencies and makes the LSA database confusing to read ("who is 10.0.23.1?"). An explicit, memorable ID per box (1.1.1.1, 2.2.2.2…) costs one line and makes every <code>print</code>/<code>show</code> for the rest of the network's life legible. On MikroTik it lives on the instance; on Cisco, under <code>router ospf</code>.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">The MikroTik Side — Instance, Area, Templates</h2>
+  <p class="section-thesis"><em>Three objects, in order. The interface-template is where ROS7 differs most from both ROS6 and Cisco — it matches interfaces OR networks, and carries the per-link settings.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">MT-1 — full OSPF config (MT-2 mirrors with its own RID/LAN)</span>
+    <pre class="term"><span class="cmt"># 1. The instance — the routing process itself</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/instance add name=default version=2 router-id=1.1.1.1</span>
+
+<span class="cmt"># 2. The backbone area, attached to the instance</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/area add name=backbone area-id=0.0.0.0 instance=default</span>
+
+<span class="cmt"># 3. Interface templates — the /30s speak OSPF, the LAN is announced but passive</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/interface-template add area=backbone interfaces=ether1 networks=10.0.12.0/30 type=ptp</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/interface-template add area=backbone interfaces=ether2 networks=10.0.13.0/30 type=ptp</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/interface-template add area=backbone interfaces=bridge-lan networks=10.1.0.0/24 passive</span>
+
+<span class="cmt"># Adjacency to MT-2 comes up in seconds:</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/neighbor print</span>
+<span class="out"> 0  instance=default area=backbone address=10.0.12.2
+    router-id=2.2.2.2 state=<span class="key">Full</span> state-changes=2</span>
+
+<span class="cmt"># And MT-2's LAN appears with routing-table code "Do" (dynamic ospf):</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/ip/route print where dst-address=10.2.0.0/24</span>
+<span class="out">   DST-ADDRESS     GATEWAY      DISTANCE
+Do 10.2.0.0/24     10.0.12.2    110</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Point-to-Point Type on /30s, Both Ends</span>
+    <p>On a /30 between two routers, set <code>type=ptp</code> (and <code>ip ospf network point-to-point</code> on the Cisco side). The default broadcast type works, but it runs a pointless DR election on a two-router link, adds a type-2 LSA, and — the interop trap — <strong>the network type must match on both ends or the adjacency sticks in ExStart/Exchange</strong>. Mismatched network types are the #1 cause of "the MikroTik and the Cisco see each other but never reach Full".</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">The Cisco Side — and the Moment of Interop</h2>
+  <p class="section-thesis"><em>Standard IOS OSPF from part 7 of the Cisco series. The only requirement is agreement: area, hello/dead timers, network type, MTU. Then a 2911 and an RB5009 shake hands like it's nothing.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">CSC-1 (IOS) — and the adjacency, seen from both sides</span>
+    <pre class="term"><span class="pc">CSC-1(config)#</span> <span class="out">router ospf 1</span>
+<span class="pc">CSC-1(config-router)#</span> <span class="out">router-id 3.3.3.3</span>
+<span class="pc">CSC-1(config-router)#</span> <span class="out">passive-interface GigabitEthernet0/2</span>   <span class="cmt">← the LAN</span>
+<span class="pc">CSC-1(config-router)#</span> <span class="out">network 10.0.13.0 0.0.0.3 area 0</span>
+<span class="pc">CSC-1(config-router)#</span> <span class="out">network 10.0.23.0 0.0.0.3 area 0</span>
+<span class="pc">CSC-1(config-router)#</span> <span class="out">network 10.3.0.0 0.0.0.255 area 0</span>
+<span class="pc">CSC-1(config)#</span> <span class="out">interface range GigabitEthernet0/0 - 1</span>
+<span class="pc">CSC-1(config-if-range)#</span> <span class="out">ip ospf network point-to-point</span>
+
+<span class="cmt"># The Cisco sees two MikroTik neighbors…</span>
+<span class="pc">CSC-1#</span> <span class="out">show ip ospf neighbor</span>
+<span class="out">Neighbor ID     Pri   State     Dead Time   Address      Interface
+1.1.1.1           0   <span class="key">FULL/  -</span>  00:00:36    10.0.13.1    GigabitEthernet0/0
+2.2.2.2           0   <span class="key">FULL/  -</span>  00:00:34    10.0.23.1    GigabitEthernet0/1</span>
+
+<span class="cmt"># …and the MikroTik routes to the Cisco LAN, learned via OSPF:</span>
+<span class="pc">[admin@MT-2] ></span> <span class="out">/ip/route print where dst-address=10.3.0.0/24</span>
+<span class="out">Do 10.3.0.0/24     10.0.23.2    110</span>   <span class="cmt">← vendor boundary, invisible to the protocol</span></pre>
+  </div>
+
+  <p>That <code>FULL/ -</code> is the entire argument for standards-based routing: the protocol doesn't know or care that one end costs €1,200 and runs IOS while the other costs €60 and runs RouterOS. Same packets, same state machine. When a client's network grows one site at a time with whatever hardware made sense that year, OSPF is what makes the patchwork behave like a system.</p>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Default Route, Costs, and a Failure Drill</h2>
+  <p class="section-thesis"><em>MT-1 owns the internet, so MT-1 originates the default — conditionally. Then align the cost math between vendors and cut a link to watch the triangle earn its keep.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">MT-1 — originate the default; everyone — align costs</span>
+    <pre class="term"><span class="cmt"># MT-1's own default is a static toward the ISP (with a check-gateway probe,
+# as in the Starlink failover post). OSPF advertises it only while it exists:</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/instance set default originate-default=if-installed</span>
+
+<span class="cmt"># MT-2 and CSC-1 now both have a default via the triangle:</span>
+<span class="pc">CSC-1#</span> <span class="out">show ip route | include 0.0.0.0/0</span>
+<span class="out">O*E2  0.0.0.0/0 [110/1] via 10.0.13.1, 00:00:22, GigabitEthernet0/0</span>
+
+<span class="cmt"># Cost alignment: RouterOS interface-templates default to cost=1 regardless
+# of speed — set costs explicitly so both vendors agree what "far" means:</span>
+<span class="pc">[admin@MT-1] ></span> <span class="out">/routing/ospf/interface-template set [find interfaces=ether1] cost=10</span>
+<span class="cmt"># …and on Cisco: interface Gi0/0 → ip ospf cost 10. Same number, same link.</span></pre>
+  </div>
+
+  <h3 class="sub">The drill</h3>
+  <p>Start a continuous ping from a PC on MT-2's LAN to one on CSC-1's LAN — steady state, it crosses the direct MT-2↔CSC-1 link. Now disable that link (<code>/interface/ethernet disable ether2</code> on MT-2). Two or three pings drop, then traffic re-appears — via MT-1, the long way around the triangle. <code>/routing/ospf/neighbor print</code> shows the lost neighbor; <code>traceroute</code> shows the extra hop. Re-enable and it falls back. That's a multi-vendor network healing itself in seconds — with <code>originate-default=if-installed</code> ensuring that even the <em>internet</em> path fails over honestly if MT-1's WAN dies.</p>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Where This Meets the Rest of the Series</span>
+    <p>This triangle composes directly with earlier posts: run OSPF <em>over WireGuard or GRE tunnels</em> (<a href="mikrotik-wireguard.html">part 9</a>, <a href="cisco-lab-gre-ipsec.html">Cisco lab 26</a>) and remote sites join the same area 0; feed MT-1's default from the <a href="starlink-mikrotik-failover.html">Starlink failover</a> setup and WAN failover propagates to every router automatically. Dynamic routing is the layer that makes all the other redundancy tricks compose instead of fighting.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">ROS6 → ROS7 Migration Traps <span class="safe-badge">Read Before Upgrading</span></h2>
+  <p class="section-thesis"><em>If you learned OSPF on RouterOS 6 — or you're upgrading a router that runs it — the syntax isn't the only thing that changed.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>ROS6 habit</th><th>ROS7 reality</th></tr></thead>
+    <tbody>
+      <tr><td>/routing ospf network add</td><td>Gone. Networks live on interface-templates now.</td></tr>
+      <tr><td>router-id on /routing ospf instance default</td><td>Instance still, but you must create the instance — no implicit default one.</td></tr>
+      <tr><td>redistribute-static=as-type-1</td><td>redistribute=static on the instance (+ out-select filters if you need per-route control).</td></tr>
+      <tr><td>passive on the interface entry</td><td>passive flag on the interface-template.</td></tr>
+      <tr><td>distribute-in filters</td><td>Rewritten routing filters — new rule syntax (if/then), audit any filter config by hand.</td></tr>
+      <tr><td>Upgrade in place and hope</td><td>ROS7 <em>tries</em> to convert OSPF config on upgrade; complex configs come through broken. Export, upgrade, verify line by line — with a <a href="mikrotik-backup.html">backup</a> off-box first.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="cheat">
+    <thead><tr><th>Verify (RouterOS)</th><th>Equivalent (Cisco)</th></tr></thead>
+    <tbody>
+      <tr><td>/routing/ospf/neighbor print</td><td>show ip ospf neighbor</td></tr>
+      <tr><td>/routing/ospf/interface print</td><td>show ip ospf interface brief</td></tr>
+      <tr><td>/routing/ospf/lsa print</td><td>show ip ospf database</td></tr>
+      <tr><td>/ip/route print where routing-table=main</td><td>show ip route ospf</td></tr>
+      <tr><td>/routing/stats/step print</td><td>(SPF run stats — debug ip ospf spf, roughly)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>ROS7 OSPF is three objects:</strong> instance (router-id), area, interface-templates (networks, cost, passive, type). Ignore every ROS6 tutorial — the model changed, not just the syntax.</li>
+      <li><strong>Set router-ids explicitly on every box, both vendors.</strong> Auto-derived IDs change under you and make the whole network harder to read.</li>
+      <li><strong>type=ptp on /30 links, matched on both ends.</strong> Mismatched network types are the top cause of mixed-vendor adjacencies stuck below Full.</li>
+      <li><strong>Interop is real:</strong> agreement on area, timers, network type, and MTU is all a hEX and a 2911 need to reach FULL. The protocol can't see the price tags.</li>
+      <li><strong>originate-default=if-installed</strong> is the honest default: the network learns the way out only while the way out exists — and it composes with check-gateway/IP SLA WAN failover.</li>
+      <li><strong>Align costs explicitly across vendors</strong> — RouterOS templates default to cost 1, Cisco derives from bandwidth; leave both alone and path selection is meaningless.</li>
+      <li><strong>Never upgrade a ROS6 OSPF router blind.</strong> Export the config, upgrade, then verify the converted OSPF section object by object.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Mixed Cisco + MikroTik network that grew organically?</h3>
+    <p>NOCTIS designs and maintains multi-vendor routed networks across Crete — OSPF that heals around failures, WAN failover that propagates everywhere, and documentation that names every router-id. The patchwork can behave like a system.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+
+  <!-- series-nav -->
+  <nav aria-label="MikroTik RouterOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="mikrotik-wireguard.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 9</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">WireGuard VPN</span></a>
+    <a href="mikrotik-lab-hotel.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 11 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: The Hotel Network</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="mikrotik-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 13 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

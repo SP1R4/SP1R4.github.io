@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: First-Hop Redundancy (HSRP &amp; VRRP) — SP1R4 / NOCTIS</title>
+<meta name="description" content="A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.">
+<meta property="og:title" content="Cisco IOS: First-Hop Redundancy (HSRP &amp; VRRP) — NOCTIS">
+<meta property="og:description" content="A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-hsrp.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-hsrp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-hsrp.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-hsrp.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: First-Hop Redundancy (HSRP & VRRP)",
+  "description": "A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.",
+  "datePublished": "2026-07-22",
+  "dateModified": "2026-07-22",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-hsrp.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-hsrp.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-hsrp"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>First-Hop Redundancy</h1>
+  <p class="post-subtitle">You can have two of everything — two switches, two uplinks, two ISPs — and still lose the whole site when one router dies, because every host points at a single default gateway. HSRP and VRRP give that gateway a heartbeat: a virtual IP that fails over between two routers in a second, invisibly.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">HSRP</span>
+    <span class="tag">VRRP</span>
+    <span class="tag">FHRP</span>
+    <span class="tag">Redundancy</span>
+    <span class="tag">Gateway</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 9 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: virtual gateway -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <text x="360" y="28" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">ONE VIRTUAL GATEWAY, TWO REAL ROUTERS</text>
+      <!-- routers -->
+      <rect x="120" y="52" width="150" height="52" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="195" y="72" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">R1 · ACTIVE</text>
+      <text x="195" y="90" style="font-family:ui-monospace,monospace;font-size:9px;fill:#3a5a78;text-anchor:middle;">.2 · priority 110</text>
+      <rect x="450" y="52" width="150" height="52" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="525" y="72" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#555550;text-anchor:middle;">R2 · STANDBY</text>
+      <text x="525" y="90" style="font-family:ui-monospace,monospace;font-size:9px;fill:#888880;text-anchor:middle;">.3 · priority 90</text>
+      <!-- hellos between -->
+      <line x1="270" y1="78" x2="450" y2="78" stroke="#c08020" stroke-width="1.4" stroke-dasharray="4,3"/>
+      <text x="360" y="72" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#8a5a10;text-anchor:middle;">hellos (3s)</text>
+      <!-- VIP -->
+      <ellipse cx="360" cy="130" rx="78" ry="20" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="360" y="128" style="font-family:ui-monospace,monospace;font-size:10px;fill:#c63d1f;text-anchor:middle;font-weight:600;">VIP .1</text>
+      <text x="360" y="141" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">virtual MAC 0000.0c07.acXX</text>
+      <line x1="195" y1="104" x2="330" y2="118" stroke="#c63d1f" stroke-width="1.2"/>
+      <line x1="525" y1="104" x2="390" y2="118" stroke="#888880" stroke-width="1.2" stroke-dasharray="3,2"/>
+      <!-- hosts -->
+      <rect x="286" y="168" width="148" height="26" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="185" style="font-family:'Inter',sans-serif;font-size:9px;fill:#555550;text-anchor:middle;">every host: gateway = .1</text>
+      <line x1="360" y1="150" x2="360" y2="168" stroke="#c63d1f" stroke-width="1.4"/>
+      <text x="600" y="205" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#888880;text-anchor:end;">R1 dies → R2 claims .1 + the virtual MAC → hosts never notice</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>A host has exactly one default gateway, and it is a single point of failure. Build a beautifully redundant network — dual switches, bundled uplinks (see <a href="cisco-stp-etherchannel.html">STP &amp; EtherChannel</a>), even dual ISPs (see <a href="cisco-routing-ospf.html">Routing &amp; OSPF</a>) — and it still all funnels through one gateway IP burned into every DHCP scope. That router reboots and the entire subnet goes dark until someone repoints hundreds of devices. Unacceptable.</p>
+    <p>A <strong>First-Hop Redundancy Protocol</strong> fixes this by inventing a <strong>virtual IP</strong> and a virtual MAC that float between two (or more) routers. Hosts point at the virtual IP forever; behind the scenes one router is <em>active</em> and answers for it while the other stands by, listening for the active router's heartbeat. When the heartbeat stops, the standby takes over the virtual IP and MAC in about a second — no ARP re-learning, no host reconfiguration, usually not even a dropped ping. Cisco's version is <strong>HSRP</strong>; the open-standard equivalent is <strong>VRRP</strong>. This post builds both, adds interface tracking so a dead uplink also triggers failover, and covers the preempt behaviour that surprises everyone.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Inter-VLAN routing / SVIs — see <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a></li>
+      <li>Two L3 switches or routers sharing the same subnet(s)</li>
+      <li>Comfort reading <code>show</code> output and the idea of a priority tie-break</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">HSRP — The Active/Standby Pair</h2>
+  <p class="section-thesis"><em>Two routers, one virtual IP, one group number. The higher priority becomes active; the other waits. Hosts use the virtual IP as their gateway and never know which physical router is answering.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — HSRP on both routers (VLAN 10 gateway)</span>
+    <pre class="term"><span class="cmt"># ── R1 — the intended active router ──</span>
+<span class="pc">R1(config)#</span> <span class="out">interface vlan 10</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip address 192.168.10.2 255.255.255.0</span>   <span class="cmt"># R1's REAL ip</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby version 2</span>                        <span class="cmt"># v2: better timers, IPv6</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 10 ip 192.168.10.1</span>                <span class="cmt"># group 10, VIRTUAL ip .1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 10 priority 110</span>                   <span class="cmt"># higher = preferred active</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 10 preempt</span>                        <span class="cmt"># reclaim active when back up</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 10 name VLAN10-GW</span>
+
+<span class="cmt"># ── R2 — the standby (mirror, lower priority, its own real IP) ──</span>
+<span class="pc">R2(config-if)#</span> <span class="out">ip address 192.168.10.3 255.255.255.0</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby version 2</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 10 ip 192.168.10.1</span>                <span class="cmt"># SAME virtual ip + group</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 10 priority 90</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 10 preempt</span>
+
+<span class="cmt"># Every host on VLAN 10 uses 192.168.10.1 as its default gateway.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The Virtual IP Is Not Any Router's Real IP</span>
+    <p>A frequent beginner error is setting the <code>standby ip</code> to R1's own interface address. The virtual IP must be a <strong>third, unused address</strong> in the subnet (here .1), distinct from R1's .2 and R2's .3. The whole point is that .1 belongs to <em>the group</em>, not to a box — that's why it can move. Also: both routers must use the <strong>same group number and version</strong>, or they form two separate groups and both think they're active (you'll see duplicate-gateway symptoms).</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Watching It Work &amp; Fail Over <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>One command tells you who's active, what the virtual IP and MAC are, and whether preempt is set. Then pull a cable and watch the standby take over.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — show standby, before and after failure</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show standby brief</span>
+<span class="out">                     P indicates configured to preempt.
+Interface   Grp  Pri P State    Active          Standby         Virtual IP
+Vl10        10   110 P Active   local           192.168.10.3    192.168.10.1</span>
+
+<span class="pc">R1#</span> <span class="out">show standby vlan 10</span>
+<span class="out">Vlan10 - Group 10 (version 2)
+  State is Active
+  Virtual IP address is 192.168.10.1
+  Active virtual MAC address is 0000.0c9f.f00a  (v2 group 10 = ...f00a)
+  Hello time 3 sec, hold time 10 sec
+  Preemption enabled</span>
+
+<span class="cmt"># Pull R1's uplink / shut its interface — R2 promotes within the holdtime:</span>
+<span class="out">%HSRP-5-STATECHANGE: Vlan10 Grp 10 state Standby -> Active</span>
+<span class="cmt"># Hosts keep pinging the gateway throughout — the VIP + virtual MAC moved.</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — Tighten the Timers (a Little)</span>
+    <p>Default HSRP hellos are 3 s with a 10 s holdtime — so a silent failure can dark the subnet for up to ten seconds. <code>standby 10 timers msec 250 msec 800</code> cuts failover to under a second. Don't go absurdly low: too-aggressive timers cause false failovers under CPU load or brief congestion, which is worse than a slightly slower one. Sub-second is plenty; pair it with tracking (next section) so failover triggers on the <em>real</em> problem, not a missed hello.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Interface Tracking — Fail Over for the Right Reason</h2>
+  <p class="section-thesis"><em>HSRP by default only fails over if the active router dies entirely. But the common failure is subtler: the router is fine, its UPLINK is down. Tracking makes HSRP watch the uplink and step aside when the path — not the box — is broken.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — decrement priority when the uplink drops</span>
+    <pre class="term"><span class="cmt"># On R1: if the WAN/uplink interface goes down, drop priority by 30</span>
+<span class="pc">R1(config)#</span> <span class="out">track 1 interface GigabitEthernet0/0 line-protocol</span>
+<span class="pc">R1(config)#</span> <span class="out">interface vlan 10</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 10 track 1 decrement 30</span>
+
+<span class="cmt"># Math: R1 starts at 110. Uplink dies → 110 - 30 = 80, which is below
+# R2's 90. With preempt on R2, R2 takes over. Uplink returns → R1 back to
+# 110 → R1 preempts and reclaims active. Failover follows the PATH, not
+# just the chassis.</span>
+
+<span class="pc">R1#</span> <span class="out">show track 1</span>
+<span class="out">Track 1
+  Interface GigabitEthernet0/0 line-protocol
+  Line protocol is Up
+  Tracked by: HSRP Vlan10 10</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Tracking Only Helps If the Decrement Actually Crosses the Line</span>
+    <p>The decrement must be large enough to drop the active router <em>below</em> the standby's priority. If R1 is 110 and R2 is 105, a <code>decrement 30</code> takes R1 to 80 — good, R2 wins. But if you'd left both near default (100), a small decrement might not cross over and failover silently never happens. Do the arithmetic: <code>active_priority − decrement &lt; standby_priority</code>. And <code>line-protocol</code> tracks up/down; to fail over when the far end is unreachable-but-up, track an <strong>IP SLA</strong> object instead — which is exactly the next post in this series.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Load Sharing — Don't Let Half Your Gear Idle</h2>
+  <p class="section-thesis"><em>With one HSRP group, the standby router forwards nothing until a failure — expensive hardware sitting idle. Two groups with flipped priorities make each router active for half the VLANs, so both work and both back each other up.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — R1 active for VLAN 10, R2 active for VLAN 20</span>
+    <pre class="term"><span class="cmt"># VLAN 10 → R1 active (priority 110), R2 standby</span>
+<span class="cmt"># VLAN 20 → R2 active (priority 110), R1 standby</span>
+
+<span class="pc">R1(config)#</span> <span class="out">interface vlan 20</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 20 ip 192.168.20.1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 20 priority 90</span>          <span class="cmt"># R1 is STANDBY for VLAN 20</span>
+<span class="pc">R1(config-if)#</span> <span class="out">standby 20 preempt</span>
+
+<span class="pc">R2(config)#</span> <span class="out">interface vlan 20</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 20 ip 192.168.20.1</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 20 priority 110</span>         <span class="cmt"># R2 is ACTIVE for VLAN 20</span>
+<span class="pc">R2(config-if)#</span> <span class="out">standby 20 preempt</span>
+<span class="cmt"># Point half your DHCP scopes' gateways at each router's active VLAN.
+# Both boxes forward in steady state; either covers both if its peer dies.</span></pre>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">VRRP — The Open-Standard Sibling</h2>
+  <p class="section-thesis"><em>VRRP does the same job as HSRP with standardized syntax, so it interoperates with non-Cisco gear. If your environment is mixed vendor, reach for VRRP; if it's all Cisco, HSRP is equally fine.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — VRRP equivalent of the section-01 config</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">interface vlan 10</span>
+<span class="pc">R1(config-if)#</span> <span class="out">vrrp 10 ip 192.168.10.1</span>          <span class="cmt"># virtual ip</span>
+<span class="pc">R1(config-if)#</span> <span class="out">vrrp 10 priority 110</span>
+<span class="pc">R1(config-if)#</span> <span class="out">vrrp 10 description VLAN10-GW</span>
+<span class="cmt"># NOTE: in VRRP, preempt is ON by default (HSRP requires it explicitly).</span>
+
+<span class="pc">R1#</span> <span class="out">show vrrp brief</span>
+<span class="out">Interface   Grp Pri Time  Own Pre State   Master addr    Group addr
+Vl10        10  110 3218      Y   Master  192.168.10.2   192.168.10.1</span></pre>
+  </div>
+
+  <table class="cheat">
+    <thead><tr><th>&nbsp;</th><th>HSRP</th><th>VRRP</th></tr></thead>
+    <tbody>
+      <tr><td>Origin</td><td>Cisco proprietary</td><td>IETF open standard</td></tr>
+      <tr><td>Terms</td><td>Active / Standby</td><td>Master / Backup</td></tr>
+      <tr><td>Preempt default</td><td>Off (must enable)</td><td>On</td></tr>
+      <tr><td>Virtual MAC</td><td>0000.0c9f.fXXX (v2)</td><td>0000.5e00.01XX</td></tr>
+      <tr><td>Use when</td><td>All-Cisco shop</td><td>Mixed vendor</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Most FHRP tickets are one of three things: both routers think they're active, failover doesn't trigger, or it flaps. These commands isolate all three.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td>show standby brief</td><td>State, priority, preempt, active/standby peers, virtual IP — the one-liner.</td></tr>
+      <tr><td>show standby vlan 10</td><td>Timers, virtual MAC, tracking, and state-change history.</td></tr>
+      <tr><td>show track</td><td>Tracked objects and their up/down state.</td></tr>
+      <tr><td>show vrrp brief</td><td>The VRRP equivalent of standby brief.</td></tr>
+      <tr><td>debug standby terse</td><td>Live state transitions when chasing a flap (turn off after).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Both Routers Show "Active"</span>
+    <p>If <code>show standby</code> reports both routers active, they aren't hearing each other's hellos. Usual causes: a <strong>group-number or version mismatch</strong> (R1 group 10 v2, R2 group 10 v1 — different protocols on the wire); the VLAN/SVI is <strong>down on one side</strong>; or the <strong>trunk between them doesn't carry that VLAN</strong> (back to the allowed-VLAN list from the trunking post). Two "active" routers both answer for the virtual MAC → intermittent, maddening connectivity. Confirm the same group + version and that the two SVIs can actually reach each other before touching anything else.</p>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Redundant Gateways</h2>
+  <p class="section-thesis"><em>RouterOS speaks VRRP natively, so the crossover is clean — the concepts map one-to-one.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>/interface vrrp add vrid=10</td><td><code>vrrp 10 …</code> (or <code>standby 10</code> for HSRP)</td></tr>
+      <tr><td>priority=110</td><td><code>standby 10 priority 110</code></td></tr>
+      <tr><td>The VRRP interface holds the virtual IP</td><td>Virtual IP via <code>standby/vrrp … ip</code></td></tr>
+      <tr><td>Netwatch/script lowers priority on failure</td><td><code>track</code> object + <code>decrement</code></td></tr>
+      <tr><td>preemption-mode=yes</td><td><code>standby 10 preempt</code> (HSRP) / default on VRRP</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 The Whole Redundancy Picture</span>
+    <p>FHRP is the last piece of a three-layer story this series has built: <a href="cisco-stp-etherchannel.html">EtherChannel</a> keeps links up, <a href="cisco-stp-etherchannel.html">STP</a> keeps the L2 topology loop-free, <a href="cisco-routing-ospf.html">OSPF</a> reroutes around dead paths — and HSRP/VRRP keeps the <em>gateway</em> alive so hosts never care that any of it happened. A network is only as redundant as its least-redundant hop, and for most sites the forgotten hop is the default gateway.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Every host has one gateway, so that gateway must not be one box.</strong> FHRP invents a virtual IP + virtual MAC that float between two routers; hosts point at the VIP forever.</li>
+      <li><strong>The virtual IP is a third address</strong> — not R1's, not R2's. Same group number and same version on both routers, or they split into two "active" groups.</li>
+      <li><strong>Higher priority wins; preempt reclaims it.</strong> HSRP needs <code>preempt</code> set explicitly (VRRP has it on by default) or a recovered primary stays standby.</li>
+      <li><strong>Track the uplink, not just the chassis.</strong> The common failure is a live router with a dead path; tracking with a decrement that crosses the peer's priority makes failover follow the real problem.</li>
+      <li><strong>Two groups with flipped priorities = load sharing.</strong> Both routers forward in steady state instead of one idling as an expensive spare.</li>
+      <li><strong>HSRP for all-Cisco, VRRP for mixed vendor.</strong> Same job, standardized syntax; watch the preempt-default difference.</li>
+      <li><strong>"Both active" = they can't hear each other.</strong> Group/version mismatch, a down SVI, or a trunk that doesn't carry the VLAN — check reachability between the two before anything else.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Building a network that survives a dead router in Crete?</h3>
+    <p>NOCTIS designs redundant gateways — HSRP/VRRP with proper tracking and load sharing — for hotels, clinics, and SMBs that can't afford a subnet going dark. Tested by pulling power, documented so your team understands the failover.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-stp-etherchannel.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 8</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">STP &amp; EtherChannel</span></a>
+    <a href="cisco-ipsla-failover.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 10 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Dual-WAN Failover (IP SLA)</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

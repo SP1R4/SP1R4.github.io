@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Backup &amp; Restore — SP1R4 / NOCTIS</title>
+<meta name="description" content="Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.">
+<meta property="og:title" content="Cisco IOS: Backup &amp; Restore — NOCTIS">
+<meta property="og:description" content="Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-backup-restore.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-backup-restore.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-backup-restore.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-backup-restore.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  /* keyboard shortcut pills */
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  /* cheatsheet table */
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  /* safe badge */
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Backup & Restore",
+  "description": "Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.",
+  "datePublished": "2026-07-10",
+  "dateModified": "2026-07-10",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-backup-restore.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-backup-restore.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-backup-restore"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Backup &amp; Restore</h1>
+  <p class="post-subtitle">A router config is only as safe as its last backup. Save to startup, export off-box to TFTP or SCP, automate it with the archive feature and kron, roll back a bad change with <code>configure replace</code>, and recover a device nobody has the password to.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Backup</span>
+    <span class="tag">TFTP</span>
+    <span class="tag">Archive</span>
+    <span class="tag">Config Replace</span>
+    <span class="tag">Recovery</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 3 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: where config lives -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="bap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="180" fill="#e1ded7"/>
+      <rect x="40" y="60" width="170" height="60" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="125" y="86" style="font-family:ui-monospace,monospace;font-size:12px;fill:#c63d1f;font-weight:600;text-anchor:middle;">running-config</text>
+      <text x="125" y="103" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">RAM · live now</text>
+      <rect x="275" y="60" width="170" height="60" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="86" style="font-family:ui-monospace,monospace;font-size:12px;fill:#3a5a78;font-weight:600;text-anchor:middle;">startup-config</text>
+      <text x="360" y="103" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">NVRAM · survives reboot</text>
+      <rect x="510" y="60" width="170" height="60" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="595" y="86" style="font-family:ui-monospace,monospace;font-size:12px;fill:#3a6a28;font-weight:600;text-anchor:middle;">TFTP / SCP</text>
+      <text x="595" y="103" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">off-box · survives death</text>
+      <line x1="212" y1="90" x2="271" y2="90" style="stroke:#c63d1f;stroke-width:1.6;marker-end:url(#bap)"/>
+      <text x="242" y="80" style="font-family:ui-monospace,monospace;font-size:8px;fill:#c63d1f;text-anchor:middle;">copy run start</text>
+      <line x1="447" y1="90" x2="506" y2="90" style="stroke:#c63d1f;stroke-width:1.6;marker-end:url(#bap)"/>
+      <text x="477" y="80" style="font-family:ui-monospace,monospace;font-size:8px;fill:#c63d1f;text-anchor:middle;">copy … tftp:</text>
+      <text x="360" y="150" style="font-family:'Inter',sans-serif;font-size:10px;fill:#888880;text-anchor:middle;">Saving to startup survives a reboot. Only an off-box copy survives a dead switch, a theft, or a fat-fingered erase.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>There are three places a Cisco config can live, in increasing order of safety. <strong>running-config</strong> (RAM) is what's live right now and dies on reboot. <strong>startup-config</strong> (NVRAM) is what boots and survives a power cut. And an <strong>off-box copy</strong> — on a TFTP/SCP server or in a git repo — is the only thing that survives the device itself dying, being stolen, or being wiped by a bad command.</p>
+    <p>Most outages caused by "we lost the config" are really "we only ever saved to startup." This tutorial covers all three tiers, then the parts that separate a technician from a professional: automating backups so they happen without you, rolling back a bad change in one command with <code>configure replace</code>, and recovering a device when the password is long gone.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Comfort with the IOS CLI and Privileged EXEC — see <a href="cisco-first-contact.html">Cisco IOS: First Contact</a></li>
+      <li>A reachable TFTP or SCP server for off-box copies (any laptop can run one)</li>
+      <li>For recovery: physical console access to the device</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Tier 1 — Save to Startup</h2>
+  <p class="section-thesis"><em>The first and most-forgotten step. Your changes are live but volatile until you copy running-config into startup-config. This is the "type wr after every change" habit.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — save the running config</span>
+    <pre class="term"><span class="cmt"># The explicit form</span>
+<span class="pc">R1#</span> <span class="out">copy running-config startup-config</span>
+<span class="out">Destination filename [startup-config]? </span><span class="cmt">← press Enter</span>
+<span class="out">Building configuration...
+[OK]</span>
+
+<span class="cmt"># The shortcut everyone types — identical result</span>
+<span class="pc">R1#</span> <span class="out">write memory</span>       <span class="cmt"># or just:  wr</span>
+
+<span class="cmt"># Did anything change since the last save? Compare the two.</span>
+<span class="pc">R1#</span> <span class="out">show archive config differences nvram:startup-config system:running-config</span>
+<span class="cmt"># Empty output = running and startup match. Non-empty = unsaved changes.</span></pre>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Tier 2 — Export Off-Box (TFTP / SCP)</h2>
+  <p class="section-thesis"><em>NVRAM dies with the device. An off-box copy is the real backup. TFTP is the classic (and insecure) transport; SCP is the same idea over SSH and is what you should use in production.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — copy the config to a TFTP server</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">copy running-config tftp:</span>
+<span class="out">Address or name of remote host []? </span><span class="out">192.168.1.50</span>
+<span class="out">Destination filename [r1-confg]? </span><span class="out">R1-2026-07-10.cfg</span>
+<span class="out">!!
+1846 bytes copied in 0.4 secs</span>
+
+<span class="cmt"># Pull it back the same way (careful — see the merge gotcha in section 03)</span>
+<span class="pc">R1#</span> <span class="out">copy tftp: running-config</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the secure version over SCP (SSH)</span>
+    <pre class="term"><span class="cmt"># One-liner: source, then the full scp:// destination URL</span>
+<span class="pc">R1#</span> <span class="out">copy running-config scp://backup@192.168.1.50/R1-2026-07-10.cfg</span>
+<span class="out">Address or name of remote host [192.168.1.50]? </span>
+<span class="out">Password: </span>
+<span class="out">1846 bytes copied in 0.5 secs</span>
+
+<span class="cmt"># To let the device RECEIVE scp pushes, enable the server side:</span>
+<span class="pc">R1(config)#</span> <span class="out">ip scp server enable</span>
+<span class="cmt"># (requires SSH + a local AAA user — see the SSH section of "First Contact")</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — TFTP Is Clear-Text; Don't Use It Over Untrusted Links</span>
+    <p>TFTP has no authentication and no encryption — your entire config, including (weakly) encrypted password hashes, crosses the wire in the clear. It's fine on an isolated management segment for a quick copy, but for anything crossing a real network use <strong>SCP</strong>. Same muscle memory, wrapped in SSH. If a config is worth backing up, it's worth not broadcasting.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Restoring — The Merge Trap</h2>
+  <p class="section-thesis"><em>The single most dangerous misconception in Cisco backup. Copying a config INTO running-config does not replace it — it merges. This surprises everyone once, usually painfully.</em></p>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — copy … running-config MERGES, It Does Not Replace</span>
+    <p>When you <code>copy tftp: running-config</code>, IOS applies the backup <em>on top of</em> what's already running. Commands that exist get overwritten; commands in the live config that <em>aren't</em> in the backup stay put. So restoring an old backup does not return the device to that old state — you get a Frankenstein merge of both. To truly replace the running config, either copy to <strong>startup</strong> and reload, or use <code>configure replace</code> (section 04).</p>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the two honest ways to restore</span>
+    <pre class="term"><span class="cmt"># Option A — restore to STARTUP, then reboot into a clean state</span>
+<span class="pc">R1#</span> <span class="out">copy tftp: startup-config</span>
+<span class="pc">R1#</span> <span class="out">reload</span>
+<span class="cmt"># The device boots entirely from the restored file. Clean, but a reboot.</span>
+
+<span class="cmt"># Option B — replace the RUNNING config live, no reboot (section 04)</span>
+<span class="pc">R1#</span> <span class="out">configure replace tftp://192.168.1.50/R1-good.cfg</span></pre>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Archive Feature &amp; One-Command Rollback</h2>
+  <p class="section-thesis"><em>IOS can keep automatic versioned snapshots of the config and roll back to any of them live — no reboot, no merge. This is the professional safety net for risky changes.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — enable config archiving</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">archive</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">path flash:/archive/R1-config</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">maximum 14</span>          <span class="cmt"># keep 14 versions</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">time-period 1440</span>     <span class="cmt"># auto-snapshot every 1440 min (daily)</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">write-memory</span>         <span class="cmt"># also snapshot on every "wr"</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">end</span>
+
+<span class="cmt"># Take a snapshot on demand, and list what's stored (safe)</span>
+<span class="pc">R1#</span> <span class="out">archive config</span>
+<span class="pc">R1#</span> <span class="out">show archive</span>
+<span class="out"> The maximum archive configurations allowed is 14.
+ Archive #  Name
+   1        flash:/archive/R1-config-1
+   2        flash:/archive/R1-config-2  &lt;- Most Recent</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — roll back a bad change in one command</span>
+    <pre class="term"><span class="cmt"># You made a change, it broke something. Roll the RUNNING config back to
+# a known-good snapshot — live, no reboot, a true replace (not a merge).</span>
+<span class="pc">R1#</span> <span class="out">configure replace flash:/archive/R1-config-1</span>
+<span class="out">This will apply all necessary additions and deletions
+to replace the current running configuration with the
+contents of the specified configuration file, which is
+assumed to be a complete configuration, not a partial
+configuration. Enter Y if you are sure you want to proceed. ? [no]: </span><span class="out">y</span>
+<span class="out">Total number of passes: 1
+Rollback Done</span>
+
+<span class="cmt"># Even safer for remote changes: auto-rollback if you lose the session</span>
+<span class="pc">R1#</span> <span class="out">configure terminal revert timer 5</span>
+<span class="cmt"># Make your changes; if you don't "configure confirm" within 5 minutes,
+# IOS reverts automatically. Your parachute for remote config work.</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — <code>reload in 5</code> Is the Poor Man's Auto-Rollback</span>
+    <p>No archive configured and about to make a scary change on a remote device? Type <code>reload in 5</code> before you start. If your change locks you out, the device reboots in 5 minutes back to the last saved <code>startup-config</code>. If everything's fine, cancel it with <code>reload cancel</code>. It's crude — it costs a reboot and only reverts to startup — but it has saved countless admins stuck 300 km from the rack.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Automating Backups with kron</h2>
+  <p class="section-thesis"><em>A backup you have to remember to run is a backup you won't have. IOS has a built-in scheduler — kron — that can push the config off-box on a timer, with no external tooling.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — scheduled nightly config export</span>
+    <pre class="term"><span class="cmt"># 1. Define WHAT to run — a policy that copies running-config to SCP</span>
+<span class="pc">R1(config)#</span> <span class="out">kron policy-list NIGHTLY-BACKUP</span>
+<span class="pc">R1(config-kron-policy)#</span> <span class="out">cli copy running-config scp://backup@192.168.1.50/R1-nightly.cfg</span>
+<span class="pc">R1(config-kron-policy)#</span> <span class="out">exit</span>
+
+<span class="cmt"># 2. Define WHEN — every day at 02:00, recurring</span>
+<span class="pc">R1(config)#</span> <span class="out">kron occurrence NIGHTLY at 2:00 recurring</span>
+<span class="pc">R1(config-kron-occurrence)#</span> <span class="out">policy-list NIGHTLY-BACKUP</span>
+<span class="pc">R1(config-kron-occurrence)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify the schedule (safe)</span>
+<span class="pc">R1#</span> <span class="out">show kron schedule</span>
+<span class="out">Kron Occurrence Schedule
+  NIGHTLY inactive, will run again in 0 days 13:41:22</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — kron Runs Commands from Privileged EXEC, Non-Interactively</span>
+    <p>Kron executes each <code>cli</code> line as if typed at the <code>#</code> prompt — but there's no human to answer prompts. Commands that ask a question (like an interactive <code>copy</code> that prompts for a filename) can stall. Use fully-qualified one-line forms with the destination baked into the URL, as above, so nothing needs answering. Test the exact command by hand once before trusting the schedule.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Backing Up the IOS Image</h2>
+  <p class="section-thesis"><em>Config is not the only thing worth saving. A corrupt or deleted IOS image turns a switch into a paperweight. Keep a copy of the .bin off-box too.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — what's in flash, and copy the image out</span>
+    <pre class="term"><span class="cmt"># See the image files and free space (safe)</span>
+<span class="pc">R1#</span> <span class="out">show flash:</span>
+<span class="out">-#- --length-- -----date/time------ path
+  1   45088768 Jul 10 2026 09:14:02 c2900-universalk9-mz.SPA.157-3.M9.bin
+  2       1846 Jul 10 2026 10:02:11 R1-2026-07-10.cfg</span>
+
+<span class="cmt"># Copy the image to your server (note the exact filename from above)</span>
+<span class="pc">R1#</span> <span class="out">copy flash:c2900-universalk9-mz.SPA.157-3.M9.bin tftp:</span>
+<span class="out">Address or name of remote host []? </span><span class="out">192.168.1.50</span>
+<span class="out">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+45088768 bytes copied in 78.2 secs</span>
+
+<span class="cmt"># Confirm integrity against Cisco's published hash</span>
+<span class="pc">R1#</span> <span class="out">verify /md5 flash:c2900-universalk9-mz.SPA.157-3.M9.bin</span></pre>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">Password Recovery <span class="danger-badge">Console Required</span></h2>
+  <p class="section-thesis"><em>Inherited a device nobody has the password to? You don't wipe it. You boot around the startup-config using the configuration register, recover the config, and reset the passwords. Physical console access is mandatory — which is exactly why console security matters.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — router password recovery (via ROMMON)</span>
+    <pre class="term"><span class="cmt"># 1. Console in, power-cycle, and send a BREAK during boot to reach ROMMON</span>
+<span class="out">rommon 1 &gt;</span> <span class="out">confreg 0x2142</span>   <span class="cmt"># tell it to IGNORE startup-config on next boot</span>
+<span class="out">rommon 2 &gt;</span> <span class="out">reset</span>
+
+<span class="cmt"># 2. It boots with a blank running-config (setup wizard) — say no. Then
+#    load the REAL config from NVRAM into running WITHOUT its passwords taking effect:</span>
+<span class="pc">Router&gt;</span> <span class="out">enable</span>
+<span class="pc">Router#</span> <span class="out">copy startup-config running-config</span>   <span class="cmt"># your config is back, and you're already privileged</span>
+
+<span class="cmt"># 3. Set a new password and make sure interfaces you need are not shut</span>
+<span class="pc">Router#</span> <span class="out">configure terminal</span>
+<span class="pc">Router(config)#</span> <span class="out">enable secret NewStr0ng!Pass</span>
+
+<span class="cmt"># 4. CRITICAL: restore the config register so it boots normally next time</span>
+<span class="pc">Router(config)#</span> <span class="out">config-register 0x2102</span>
+<span class="pc">Router(config)#</span> <span class="out">end</span>
+
+<span class="cmt"># 5. Save and reboot</span>
+<span class="pc">Router#</span> <span class="out">write memory</span>
+<span class="pc">Router#</span> <span class="out">reload</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Don't Forget Step 4</span>
+    <p>If you skip <code>config-register 0x2102</code>, the device keeps ignoring its startup-config on <em>every</em> future boot — it'll come up blank each time and you'll think the recovery failed. Confirm with <code>show version</code> (last line shows the configuration register). Switches use a slightly different procedure (hold the MODE button during boot, then <code>flash_init</code> / <code>rename flash:config.text</code>) but the idea is the same: boot around the config, recover it, reset the password, restore normal boot.</p>
+  </div>
+
+  <!-- 08 -->
+  <p class="section-num">08</p>
+  <h2 class="section-title">Command Reference</h2>
+  <p class="section-thesis"><em>The backup and recovery commands worth committing to memory.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>copy run start · wr</td><td>Save running-config to NVRAM (survives reboot).</td></tr>
+      <tr><td>copy run tftp: / scp:</td><td>Export the config off-box. SCP for anything untrusted.</td></tr>
+      <tr><td>copy tftp: startup-config</td><td>Restore to startup — then <code>reload</code> for a clean replace.</td></tr>
+      <tr><td>configure replace &lt;file&gt;</td><td>Replace the running config live — a true replace, no reboot.</td></tr>
+      <tr><td>archive config</td><td>Take a versioned config snapshot now.</td></tr>
+      <tr><td>show archive</td><td>List stored config versions.</td></tr>
+      <tr><td>show kron schedule</td><td>See scheduled automated jobs.</td></tr>
+      <tr><td>show flash: / dir flash:</td><td>List files and free space (config + IOS image).</td></tr>
+      <tr><td>reload in 5 / reload cancel</td><td>Arm / disarm a safety reboot before a risky change.</td></tr>
+      <tr><td>config-register 0x2102</td><td>Normal boot (0x2142 = ignore startup, for recovery).</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Three tiers, increasing safety:</strong> running (RAM) → startup (NVRAM, <code>wr</code>) → off-box (TFTP/SCP/git). Only the third survives the device itself dying. Most "we lost the config" outages are really "we only saved to startup."</li>
+      <li><strong>Restoring into running-config MERGES, it doesn't replace.</strong> To truly return to an old state, restore to startup and reload, or use <code>configure replace</code>. This gotcha bites everyone exactly once.</li>
+      <li><strong>The archive feature is your live rollback.</strong> Versioned snapshots plus <code>configure replace</code> undo a bad change with no reboot and no merge. Turn it on before you need it.</li>
+      <li><strong>Automate it or it won't happen.</strong> <code>kron</code> pushes the config off-box on a schedule with no external tooling — use fully-qualified one-line commands so nothing prompts.</li>
+      <li><strong>Back up the IOS image too.</strong> A missing or corrupt .bin bricks the box. Keep a copy off-device and <code>verify /md5</code> it.</li>
+      <li><strong>Arm a parachute for remote changes.</strong> <code>configure terminal revert timer</code> or a plain <code>reload in 5</code> auto-recovers you if a change cuts your own session.</li>
+      <li><strong>Recovery needs the console.</strong> You can reset any password with physical access and the config register — which is precisely why the console port and physical security are part of your threat model, not an afterthought.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Managing Cisco gear for an office, hotel, or SMB in Crete?</h3>
+    <p>NOCTIS sets up automated, off-site config backups and tested recovery procedures for every device we manage — so a dead switch is a 20-minute swap, not a lost weekend. We hand over the runbook too.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-vlans-trunking.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 2</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">VLANs &amp; Trunking</span></a>
+    <a href="cisco-dhcp-nat.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 4 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">DHCP &amp; NAT/PAT</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

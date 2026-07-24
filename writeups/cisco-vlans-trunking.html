@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: VLANs & Trunking — SP1R4 / NOCTIS</title>
+<meta name="description" content="Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).">
+<meta property="og:title" content="Cisco IOS: VLANs &amp; Trunking — NOCTIS">
+<meta property="og:description" content="Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-vlans-trunking.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-vlans-trunking.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-vlans-trunking.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-vlans-trunking.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  /* keyboard shortcut pills */
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  /* cheatsheet table */
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  /* safe badge */
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: VLANs & Trunking",
+  "description": "Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).",
+  "datePublished": "2026-07-08",
+  "dateModified": "2026-07-08",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-vlans-trunking.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-vlans-trunking.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-vlans-trunking"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>VLANs &amp; Trunking</h1>
+  <p class="post-subtitle">One physical switch, many isolated networks. Create VLANs, assign access ports, carry multiple VLANs over a single 802.1Q trunk, and route between them — first with router-on-a-stick, then with an L3 switch. With the native-VLAN gotchas that catch everyone.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">VLAN</span>
+    <span class="tag">802.1Q</span>
+    <span class="tag">Trunking</span>
+    <span class="tag">Inter-VLAN Routing</span>
+    <span class="tag">Catalyst</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 2 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: access vs trunk -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+      <defs><style>
+        .vbg{fill:#e1ded7}
+        .vl{font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle}
+        .vs{font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle}
+        .vm{font-family:ui-monospace,monospace;font-size:10px;fill:#555550;text-anchor:middle}
+      </style></defs>
+      <rect width="720" height="220" class="vbg"/>
+      <!-- switch A -->
+      <rect x="70" y="86" width="150" height="48" rx="5" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="145" y="106" class="vl">SW1</text>
+      <text x="145" y="122" class="vs">access + trunk</text>
+      <!-- switch B -->
+      <rect x="500" y="86" width="150" height="48" rx="5" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="575" y="106" class="vl">SW2</text>
+      <text x="575" y="122" class="vs">access + trunk</text>
+      <!-- trunk link -->
+      <line x1="220" y1="110" x2="500" y2="110" stroke="#c63d1f" stroke-width="3"/>
+      <text x="360" y="100" class="vl" style="fill:#c63d1f">802.1Q TRUNK</text>
+      <text x="360" y="128" class="vs">carries VLAN 10 + 20 + 99 (tagged)</text>
+      <!-- access hosts SW1 -->
+      <line x1="100" y1="134" x2="100" y2="180" stroke="#3a5a78" stroke-width="1.6"/>
+      <rect x="72" y="180" width="56" height="24" rx="3" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="100" y="196" class="vm" style="fill:#3a5a78">VLAN 10</text>
+      <line x1="190" y1="134" x2="190" y2="180" stroke="#558840" stroke-width="1.6"/>
+      <rect x="162" y="180" width="56" height="24" rx="3" fill="#d7e7cf" stroke="#558840"/>
+      <text x="190" y="196" class="vm" style="fill:#3a6a28">VLAN 20</text>
+      <!-- access hosts SW2 -->
+      <line x1="530" y1="134" x2="530" y2="180" stroke="#3a5a78" stroke-width="1.6"/>
+      <rect x="502" y="180" width="56" height="24" rx="3" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="530" y="196" class="vm" style="fill:#3a5a78">VLAN 10</text>
+      <line x1="620" y1="134" x2="620" y2="180" stroke="#558840" stroke-width="1.6"/>
+      <rect x="592" y="180" width="56" height="24" rx="3" fill="#d7e7cf" stroke="#558840"/>
+      <text x="620" y="196" class="vm" style="fill:#3a6a28">VLAN 20</text>
+      <text x="360" y="205" class="vs">Access ports face hosts (one untagged VLAN). The trunk carries them all between switches.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>A VLAN turns one physical switch into several logical switches. Ports in VLAN 10 can't talk to ports in VLAN 20 — different broadcast domains, as isolated as if they were separate boxes. That's how you put staff, guests, VoIP, and cameras on the same hardware without letting them touch each other.</p>
+    <p>Two port roles make it work. An <strong>access port</strong> belongs to exactly one VLAN and faces an end device — a PC, a printer, an AP — which knows nothing about VLANs. A <strong>trunk port</strong> carries many VLANs between switches (or to a router) by tagging each frame with its VLAN ID using 802.1Q. This tutorial builds both, then routes between VLANs two different ways. If you've done VLANs on MikroTik, the concepts are identical — only the syntax changes, and section 08 maps them directly.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Comfort with the IOS CLI and the three modes — see <a href="cisco-first-contact.html">Cisco IOS: First Contact</a></li>
+      <li>Two switches (or a lab) and, for routing, a router or an L3 switch</li>
+      <li>A VLAN plan: which IDs, which subnets. We use VLAN 10 (staff, 192.168.10.0/24), VLAN 20 (guest, 192.168.20.0/24), VLAN 99 (native/management)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Creating VLANs</h2>
+  <p class="section-thesis"><em>A VLAN has to exist in the switch's VLAN database before you can put a port in it. Create it, name it, done. Naming is optional but you will regret skipping it.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — create and name VLANs</span>
+    <pre class="term"><span class="pc">SW1#</span> <span class="out">configure terminal</span>
+<span class="pc">SW1(config)#</span> <span class="out">vlan 10</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">name STAFF</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">exit</span>
+<span class="pc">SW1(config)#</span> <span class="out">vlan 20</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">name GUEST</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">exit</span>
+<span class="pc">SW1(config)#</span> <span class="out">vlan 99</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">name NATIVE-MGMT</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">end</span>
+
+<span class="cmt"># Confirm they exist (all safe, read-only)</span>
+<span class="pc">SW1#</span> <span class="out">show vlan brief</span>
+<span class="out">VLAN Name              Status    Ports
+1    default           active    Gi0/3, Gi0/4, Gi0/5 ...
+10   STAFF             active
+20   GUEST             active
+99   NATIVE-MGMT       active</span>
+<span class="cmt"># New VLANs have no ports yet — every port still lives in VLAN 1 (default).</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — VLAN 1 Is Special, and a Liability</span>
+    <p>Every port ships in VLAN 1, and by default VLAN 1 is also the native and management VLAN. That's convenient and insecure — it means an attacker on a default port shares a broadcast domain with your management traffic. Best practice: don't <em>use</em> VLAN 1 for anything real. Put a dedicated management VLAN (we use 99) and move the native VLAN off 1 (section 03).</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Access Ports</h2>
+  <p class="section-thesis"><em>An access port carries exactly one VLAN, untagged, to an end device. This is where you put PCs, printers, and access points. The <code>interface range</code> keyword configures many at once.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — assign access ports (one, then a range)</span>
+    <pre class="term"><span class="cmt"># A single port into VLAN 10</span>
+<span class="pc">SW1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport mode access</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport access vlan 10</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Twelve ports into VLAN 20 in one shot with "interface range"</span>
+<span class="pc">SW1(config)#</span> <span class="out">interface range GigabitEthernet0/13 - 24</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">switchport mode access</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">switchport access vlan 20</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify: each port now shows its VLAN</span>
+<span class="pc">SW1#</span> <span class="out">show interfaces status</span>
+<span class="out">Port    Name   Status       Vlan   Duplex  Speed Type
+Gi0/1          connected    10     a-full  a-1000 ...
+Gi0/13         notconnect   20     auto    auto   ...</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — Set "mode access" Explicitly</span>
+    <p>Cisco ports default to <em>dynamic auto</em> (DTP), meaning a port can negotiate itself into a trunk if the neighbour asks — a known attack vector (VLAN hopping). Always pin end-user ports with <code>switchport mode access</code>, and for extra safety add <code>switchport nonegotiate</code> so the port never sends DTP frames at all. An access port should never become a trunk by accident.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Trunk Ports &amp; 802.1Q</h2>
+  <p class="section-thesis"><em>A trunk carries many VLANs over one link by tagging each frame with its VLAN ID. This is the link between two switches, or between a switch and a router. One untagged VLAN — the native VLAN — rides without a tag.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — configure a trunk (both ends must match)</span>
+    <pre class="term"><span class="pc">SW1(config)#</span> <span class="out">interface GigabitEthernet0/24</span>
+
+<span class="cmt"># On switches that support ISL, set the encapsulation first.
+# On 2960/2960-X (dot1q-only) this command doesn't exist — just skip it.</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport trunk encapsulation dot1q</span>
+
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport mode trunk</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport trunk native vlan 99</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport trunk allowed vlan 10,20,99</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport nonegotiate</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify the trunk: allowed VLANs and native VLAN</span>
+<span class="pc">SW1#</span> <span class="out">show interfaces trunk</span>
+<span class="out">Port    Mode  Encapsulation  Status    Native vlan
+Gi0/24  on    802.1q         trunking  99
+
+Port    Vlans allowed on trunk
+Gi0/24  10,20,99</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Native VLAN Mismatch</span>
+    <p>Both ends of a trunk must agree on the native VLAN. If SW1 uses native 99 and SW2 uses native 1, untagged frames land in the wrong VLAN and CDP throws <code>%CDP-4-NATIVE_VLAN_MISMATCH</code> every 60 seconds. It's a real security and connectivity problem, not just noise. Set <code>switchport trunk native vlan 99</code> identically on both sides. Equally: if a VLAN isn't in the <code>allowed</code> list, its traffic is silently dropped across the trunk — a classic "VLAN 20 can't reach the other switch" cause.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Inter-VLAN Routing — Router-on-a-Stick</h2>
+  <p class="section-thesis"><em>VLANs are isolated by design — VLAN 10 can't reach VLAN 20 without a router. The cheapest way to route between them is one router interface, trunked, carrying a subinterface per VLAN. Each subinterface is that VLAN's default gateway.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS (router) — one physical link, a subinterface per VLAN</span>
+    <pre class="term"><span class="cmt"># The switch port facing the router must be a trunk (see section 03).
+# On the ROUTER, carve the physical interface into tagged subinterfaces:</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">no shutdown</span>          <span class="cmt"># the physical parent needs no IP, just "up"</span>
+<span class="pc">R1(config-if)#</span> <span class="out">exit</span>
+
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0.10</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">encapsulation dot1q 10</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">ip address 192.168.10.1 255.255.255.0</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">exit</span>
+
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0.20</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">encapsulation dot1q 20</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">ip address 192.168.20.1 255.255.255.0</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">exit</span>
+
+<span class="cmt"># The native VLAN uses the "native" keyword so its frames stay untagged</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0.99</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">encapsulation dot1q 99 native</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">ip address 192.168.99.1 255.255.255.0</span>
+<span class="pc">R1(config-subif)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <p>Now set each host's default gateway to its subinterface IP (e.g. VLAN 10 hosts → 192.168.10.1) and VLAN 10 can reach VLAN 20 through the router. Great for small sites; the single link is the bottleneck at scale.</p>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Inter-VLAN Routing — L3 Switch (SVI)</h2>
+  <p class="section-thesis"><em>A layer-3 switch routes between VLANs in hardware, at wire speed, with no trunk bottleneck. Instead of router subinterfaces you create a Switched Virtual Interface (SVI) per VLAN. This is how real sites do it.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS (L3 switch) — enable routing, one SVI per VLAN</span>
+    <pre class="term"><span class="cmt"># 1. Turn on IP routing — off by default on a switch</span>
+<span class="pc">L3-SW(config)#</span> <span class="out">ip routing</span>
+
+<span class="cmt"># 2. A virtual interface per VLAN — this IP is the VLAN's gateway</span>
+<span class="pc">L3-SW(config)#</span> <span class="out">interface vlan 10</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">ip address 192.168.10.1 255.255.255.0</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">no shutdown</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">exit</span>
+
+<span class="pc">L3-SW(config)#</span> <span class="out">interface vlan 20</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">ip address 192.168.20.1 255.255.255.0</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">no shutdown</span>
+<span class="pc">L3-SW(config-if)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify routing between VLANs is now local and active</span>
+<span class="pc">L3-SW#</span> <span class="out">show ip route</span>
+<span class="out">C    192.168.10.0/24 is directly connected, Vlan10
+C    192.168.20.0/24 is directly connected, Vlan20</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — An SVI Only Comes "up" With a Live Access Port</span>
+    <p>A VLAN's SVI stays <code>down/down</code> until at least one access port in that VLAN is <em>connected</em> and up (or the VLAN is allowed on an up trunk). Configure everything perfectly and the SVI can still show down simply because nothing is plugged into VLAN 10 yet. <code>show ip interface brief | include Vlan</code> tells you the truth. Also don't forget <code>ip routing</code> — without it, the L3 switch has SVIs but won't route between them.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Four read-only commands answer almost every VLAN problem: which VLAN is a port in, what does the trunk carry, is the native VLAN consistent, and does the SVI have an IP.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td>show vlan brief</td><td>Which VLANs exist and which access ports are in each.</td></tr>
+      <tr><td>show interfaces trunk</td><td>Which ports are trunks, their native VLAN, and the allowed-VLAN list.</td></tr>
+      <tr><td>show interfaces status</td><td>Per-port: connected/notconnect, access VLAN, speed/duplex.</td></tr>
+      <tr><td>show interfaces gi0/1 switchport</td><td>Full switchport detail for one port — mode, access VLAN, trunk settings.</td></tr>
+      <tr><td>show ip interface brief</td><td>SVI IPs and up/down state (L3 switch / router).</td></tr>
+      <tr><td>show ip route</td><td>Confirms the inter-VLAN routes are directly connected and active.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the "why can't these two VLANs talk" checklist</span>
+    <pre class="term"><span class="cmt"># 1. Are both hosts actually in the VLAN you think?</span>
+<span class="pc">SW1#</span> <span class="out">show interfaces status | include connected</span>
+
+<span class="cmt"># 2. Does the trunk between switches carry BOTH VLANs?</span>
+<span class="pc">SW1#</span> <span class="out">show interfaces trunk</span>
+<span class="cmt">#    If VLAN 20 is missing from "allowed", add it:</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport trunk allowed vlan add 20</span>
+
+<span class="cmt"># 3. Is there a router/SVI with a gateway IP in each subnet?</span>
+<span class="pc">L3-SW#</span> <span class="out">show ip interface brief | include Vlan</span>
+
+<span class="cmt"># 4. Does each host use that gateway? (ping the gateway, then across)</span>
+<span class="pc">SW1#</span> <span class="out">ping 192.168.20.1</span></pre>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Same Idea, Different Words</h2>
+  <p class="section-thesis"><em>If you came from RouterOS, the model is identical — a bridge with VLAN filtering is a switch, tagged/untagged is trunk/access. Only the vocabulary differs.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>Bridge with vlan-filtering=yes</td><td>The switch itself (VLAN-aware by default)</td></tr>
+      <tr><td>Bridge port pvid=10, untagged</td><td><code>switchport mode access ; switchport access vlan 10</code></td></tr>
+      <tr><td>Bridge VLAN tagged=ether1,ether2</td><td><code>switchport mode trunk ; switchport trunk allowed vlan …</code></td></tr>
+      <tr><td>Frame tagging = 802.1Q</td><td>802.1Q — identical wire format</td></tr>
+      <tr><td>/interface vlan (VLAN interface + IP)</td><td><code>interface vlan 10</code> (SVI) or router subinterface</td></tr>
+      <tr><td>PVID on ingress port</td><td>Access VLAN / native VLAN on trunk</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 The Real Difference</span>
+    <p>MikroTik makes you build the bridge and enable VLAN filtering explicitly — the switch behaviour is opt-in. On Cisco, a Catalyst is a VLAN-aware switch out of the box; you're configuring roles on ports that already switch. Neither is harder — but Cisco hides less, which is why the native VLAN and DTP catch newcomers. When we migrate a MikroTik site to Cisco (or run both), this table is the cheat sheet we hand the client's team.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>A VLAN must exist before a port can join it.</strong> Create and name it in the VLAN database (<code>vlan 10 ; name STAFF</code>), then assign ports. Name everything — <code>show vlan brief</code> becomes self-documenting.</li>
+      <li><strong>Access = one VLAN to a host; trunk = many VLANs between switches.</strong> Pin end-user ports with <code>switchport mode access</code> and <code>nonegotiate</code> so they can never negotiate into a trunk.</li>
+      <li><strong>Both ends of a trunk must agree on native VLAN and allowed VLANs.</strong> A native mismatch fires CDP errors and misdelivers untagged frames; a missing allowed VLAN silently black-holes that VLAN across the link.</li>
+      <li><strong>VLANs don't route themselves.</strong> Use router-on-a-stick (subinterfaces with <code>encapsulation dot1q</code>) for small sites, or an L3 switch with SVIs and <code>ip routing</code> for anything real.</li>
+      <li><strong>An SVI needs a live port in its VLAN to come up.</strong> A perfectly configured <code>interface vlan 10</code> shows <code>down/down</code> until something is connected in VLAN 10.</li>
+      <li><strong>The concept is universal.</strong> Access/trunk and 802.1Q are the same on MikroTik, Cisco, and everything else — only the CLI words change. Learn it once here and it transfers everywhere.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Segmenting a network for an office, hotel, or SMB in Crete?</h3>
+    <p>NOCTIS designs VLAN layouts that keep staff, guests, VoIP, and cameras properly isolated — on Cisco, MikroTik, or a mix — and documents every port and trunk so your team can maintain it without us.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-first-contact.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 1</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">First Contact</span></a>
+    <a href="cisco-backup-restore.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 3 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Backup &amp; Restore</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

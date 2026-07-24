@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Upgrading Safely — SP1R4 / NOCTIS</title>
+<meta name="description" content="Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.">
+<meta property="og:title" content="Cisco IOS: Upgrading Safely — NOCTIS">
+<meta property="og:description" content="Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-ios-upgrade.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ios-upgrade.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ios-upgrade.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-ios-upgrade.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Upgrading Safely",
+  "description": "Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.",
+  "datePublished": "2026-08-03",
+  "dateModified": "2026-08-03",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-ios-upgrade.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-ios-upgrade.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-ios-upgrade"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Upgrading Safely</h1>
+  <p class="post-subtitle">The task nobody wants to do remotely: replacing the operating system on a live device. Do it wrong and you're driving to the site with a console cable. Do it right — verify the image, set the boot variable, keep the old one — and it's a scheduled reboot. Here's the disciplined version.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">IOS Upgrade</span>
+    <span class="tag">Boot System</span>
+    <span class="tag">IOS-XE</span>
+    <span class="tag">install mode</span>
+    <span class="tag">Maintenance</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 15 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: upgrade flow -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="up" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="130" fill="#e1ded7"/>
+      <g font-family="'Inter',sans-serif" font-size="10" font-weight="700" fill="#1a1a18" text-anchor="middle">
+        <rect x="20" y="44" width="98" height="42" rx="5" fill="#d4d2cc" stroke="#c8c5be"/><text x="69" y="62">1 · CHECK</text><text x="69" y="76" font-size="8" font-weight="400" fill="#888880">space + version</text>
+        <rect x="146" y="44" width="98" height="42" rx="5" fill="#d4d2cc" stroke="#c8c5be"/><text x="195" y="62">2 · COPY</text><text x="195" y="76" font-size="8" font-weight="400" fill="#888880">image to flash</text>
+        <rect x="272" y="44" width="98" height="42" rx="5" fill="#d4d2cc" stroke="#c8c5be"/><text x="321" y="62">3 · VERIFY</text><text x="321" y="76" font-size="8" font-weight="400" fill="#c63d1f">md5 hash</text>
+        <rect x="398" y="44" width="98" height="42" rx="5" fill="#d4d2cc" stroke="#c8c5be"/><text x="447" y="62">4 · BOOT VAR</text><text x="447" y="76" font-size="8" font-weight="400" fill="#888880">+ save</text>
+        <rect x="524" y="44" width="98" height="42" rx="5" fill="#cfe0ee" stroke="#3a5a78"/><text x="573" y="62" fill="#3a5a78">5 · RELOAD</text><text x="573" y="76" font-size="8" font-weight="400" fill="#3a5a78">in a window</text>
+      </g>
+      <line x1="118" y1="65" x2="144" y2="65" style="stroke:#c63d1f;stroke-width:1.4;marker-end:url(#up)"/>
+      <line x1="244" y1="65" x2="270" y2="65" style="stroke:#c63d1f;stroke-width:1.4;marker-end:url(#up)"/>
+      <line x1="370" y1="65" x2="396" y2="65" style="stroke:#c63d1f;stroke-width:1.4;marker-end:url(#up)"/>
+      <line x1="496" y1="65" x2="522" y2="65" style="stroke:#c63d1f;stroke-width:1.4;marker-end:url(#up)"/>
+      <text x="360" y="112" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Skip step 3 and a corrupt download bricks the box on reboot. The old image stays in flash as your parachute.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>An IOS upgrade is conceptually simple — put a new image file in flash, tell the device to boot it, reboot — but the failure mode is severe: a device that won't boot needs physical console access and a ROMMON recovery, which for a remote site means a trip. The discipline that prevents that is entirely about <strong>doing things in the right order and verifying at each step</strong>: confirm there's room, verify the download wasn't corrupted, point the boot variable at the new image, keep the old one, and reboot inside a maintenance window with a rollback ready.</p>
+    <p>There's also a fork in the road. Classic IOS and older Catalysts boot a single <strong>bundle</strong> image with <code>boot system</code> — that's most of this post. Newer <strong>IOS-XE</strong> platforms (Catalyst 9000, ISR 4000, many current switches) prefer <strong>install mode</strong> with <code>install add/activate/commit</code>, which is safer and has built-in rollback. We cover both, and which one you have. This is the operational sibling of the <a href="cisco-backup-restore.html">Backup &amp; Restore post</a> — same "keep a parachute" mindset, applied to the OS itself.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>File operations and the two configs — see <a href="cisco-backup-restore.html">Backup &amp; Restore</a></li>
+      <li>The correct image for your exact model + license, downloaded from Cisco with its published hash</li>
+      <li>A TFTP/SCP server, a maintenance window, and — ideally — console access as the ultimate fallback</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Before You Touch Anything <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Three questions, all read-only: what am I running, is there room for the new image, and have I backed up the config. Answer them before copying a single byte.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the pre-flight checks</span>
+    <pre class="term"><span class="cmt"># What model, current version, and how it boots?</span>
+<span class="pc">SW1#</span> <span class="out">show version | include IOS|System image|Model</span>
+<span class="out">Cisco IOS Software, C2960X Software ... Version 15.2(7)E3
+System image file is "flash:c2960x-universalk9-mz.152-7.E3.bin"
+Model number : WS-C2960X-24TS-L</span>
+
+<span class="cmt"># Is there room? Compare "bytes free" to the new image size.</span>
+<span class="pc">SW1#</span> <span class="out">dir flash: | include bytes</span>
+<span class="out">128169984 bytes total (39124992 bytes free)</span>
+
+<span class="cmt"># Back up the config off-box FIRST (see the Backup post)</span>
+<span class="pc">SW1#</span> <span class="out">copy running-config tftp:</span>
+<span class="cmt"># and ideally copy the CURRENT image off too, so you can restore it.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Not Enough Flash Is the Most Common Wall</span>
+    <p>Access switches often ship with small flash, and a new image plus the old one may not fit. Don't blindly delete the running image to make room — if the new copy is corrupt, you've just removed your only working OS. Instead: confirm the new image size, and if space is tight, remove <em>old crash files or unused images</em> (<code>delete flash:old-image.bin</code>) — never the one you're currently booted from — and <code>dir</code> again. On stacked switches, every member needs the image; that's what install mode (section 05) handles cleanly.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Copy &amp; Verify the Image</h2>
+  <p class="section-thesis"><em>Get the image into flash, then — the step people skip and regret — verify its hash against Cisco's published value. A truncated or corrupt download that boots is far worse than one that doesn't.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — copy in, then verify the MD5</span>
+    <pre class="term"><span class="pc">SW1#</span> <span class="out">copy tftp: flash:</span>
+<span class="out">Address or name of remote host []? </span><span class="out">192.168.1.50</span>
+<span class="out">Source filename []? </span><span class="out">c2960x-universalk9-mz.152-7.E12.bin</span>
+<span class="out">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+23891456 bytes copied in 74.2 secs</span>
+
+<span class="cmt"># THE step that saves you: verify against Cisco's published MD5/SHA.</span>
+<span class="pc">SW1#</span> <span class="out">verify /md5 flash:c2960x-universalk9-mz.152-7.E12.bin</span>
+<span class="out">verify /md5 (flash:...E12.bin) = a3f5c9...  ✓ matches Cisco.com</span>
+<span class="cmt"># If this hash does NOT match the download page, STOP. Re-download.
+# A corrupt image that partially boots can hang in ROMMON — a site visit.</span></pre>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Set the Boot Variable</h2>
+  <p class="section-thesis"><em>Copying the image doesn't make the device use it — the boot variable does. Point it at the new image, keep the old one as a fallback, save, and confirm before you reload.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — boot new first, old as fallback</span>
+    <pre class="term"><span class="pc">SW1(config)#</span> <span class="out">boot system flash:c2960x-universalk9-mz.152-7.E12.bin</span>
+<span class="cmt"># A SECOND boot statement = automatic fallback if the first image fails</span>
+<span class="pc">SW1(config)#</span> <span class="out">boot system flash:c2960x-universalk9-mz.152-7.E3.bin</span>
+<span class="pc">SW1(config)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Confirm the config register boots normally (0x2102) — NOT 0x2142</span>
+<span class="pc">SW1#</span> <span class="out">show boot | include register|BOOT</span>
+<span class="out">BOOT path-list : flash:...E12.bin;flash:...E3.bin
+Configuration Register is 0x2102</span>
+
+<span class="cmt"># SAVE — an unsaved boot statement is forgotten on reload</span>
+<span class="pc">SW1#</span> <span class="out">write memory</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Order of boot Statements = Boot Order</span>
+    <p>IOS tries <code>boot system</code> lines top to bottom, so the <strong>new image must be listed first</strong> and the old one second. Two mistakes brick installs: forgetting to <code>write memory</code> (the device reloads into whatever startup-config had, ignoring your change), and having the config register set to <code>0x2142</code> from a past password recovery (it ignores startup-config entirely and comes up blank). Both are one <code>show</code> command away from being caught — confirm <code>show boot</code> and the register <em>before</em> you reload, not after.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Reload &amp; Confirm <span class="danger-badge">Service Impact</span></h2>
+  <p class="section-thesis"><em>Reboot inside a maintenance window, with a safety timer armed in case the new image doesn't come back the way you expect. Then confirm you're actually running the new version.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the reload, with a parachute</span>
+    <pre class="term"><span class="cmt"># Optional but wise on remote gear: arm a safety net BEFORE reloading.
+# If the box comes back wrong and you can't fix it, this reloads it again
+# to the (still-present) old image after the window. Cancel if all is well.</span>
+<span class="pc">SW1#</span> <span class="out">reload in 15</span>          <span class="cmt"># hold a re-reload 15 min out</span>
+<span class="cmt"># ... then do the real reload:</span>
+<span class="pc">SW1#</span> <span class="out">reload</span>
+<span class="out">System configuration has been modified. Save? [yes/no]: </span><span class="out">yes</span>
+<span class="out">Proceed with reload? [confirm]</span>
+
+<span class="cmt"># --- device reboots on the new image ---</span>
+
+<span class="cmt"># Confirm the upgrade actually took, then cancel the safety net</span>
+<span class="pc">SW1#</span> <span class="out">show version | include Version</span>
+<span class="out">Cisco IOS Software ... Version 15.2(7)E12   ← new!</span>
+<span class="pc">SW1#</span> <span class="out">reload cancel</span>     <span class="cmt"># all good — disarm the parachute</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 If It Comes Back Wrong — Roll Back</span>
+    <p>Because you kept the old image and listed it as the second boot statement, rollback is fast: <code>no boot system flash:...E12.bin</code> to drop the new one (leaving the old), <code>write memory</code>, <code>reload</code> — you're back on the known-good version in one reboot. This is exactly why you don't delete the old image to make space. If the box won't boot at all, the console + ROMMON (<code>boot flash:...E3.bin</code> from the <code>rommon&gt;</code> prompt) is the last resort — the reason a console cable is always in the bag.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">IOS-XE Install Mode — The Modern Path</h2>
+  <p class="section-thesis"><em>Catalyst 9000, ISR 4000 and current IOS-XE platforms replace boot-system juggling with a packaged install workflow that stages, activates, and commits — with a built-in timed rollback. If <code>show version</code> says IOS-XE, prefer this.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS-XE — add, activate (auto-reload), commit</span>
+    <pre class="term"><span class="cmt"># Confirm you're in INSTALL mode (not BUNDLE) — install commands need it</span>
+<span class="pc">SW1#</span> <span class="out">show version | include INSTALL|BUNDLE</span>
+
+<span class="cmt"># 1. Stage the package onto all stack members (no service impact)</span>
+<span class="pc">SW1#</span> <span class="out">install add file flash:cat9k_iosxe.17.09.05.SPA.bin</span>
+
+<span class="cmt"># 2. Activate — this reloads the switch. "prompt-level none" for scripted;
+#    it starts a rollback timer you must confirm within, or it reverts.</span>
+<span class="pc">SW1#</span> <span class="out">install activate</span>
+
+<span class="cmt"># --- reloads onto the new image ---</span>
+
+<span class="cmt"># 3. Happy with it? Commit to make it permanent and stop the auto-rollback.</span>
+<span class="pc">SW1#</span> <span class="out">install commit</span>
+
+<span class="cmt"># Not happy? Before committing, revert to the previous image:</span>
+<span class="pc">SW1#</span> <span class="out">install rollback to committed</span>
+<span class="pc">SW1#</span> <span class="out">install remove inactive</span>   <span class="cmt"># later: reclaim space from old pkgs</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Don't Mix the Two Modes</span>
+    <p>Install-mode and bundle-mode are different worlds. On an IOS-XE box running in install mode, <code>boot system</code> pointed at a raw <code>.bin</code> can leave it inconsistent; conversely <code>install</code> commands do nothing useful in bundle mode. Check with <code>show version</code> first and use the matching workflow. The big win of install mode is the <strong>commit step</strong>: activation is provisional and auto-rolls-back if you don't confirm — so a bad upgrade on a remote switch un-does itself instead of stranding you. That safety is why it's the modern default.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Upgrade Checklist</h2>
+  <p class="section-thesis"><em>The whole post as a runbook. Print it; follow it every time; skip no line.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Step</th><th>Command / action</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Verify model &amp; version</td><td><code>show version</code> — get the exact image for this model + license.</td></tr>
+      <tr><td>2 · Check space</td><td><code>dir flash:</code> — enough for new + keep old.</td></tr>
+      <tr><td>3 · Back up config &amp; image</td><td><code>copy run tftp:</code>; copy current image off-box.</td></tr>
+      <tr><td>4 · Copy new image</td><td><code>copy tftp: flash:</code></td></tr>
+      <tr><td>5 · Verify hash</td><td><code>verify /md5 flash:...</code> — must match Cisco. Non-negotiable.</td></tr>
+      <tr><td>6 · Boot variable</td><td><code>boot system</code> new first, old second; check <code>show boot</code>; register 0x2102.</td></tr>
+      <tr><td>7 · Save</td><td><code>write memory</code></td></tr>
+      <tr><td>8 · Reload in a window</td><td>Arm <code>reload in</code>; <code>reload</code>; confirm <code>show version</code>; <code>reload cancel</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>The danger isn't the upgrade, it's a device that won't boot.</strong> Every step in this post exists to keep a fallback OS on the box and catch problems before the reboot, not after.</li>
+      <li><strong>Verify the hash, always.</strong> <code>verify /md5</code> against Cisco's published value. A corrupt image that half-boots into ROMMON is a site visit; a mismatch caught on the CLI is a re-download.</li>
+      <li><strong>Copying isn't booting — set the boot variable.</strong> New image first, old image second (auto-fallback), confirm <code>show boot</code> and register 0x2102, and <code>write memory</code> or it's forgotten.</li>
+      <li><strong>Keep the old image.</strong> It's your one-reboot rollback (<code>no boot system</code> the new one, reload). Never delete it to make room — trim crash files or unused images instead.</li>
+      <li><strong>Reload in a window with a parachute.</strong> <code>reload in 15</code> before the real reload re-reverts you if the new image misbehaves and you can't reach it; <code>reload cancel</code> once it's confirmed good.</li>
+      <li><strong>IOS-XE? Use install mode.</strong> <code>install add/activate/commit</code> stages safely and auto-rolls-back until you commit — far safer for remote gear than boot-system juggling.</li>
+      <li><strong>It's the OS-level version of your backup discipline.</strong> Same mindset as config backups: never remove your only working copy, always keep a way back.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Overdue Cisco upgrades you're afraid to run in Crete?</h3>
+    <p>NOCTIS plans and executes IOS/IOS-XE upgrades for hotels and SMBs — patched for known CVEs, verified, staged in a maintenance window, with rollback ready. The scary remote reboot, made routine.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-observability.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 14</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Observability</span></a>
+    <a href="cisco-eem.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 16 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">EEM Automation</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

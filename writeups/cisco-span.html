@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: SPAN &amp; RSPAN Port Mirroring — SP1R4 / NOCTIS</title>
+<meta name="description" content="Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.">
+<meta property="og:title" content="Cisco IOS: SPAN &amp; RSPAN Port Mirroring — NOCTIS">
+<meta property="og:description" content="Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-span.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-span.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-span.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-span.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: SPAN & RSPAN Port Mirroring",
+  "description": "Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.",
+  "datePublished": "2026-08-11",
+  "dateModified": "2026-08-11",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-span.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-span.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-span"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>SPAN &amp; RSPAN</h1>
+  <p class="post-subtitle">A switch normally sends each frame only to its destination — which is why you can't just plug a laptop in and see traffic. SPAN mirrors chosen ports or VLANs to an analyzer port so you can. Local SPAN, RSPAN across switches, and ERSPAN over IP — plus the oversubscription trap that makes captures lie.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">SPAN</span>
+    <span class="tag">RSPAN</span>
+    <span class="tag">ERSPAN</span>
+    <span class="tag">Port Mirroring</span>
+    <span class="tag">IDS</span>
+    <span class="tag">Forensics</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 19 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="sp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="170" fill="#e1ded7"/>
+      <rect x="270" y="60" width="180" height="50" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="82" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#1a1a18;text-anchor:middle;">SWITCH</text>
+      <text x="360" y="98" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">monitor session</text>
+      <!-- source -->
+      <rect x="40" y="66" width="120" height="38" rx="4" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="100" y="84" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;text-anchor:middle;font-weight:600;">SOURCE Gi0/1</text>
+      <text x="100" y="96" style="font-family:'Inter',sans-serif;font-size:8px;fill:#3a5a78;text-anchor:middle;">real traffic</text>
+      <line x1="160" y1="85" x2="268" y2="85" style="stroke:#3a5a78;stroke-width:1.6;marker-end:url(#sp)"/>
+      <!-- dest -->
+      <rect x="560" y="66" width="120" height="38" rx="4" fill="#eee6d8" stroke="#c08020"/>
+      <text x="620" y="84" style="font-family:'Inter',sans-serif;font-size:9px;fill:#8a5a10;text-anchor:middle;font-weight:600;">DEST Gi0/24</text>
+      <text x="620" y="96" style="font-family:'Inter',sans-serif;font-size:8px;fill:#8a5a10;text-anchor:middle;">→ analyzer / IDS</text>
+      <line x1="450" y1="85" x2="558" y2="85" style="stroke:#c63d1f;stroke-width:2;marker-end:url(#sp)"/>
+      <text x="504" y="76" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">copy</text>
+      <text x="360" y="145" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">A copy of the source port's frames is duplicated to the destination port. The original still flows normally.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Switches learn where each MAC lives and forward frames only there — great for performance, inconvenient when you need to <em>watch</em> traffic that isn't destined for you. SPAN (Switched Port Analyzer) is the built-in answer: tell the switch to duplicate the frames from one or more <strong>source</strong> ports or VLANs onto a <strong>destination</strong> port, where a Wireshark laptop, an IDS sensor (Snort/Suricata/Zeek), or a DPI appliance can see everything. No hardware tap, no cabling change.</p>
+    <p>Three flavours cover the distances: <strong>local SPAN</strong> when the analyzer is on the same switch, <strong>RSPAN</strong> when it's on a different switch (the copy rides a dedicated VLAN across trunks), and <strong>ERSPAN</strong> when it's across a routed network (the copy is GRE-encapsulated over IP). This is where our two hats meet — the same mirror we set up for a customer's IDS is the one we ask for during incident response to see what an attacker is actually doing on the wire. One gotcha, oversubscription, makes the difference between a capture you can trust and one that silently lies; it gets its own section.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>VLANs and trunking (for RSPAN) — see <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a></li>
+      <li>An analyzer: a laptop with Wireshark, or an IDS/sensor NIC</li>
+      <li>A free switch port to dedicate as the destination</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Local SPAN — Same Switch</h2>
+  <p class="section-thesis"><em>The simplest case: source and analyzer on one switch. Two lines — a source and a destination — and you're capturing.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — mirror a port (and a whole VLAN) to Gi0/24</span>
+    <pre class="term"><span class="cmt"># Mirror BOTH directions of Gi0/1 to the analyzer on Gi0/24</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 1 source interface GigabitEthernet0/1 both</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 1 destination interface GigabitEthernet0/24</span>
+<span class="pc">SW1(config)#</span> <span class="out">end</span>
+
+<span class="cmt"># Or mirror an entire VLAN's traffic (great for an IDS watching a segment)</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 2 source vlan 10 rx</span>       <span class="cmt"># rx = received only</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 2 destination interface GigabitEthernet0/23</span>
+
+<span class="cmt"># Confirm the session</span>
+<span class="pc">SW1#</span> <span class="out">show monitor session 1</span>
+<span class="out">Session 1
+Type              : Local Session
+Source Ports  Both : Gi0/1
+Destination Ports : Gi0/24</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The Destination Port Stops Being a Normal Port</span>
+    <p>Once an interface is a SPAN destination, it does one thing: spit out mirrored frames. It <strong>drops incoming traffic and no longer participates in the network</strong> — so don't SPAN to a port that a real device (or your own management path) relies on, and don't be surprised when the analyzer laptop can't reach the internet through it. Plan a dedicated port. Also note <code>both</code> mirrors tx+rx, which can double the volume — see oversubscription (section 04). Use <code>rx</code> or <code>tx</code> when you only need one direction.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">RSPAN — Across Switches</h2>
+  <p class="section-thesis"><em>When the analyzer sits on a different switch, RSPAN carries the mirrored copy over a dedicated VLAN that rides your existing trunks. A source session on one switch, a destination session on the other, joined by a special RSPAN VLAN.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — RSPAN VLAN + source switch + dest switch</span>
+    <pre class="term"><span class="cmt"># On EVERY switch in the path, define the special RSPAN VLAN</span>
+<span class="pc">SW1(config)#</span> <span class="out">vlan 199</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">remote-span</span>
+<span class="pc">SW1(config-vlan)#</span> <span class="out">exit</span>
+<span class="cmt"># (and allow VLAN 199 on the trunks between the switches)</span>
+
+<span class="cmt"># SOURCE switch — mirror the port INTO the RSPAN VLAN</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 1 source interface GigabitEthernet0/1 both</span>
+<span class="pc">SW1(config)#</span> <span class="out">monitor session 1 destination remote vlan 199</span>
+
+<span class="cmt"># DEST switch (SW2) — pull the RSPAN VLAN OUT to the analyzer port</span>
+<span class="pc">SW2(config)#</span> <span class="out">monitor session 1 source remote vlan 199</span>
+<span class="pc">SW2(config)#</span> <span class="out">monitor session 1 destination interface GigabitEthernet0/24</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The RSPAN VLAN Must Exist and Be Trunked End-to-End</span>
+    <p>RSPAN silently fails if any switch on the path between source and destination is missing the <code>remote-span</code> VLAN or doesn't allow it on the interconnecting trunks. The mirror traffic just doesn't arrive and there's no obvious error — you sit at the analyzer seeing nothing. Define the RSPAN VLAN on <em>every</em> switch in the path and add it to each trunk's allowed list (the <a href="cisco-vlans-trunking.html">allowed-VLAN</a> discipline again). RSPAN traffic also consumes real bandwidth on those trunks — a busy source port's mirror competes with production traffic on the uplinks.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">ERSPAN — Across a Routed Network</h2>
+  <p class="section-thesis"><em>When the analyzer is L3 hops away — a central SOC, a cloud IDS — ERSPAN wraps the mirrored frames in GRE and routes them over IP. Router/L3-switch feature; the shape is similar with source and destination IPs.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — ERSPAN source (frames GRE'd to a remote collector)</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">monitor session 1 type erspan-source</span>
+<span class="pc">R1(config-mon-erspan-src)#</span> <span class="out">source interface GigabitEthernet0/1 both</span>
+<span class="pc">R1(config-mon-erspan-src)#</span> <span class="out">destination</span>
+<span class="pc">R1(config-mon-erspan-src-dst)#</span> <span class="out">erspan-id 101</span>
+<span class="pc">R1(config-mon-erspan-src-dst)#</span> <span class="out">ip address 10.50.0.10</span>      <span class="cmt"># the collector</span>
+<span class="pc">R1(config-mon-erspan-src-dst)#</span> <span class="out">origin ip address 10.1.0.1</span>  <span class="cmt"># this router</span>
+<span class="pc">R1(config-mon-erspan-src-dst)#</span> <span class="out">no shutdown</span>
+<span class="pc">R1(config-mon-erspan-src-dst)#</span> <span class="out">end</span>
+<span class="cmt"># The collector (or a matching ERSPAN-destination session) decapsulates
+# the GRE and hands the original frames to the analyzer. Now you can mirror
+# a branch's traffic to an IDS at HQ — across the WAN.</span></pre>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Oversubscription Trap</h2>
+  <p class="section-thesis"><em>The gotcha that makes captures lie. A 1 Gbps destination port cannot carry more than 1 Gbps of mirrored traffic — and mirroring several busy ports (or both directions of one) easily exceeds that. The switch quietly drops the overflow, and your capture is missing packets you'll never know about.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">The math that bites — and how to check</span>
+    <pre class="term"><span class="cmt"># Example: mirror 4 ports, "both" directions, each ~600 Mbps at peak.
+#   4 ports x 600 Mbps x 2 directions = 4.8 Gbps of mirror traffic
+#   ...into a single 1 Gbps destination port. ~80% is DROPPED.
+# Your IDS sees a fraction of reality and reports "all clear" — falsely.
+
+<span class="cmt"># Check whether the destination is overrun (drops climbing = trouble):</span>
+<span class="pc">SW1#</span> <span class="out">show interfaces GigabitEthernet0/24 counters | include Discard|drop</span>
+<span class="pc">SW1#</span> <span class="out">show monitor session 1</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Living Within the Destination's Capacity</span>
+    <p>Three ways to keep a capture honest. <strong>Narrow the source</strong> — mirror one port or one direction (<code>rx</code>/<code>tx</code>), not everything <code>both</code>. <strong>Use a faster destination</strong> — a 10G analyzer port for aggregated sources. Or <strong>filter</strong> — some platforms support <code>monitor session … filter vlan</code> or ACL-based SPAN to copy only the traffic you care about. For serious full-fidelity capture (line-rate forensics, high-throughput IDS), a dedicated hardware <strong>network tap</strong> beats SPAN — it can't oversubscribe and doesn't compete with switch resources. SPAN is perfect for troubleshooting and moderate IDS feeds; know its ceiling before you trust a "nothing found."</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Verify &amp; Clean Up <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Confirm the session, watch for drops, and — importantly — remove the session when you're done. A forgotten SPAN quietly burns a port and switch resources for months.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td>show monitor session all</td><td>Every SPAN/RSPAN/ERSPAN session — including ones you forgot.</td></tr>
+      <tr><td>show monitor session 1</td><td>Sources, destination, direction for one session.</td></tr>
+      <tr><td>show interfaces Gi0/24 counters</td><td>Destination drops — the oversubscription check.</td></tr>
+      <tr><td>no monitor session 1</td><td>Tear it down and give the port back.</td></tr>
+      <tr><td>no monitor session all</td><td>Remove every session at once (cleanup).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Session Limits, and Don't Leave It Running</span>
+    <p>Switches cap the number of active SPAN <em>destination/source</em> sessions (often just two), so an old forgotten session can block you from creating the one you need now — <code>show monitor session all</code> first. And a SPAN destination is a security exposure: anyone with access to that port sees mirrored traffic. Treat it like a tap — physically secured, removed after the engagement, and never left connected to an unattended jack. "Temporary" mirrors have a way of becoming permanent surprises in someone else's audit.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Mirroring</h2>
+  <p class="section-thesis"><em>RouterOS mirrors too, via a switch/bridge setting or a sniffer stream; the mental model matches.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>/interface ethernet switch (mirror-source/target)</td><td>Local SPAN (<code>monitor session</code>)</td></tr>
+      <tr><td>/tool sniffer streaming to a remote host</td><td>ERSPAN (GRE to a collector)</td></tr>
+      <tr><td>Mirror to a port for Wireshark</td><td>SPAN destination interface</td></tr>
+      <tr><td>Switch-chip mirror limits</td><td>SPAN session limits + oversubscription</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Switches hide traffic by design; SPAN un-hides it.</strong> Duplicate chosen ports or VLANs to a destination port for Wireshark, an IDS, or incident response — no tap, no recabling.</li>
+      <li><strong>Three ranges:</strong> local SPAN (same switch), RSPAN (across switches via a <code>remote-span</code> VLAN on the trunks), ERSPAN (across a routed network via GRE-over-IP).</li>
+      <li><strong>The destination port leaves the network.</strong> It only emits mirrored frames — dedicate a port and don't expect the analyzer to route through it.</li>
+      <li><strong>RSPAN needs the special VLAN everywhere on the path</strong> and on every interconnecting trunk, or it silently delivers nothing.</li>
+      <li><strong>Mind oversubscription — it makes captures lie.</strong> Mirrored volume above the destination's line rate is dropped silently; an IDS then under-reports. Narrow the source, use a faster port, filter, or use a hardware tap.</li>
+      <li><strong>Sessions are limited and a security exposure.</strong> Check <code>show monitor session all</code>, secure the destination like a tap, and remove sessions when done.</li>
+      <li><strong>It's where the two hats meet.</strong> The mirror you build for a client's IDS is the one you ask for to watch an attacker on the wire during response.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Need traffic visibility or an IDS feed in Crete?</h3>
+    <p>NOCTIS sets up SPAN/RSPAN feeds into intrusion detection and captures for troubleshooting and incident response — sized so the mirror doesn't drop what matters. From the team that also knows what an attacker's traffic looks like on that wire.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-hardening.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 18</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Management-Plane Hardening</span></a>
+    <a href="cisco-ipv6.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 20 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">IPv6 Fundamentals</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

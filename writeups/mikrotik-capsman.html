@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Centralised Wi-Fi with CAPsMAN — SP1R4 / NOCTIS</title>
+<meta name="description" content="Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.">
+<meta property="og:title" content="MikroTik: Centralised Wi-Fi with CAPsMAN — NOCTIS">
+<meta property="og:description" content="Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-capsman.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-capsman.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-capsman.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-capsman.html">
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Centralised Wi-Fi with CAPsMAN",
+  "description": "Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.",
+  "datePublished": "2026-09-08",
+  "dateModified": "2026-09-08",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-capsman.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-capsman.png",
+  "keywords": [
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-capsman"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; September 2026</p>
+  <h1 class="post-title">Centralised Wi-Fi<br>with CAPsMAN</h1>
+  <p class="post-subtitle">Ten access points down a hotel corridor, one config. CAPsMAN turns a pile of MikroTik APs into a single managed system — change the guest password once and every radio updates, add an AP and it inherits everything, and guests roam room to room without dropping. This is the RouterOS 7 (WifiWave2) way, and the natural sequel to the hotel lab.</p>
+  <div class="tags">
+    <span class="tag">RouterOS 7</span>
+    <span class="tag">CAPsMAN</span>
+    <span class="tag">WifiWave2</span>
+    <span class="tag">Wireless</span>
+    <span class="tag">Roaming</span>
+    <span class="tag">Hospitality</span>
+    <span class="tag">cAP</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="mikrotik-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; MikroTik RouterOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 13 of 13</span>
+  </div>
+
+  <!-- Hero diagram: manager + CAPs -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <!-- manager -->
+      <rect x="290" y="20" width="140" height="44" rx="6" fill="#d4d2cc" stroke="#c63d1f" stroke-width="1.4"/>
+      <text x="360" y="38" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">CAPsMAN manager</text>
+      <text x="360" y="53" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">one config · one place</text>
+      <!-- trunk down -->
+      <line x1="360" y1="64" x2="360" y2="92" style="stroke:#558840;stroke-width:2.4;"/>
+      <text x="430" y="82" style="font-family:'Inter',sans-serif;font-size:8px;fill:#3a6a28;">CAPWAP + VLAN trunk (PoE)</text>
+      <!-- switch bar -->
+      <rect x="120" y="92" width="480" height="16" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="104" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">PoE switch</text>
+      <!-- CAPs -->
+      <g style="font-family:'Inter',sans-serif;">
+        <rect x="120" y="150" width="90" height="40" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+        <text x="165" y="166" style="font-weight:700;font-size:10px;fill:#1a1a18;text-anchor:middle;">CAP · lobby</text>
+        <text x="165" y="180" style="font-size:8px;fill:#555550;text-anchor:middle;">ch 1</text>
+        <rect x="255" y="150" width="90" height="40" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+        <text x="300" y="166" style="font-weight:700;font-size:10px;fill:#1a1a18;text-anchor:middle;">CAP · wing A</text>
+        <text x="300" y="180" style="font-size:8px;fill:#555550;text-anchor:middle;">ch 6</text>
+        <rect x="390" y="150" width="90" height="40" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+        <text x="435" y="166" style="font-weight:700;font-size:10px;fill:#1a1a18;text-anchor:middle;">CAP · wing B</text>
+        <text x="435" y="180" style="font-size:8px;fill:#555550;text-anchor:middle;">ch 11</text>
+        <rect x="510" y="150" width="90" height="40" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+        <text x="555" y="166" style="font-weight:700;font-size:10px;fill:#1a1a18;text-anchor:middle;">CAP · pool</text>
+        <text x="555" y="180" style="font-size:8px;fill:#555550;text-anchor:middle;">ch 1</text>
+      </g>
+      <line x1="165" y1="108" x2="165" y2="150" style="stroke:#888880;stroke-width:1.4;"/>
+      <line x1="300" y1="108" x2="300" y2="150" style="stroke:#888880;stroke-width:1.4;"/>
+      <line x1="435" y1="108" x2="435" y2="150" style="stroke:#888880;stroke-width:1.4;"/>
+      <line x1="555" y1="108" x2="555" y2="150" style="stroke:#888880;stroke-width:1.4;"/>
+      <text x="360" y="204" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Same SSIDs on every CAP, non-overlapping channels, VLANs carried back to the gateway. Guests roam; you manage one config.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>The <a href="mikrotik-lab-hotel.html">hotel lab</a> configured two APs by hand, each with its own SSIDs. That's fine for two. For ten — a corridor of rooms, a lobby, a pool bar — hand-configuring each is how you end up with one AP on the wrong VLAN, another still broadcasting last season's password, and guests whose connection drops every time they walk past the lifts. <strong>CAPsMAN</strong> (Controlled Access Point system MANager) fixes that: one router becomes the <em>manager</em>, the APs become <em>CAPs</em> (Controlled APs) that download their entire config from it. Change something once; every AP follows.</p>
+    <p>RouterOS 7 rebuilt wireless around the <strong>WifiWave2</strong> driver, and CAPsMAN with it — the config lives under <code>/interface/wifi</code>, not the old <code>/caps-man</code>. This post uses the modern stack: a manager, a common configuration all radios share, VLAN-tagged SSIDs that drop guests straight into the isolated guest network, non-overlapping channels, and the roaming that makes "walk anywhere" work. It's the capstone that makes the hotel lab scale.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li><a href="mikrotik-lab-hotel.html">The Hotel Network lab</a> — this scales its two hand-built APs to a managed fleet</li>
+      <li><a href="mikrotik-vlans.html">VLAN Segmentation</a> — CAPsMAN drops each SSID onto a VLAN over the trunk</li>
+      <li>RouterOS <strong>7.13+</strong> on the manager and APs; MikroTik APs with the <code>wifi-qcom</code>/<code>wifi-qcom-ac</code> driver (cAP ax, hAP ax, etc.)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Enable the Manager</h2>
+  <p class="section-thesis"><em>Any RouterOS 7 device can be the manager — usually the gateway. One line turns it on; the CAPs will find it over the local network.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — on the gateway (the manager)</span>
+    <pre class="term"><span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/capsman set enabled=yes \
+    interfaces=vlan99-mgmt package-path="" upgrade-policy=suggest-same-version</span>
+
+<span class="cmt"># Watch for CAPs trying to join (once they're pointed here — section 02):</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/capsman remote-cap print</span>
+<span class="out"> #  ADDRESS           IDENTITY     STATE    COMMON-NAME
+ 0  10.10.99.21       cap-lobby    Run      D4:01:...:21
+ 1  10.10.99.22       cap-wingA    Run      D4:01:...:22</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Manage on the Management VLAN</span>
+    <p>Point CAPsMAN's <code>interfaces=</code> at the <strong>management VLAN</strong>, not the guest one. The CAPWAP control channel between manager and CAPs (discovery, config push, keys) should ride the same isolated management segment as everything else you administer — never the network guests are on. This is the wireless half of the segmentation discipline from the hotel lab: control plane on VLAN 99, guest traffic tunnelled/tagged separately.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Turn an AP into a CAP</h2>
+  <p class="section-thesis"><em>On each access point, one command hands its radios to the manager and stops it being a standalone device. After this, you never log into the AP again — you manage it from the manager.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — on each access point</span>
+    <pre class="term"><span class="cmt"># Reset to a clean CAP: hand both radios to CAPsMAN, discover the manager
+# on the local segment, and adopt its config.</span>
+<span class="pc">[admin@cap-lobby] &gt;</span> <span class="out">/interface/wifi/cap set enabled=yes \
+    discovery-interfaces=vlan99-mgmt slaves-datapath=bridge1 \
+    caps-man-addresses=10.10.99.1</span>
+
+<span class="cmt"># The AP's own bridge just needs the management VLAN for control + the
+# guest/staff VLANs tagged on its uplink so CAPsMAN can place SSIDs on them.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "The CAP Won't Join" Is Almost Always Discovery or Version</span>
+    <p>Two failure modes cover 90% of stuck CAPs. First, <strong>discovery</strong>: the manager and CAP must share a Layer-2 segment (the management VLAN) for auto-discovery, or you must set <code>caps-man-addresses=</code> explicitly (as above) so the CAP unicasts to a manager across an L3 boundary. Second, <strong>driver/version</strong>: WifiWave2 CAPsMAN requires the manager and every CAP on compatible RouterOS 7 versions with the <code>wifi-qcom</code> driver — an AP still on an old package or a v6 device simply won't appear. Check <code>/interface/wifi/capsman remote-cap print</code> — if a CAP isn't even listed, it's discovery; if it's listed but stuck, it's version/driver.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">One Configuration, Every Radio</h2>
+  <p class="section-thesis"><em>The whole point: define the SSIDs, security, and VLAN mapping once as named configurations, then provision them to every CAP automatically. Change the config, every AP re-inherits.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — configurations + provisioning on the manager</span>
+    <pre class="term"><span class="cmt"># Security profiles (the passwords), defined once</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/security add name=sec-guest authentication-types=wpa2-psk,wpa3-psk passphrase="summer-in-crete"</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/security add name=sec-staff authentication-types=wpa2-psk,wpa3-psk passphrase="********"</span>
+
+<span class="cmt"># Datapath: which VLAN each SSID drops into, bridged back to the gateway</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/datapath add name=dp-guest bridge=bridge1 vlan-id=20</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/datapath add name=dp-staff bridge=bridge1 vlan-id=10</span>
+
+<span class="cmt"># Named configurations = SSID + security + datapath + channel plan</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/configuration add name=cfg-guest ssid="Hotel-Guest" security=sec-guest datapath=dp-guest</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/configuration add name=cfg-staff ssid="Hotel-Staff" security=sec-staff datapath=dp-staff</span>
+
+<span class="cmt"># Provision rule: every CAP that joins gets BOTH SSIDs, auto channel</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/provisioning add action=create-dynamic-enabled \
+    supported-bands=2ghz-ax,5ghz-ax master-configuration=cfg-guest slave-configurations=cfg-staff</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Change Once, Everywhere — the Whole Reason to Do This</span>
+    <p>Season changes and the owner wants a new guest password? <code>/interface/wifi/security set sec-guest passphrase="autumn-in-crete"</code> — one line, and every CAP in the building updates on the next config push. New AP for the extended terrace? Plug it in, run the one <code>cap set</code> line from section 02, and it inherits both SSIDs, the VLAN mapping, and the channel plan with zero further config. That "one change, everywhere" is the entire return on CAPsMAN, and it's what makes a ten-AP property maintainable by one person.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Channels &amp; Roaming</h2>
+  <p class="section-thesis"><em>Two things separate "several APs" from "one Wi-Fi network the guest never thinks about": non-overlapping channels so the APs don't fight, and fast roaming so walking between them doesn't drop the call.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — channel plan + roaming</span>
+    <pre class="term"><span class="cmt"># Let CAPsMAN pick non-overlapping channels, or pin them per-CAP.
+# 2.4GHz has only three that don't overlap: 1, 6, 11 — alternate them.</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/channel add name=ch-2g-auto band=2ghz-ax skip-dfs-channels=all</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/channel add name=ch-5g-auto band=5ghz-ax</span>
+
+<span class="cmt"># Enable 802.11k/v/r on the configuration so clients roam cleanly —
+# neighbour reports (k), BSS transition (v), fast transition (r).</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/configuration set cfg-guest \
+    .steering.rrm=yes .steering.wnm.bss-transition=yes</span>
+
+<span class="cmt"># Verify what each CAP actually chose and who's connected where:</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/radio print</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/interface/wifi/registration-table print</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Same SSID Is What Makes Roaming Work; Same Channel Is What Breaks It</span>
+    <p>For a guest to roam seamlessly, every CAP must broadcast the <strong>identical SSID and password</strong> — which CAPsMAN guarantees, since they share one configuration. But the flip side catches people: APs on <strong>overlapping channels</strong> (two neighbours both on 2.4GHz channel 1, or worse channels 1 and 3) interfere with each other and tank throughput for everyone in range. The fix is a channel plan — 1/6/11 on 2.4GHz, spread the wide 5GHz channels — either auto-selected or pinned per CAP by physical location. Same name, different channel: that's the recipe.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Operate &amp; Monitor <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Once it's running, the manager is your single pane of glass — every AP, every client, every channel, from one CLI. These are the commands you'll actually live in.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td>/interface/wifi/capsman remote-cap print</td><td>Every CAP, its state (Run = healthy), address, and identity.</td></tr>
+      <tr><td>/interface/wifi/registration-table print</td><td>Every connected client — which AP, signal, rate. The "why is room 12 slow" tool.</td></tr>
+      <tr><td>/interface/wifi/radio print</td><td>Each radio's chosen channel and band — spot two neighbours clashing.</td></tr>
+      <tr><td>/interface/wifi print</td><td>The provisioned virtual APs on each CAP (guest + staff per radio).</td></tr>
+      <tr><td>/log print where topics~"caps"</td><td>Join/leave events — a CAP that keeps re-joining is a PoE or uplink problem.</td></tr>
+      <tr><td>/interface/wifi/capsman remote-cap upgrade</td><td>Push a matching RouterOS version to every CAP at once.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 A CAP That Flaps Is Almost Never Wi-Fi</span>
+    <p>When a CAP repeatedly drops and re-joins in the log, resist debugging the wireless — it's nearly always physical: a marginal PoE injector, a long or damaged run to that AP, or a switch port renegotiating. The registration table and radio stats will look fine right up until the CAP vanishes. Check the <a href="mikrotik-qos.html">switch port</a> and PoE budget for that drop first; we've spent hours "tuning roaming" on what turned out to be a crushed cable behind a headboard.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Centralised Wireless</h2>
+  <p class="section-thesis"><em>CAPsMAN is MikroTik's answer to the wireless LAN controller — same idea, a fraction of the price and licensing.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS 7</th><th>Cisco</th></tr></thead>
+    <tbody>
+      <tr><td>CAPsMAN manager</td><td>Wireless LAN Controller (WLC) / Catalyst 9800</td></tr>
+      <tr><td>CAP (Controlled AP)</td><td>Lightweight AP joined to the WLC (CAPWAP)</td></tr>
+      <tr><td>/interface/wifi/configuration</td><td>WLAN profile + policy/RF tag</td></tr>
+      <tr><td>datapath vlan-id per SSID</td><td>WLAN → VLAN mapping / policy profile</td></tr>
+      <tr><td>provisioning rule</td><td>AP join profile + tags</td></tr>
+      <tr><td>steering (k/v/r)</td><td>802.11k/v/r under the RF/policy profile</td></tr>
+      <tr><td>Free — no per-AP licence</td><td>DNA/Smart licensing per AP</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>CAPsMAN makes many APs behave as one system</strong> — the manager holds the config, CAPs download it. Change once, every AP follows; add an AP, it inherits everything.</li>
+      <li><strong>Use the RouterOS 7 WifiWave2 stack</strong> (<code>/interface/wifi/...</code>) on 7.13+ with the <code>wifi-qcom</code> driver — not the legacy <code>/caps-man</code>.</li>
+      <li><strong>Run the control plane on the management VLAN</strong>, and tag guest/staff SSIDs onto their own VLANs via the datapath — the wireless half of segmentation.</li>
+      <li><strong>Define SSID + security + datapath once as configurations</strong>, then a provisioning rule pushes them to every CAP automatically.</li>
+      <li><strong>Same SSID everywhere enables roaming; a channel plan prevents self-interference.</strong> 1/6/11 on 2.4GHz, and enable 802.11k/v/r steering.</li>
+      <li><strong>The manager is one pane of glass</strong> — remote-cap and registration-table answer "is every AP up" and "why is that room slow" from one CLI.</li>
+      <li><strong>A flapping CAP is physical</strong> — PoE, cabling, the switch port — long before it's a wireless setting.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>A property where the Wi-Fi drops as guests walk around?</h3>
+    <p>NOCTIS designs and manages multi-AP wireless for hotels and villas across Crete — CAPsMAN-managed, one config, seamless roaming, guest traffic isolated, and a channel plan that survives a full house in August.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="MikroTik RouterOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="mikrotik-hotspot.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 12</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Hotspot &amp; Captive Portal</span></a>
+    <a href="mikrotik-index.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Series</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">All 13 parts</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="mikrotik-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 13 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

@@ -29,7 +29,7 @@ for post in posts:
         'author': {'@type': 'Person', 'name': 'S. Markakis', 'url': f'{SITE}/'},
         'publisher': {'@type': 'Organization', 'name': 'NOCTIS', 'url': f'{SITE}/'},
         'url': f'{SITE}/{post["html"]}',
-        'image': f'{SITE}/writeups/assets/og/{post["slug"]}.svg',
+        'image': f'{SITE}/writeups/assets/og/{post["slug"]}.png',
         'keywords': post.get('tags', []),
         'mainEntityOfPage': {'@type': 'WebPage', '@id': f'{SITE}/blog.html#{post["slug"]}'},
     }

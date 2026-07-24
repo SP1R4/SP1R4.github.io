@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: First Contact — CLI, Modes & SSH — SP1R4 / NOCTIS</title>
+<meta name="description" content="Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.">
+<meta property="og:title" content="Cisco IOS: First Contact — NOCTIS">
+<meta property="og:description" content="Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-first-contact.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-first-contact.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-first-contact.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-first-contact.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  /* keyboard shortcut pills */
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  /* cheatsheet table */
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  /* safe badge */
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  /* Mobile header: the floating Back-to-blog pill overlapped the site nav and
+     the nav links overflowed. Drop the nav on small screens, keep the pill,
+     and clear room for it. */
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: First Contact",
+  "description": "Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.",
+  "datePublished": "2026-07-06",
+  "dateModified": "2026-07-06",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-first-contact.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-first-contact.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-first-contact"
+  },
+  "timeRequired": "PT17M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>First Contact</h1>
+  <p class="post-subtitle">Your first hour on a Cisco switch or router. No prior IOS experience assumed — we start at the console cable, learn the three command modes, run only safe commands until you're confident, then set a hostname, a password, and SSH access from scratch.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">CLI</span>
+    <span class="tag">Console</span>
+    <span class="tag">SSH</span>
+    <span class="tag">Catalyst</span>
+    <span class="tag">CCNA</span>
+    <span class="tag">Beginner</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 1 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: the mode ladder -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <defs><style>
+        .lbg{fill:#e1ded7}
+        .ll{font-family:'Inter',-apple-system,sans-serif;font-weight:700;font-size:11px;fill:#1a1a18}
+        .lm{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12px;fill:#c63d1f;font-weight:500}
+        .ls{font-family:'Inter',-apple-system,sans-serif;font-size:9px;fill:#888880}
+      </style>
+        <marker id="lap" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#3a5a78"/></marker>
+      </defs>
+      <rect width="720" height="210" class="lbg"/>
+      <!-- rung 1: user EXEC -->
+      <rect x="60" y="24" width="380" height="34" fill="#d4d2cc" rx="4" stroke="#c8c5be" stroke-width="1"/>
+      <text x="76" y="46" class="lm">Switch&gt;</text>
+      <text x="150" y="46" class="ll">User EXEC</text>
+      <text x="150" y="46" class="ls" dx="72">look, don't touch</text>
+      <text x="460" y="40" class="ls">enter with:</text>
+      <text x="460" y="52" class="lm" style="font-size:11px;">(just log in)</text>
+      <line x1="250" y1="58" x2="250" y2="80" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#lap)"/>
+      <text x="262" y="74" class="ls" style="fill:#3a5a78;">enable</text>
+      <!-- rung 2: privileged EXEC -->
+      <rect x="60" y="82" width="380" height="34" fill="#d4d2cc" rx="4" stroke="#c8c5be" stroke-width="1"/>
+      <text x="76" y="104" class="lm">Switch#</text>
+      <text x="150" y="104" class="ll">Privileged EXEC</text>
+      <text x="150" y="104" class="ls" dx="98">show / copy / reload</text>
+      <text x="460" y="98" class="ls">enter with:</text>
+      <text x="460" y="110" class="lm" style="font-size:11px;">enable</text>
+      <line x1="250" y1="116" x2="250" y2="138" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#lap)"/>
+      <text x="262" y="132" class="ls" style="fill:#3a5a78;">configure terminal</text>
+      <!-- rung 3: global config -->
+      <rect x="60" y="140" width="380" height="34" fill="#d4d2cc" rx="4" stroke="#c8c5be" stroke-width="1"/>
+      <text x="76" y="162" class="lm">Switch(config)#</text>
+      <text x="215" y="162" class="ll">Global Config</text>
+      <text x="215" y="162" class="ls" dx="86">change the box</text>
+      <text x="460" y="156" class="ls">enter with:</text>
+      <text x="460" y="168" class="lm" style="font-size:11px;">configure terminal</text>
+      <!-- sub-modes note -->
+      <text x="76" y="196" class="ls">Sub-modes branch off Global Config: <tspan fill="#c63d1f" font-family="ui-monospace,monospace">Switch(config-if)#</tspan>, <tspan fill="#c63d1f" font-family="ui-monospace,monospace">(config-line)#</tspan>, <tspan fill="#c63d1f" font-family="ui-monospace,monospace">(config-vlan)#</tspan> …</text>
+      <text x="76" y="209" class="ls"><tspan fill="#3a5a78" font-weight="700">exit</tspan> = down one level · <tspan fill="#3a5a78" font-weight="700">end</tspan> (or Ctrl+Z) = jump straight back to Privileged EXEC</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Every Cisco switch and router ships with the same command-line operating system: <strong>IOS</strong> (or IOS-XE on newer gear — same CLI for everything in this tutorial). There is no Winbox, no web wizard you should rely on. The CLI <em>is</em> the device. Learn it once and you can configure a $200 Catalyst or a $20,000 core router with the same muscle memory.</p>
+    <p>This tutorial is for someone who has never typed a command on a Cisco box — a CCNA student, a MikroTik admin crossing over, or a technician who just inherited a rack of switches. We start at the console cable, spend real time on the three command modes (the thing that confuses everyone at first), run only read-only <code>show</code> commands until you trust yourself, and finish by setting a hostname, a password, and working SSH access. By the end you'll be able to safely poke around any Cisco device you're handed.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>A Cisco switch or router (real hardware, or a lab in Packet Tracer / GNS3 / CML)</li>
+      <li>A console cable (blue rollover, or USB-to-console) and a terminal emulator — PuTTY, screen, or minicom</li>
+      <li>CCNA-level concepts help — you know what an IP address, VLAN, and interface are — but no CLI experience is required</li>
+      <li>No fear of a blank <code>Switch&gt;</code> prompt. That's what section 01 is for.</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Getting In — The Console</h2>
+  <p class="section-thesis"><em>A brand-new Cisco device has no IP address and no SSH. The only way in is the console port — a physical cable and a terminal emulator. This never fails, so it's always your fallback.</em></p>
+
+  <p>SSH and Telnet need an IP address and configuration that a factory-fresh device doesn't have yet. The <strong>console port</strong> is the out-of-band way in: a direct serial connection that works before anything is configured, and still works when you've locked yourself out over the network. Every serious Cisco tech keeps a console cable in their bag.</p>
+
+  <h3 class="sub">Connect the Cable</h3>
+  <p>Plug the rollover/USB-console cable into the port labelled <strong>CONSOLE</strong> on the device and into your laptop. On modern gear it's a USB-C or mini-USB console port; on older kit it's the light-blue RJ-45 rollover cable into a USB-serial adapter. Your laptop sees it as a serial (COM) port.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">Your laptop — open the console (macOS / Linux)</span>
+    <pre class="term"><span class="cmt"># Find the serial device that appeared when you plugged in</span>
+<span class="pc">user@laptop:~$</span> <span class="out">ls /dev/tty.* /dev/ttyUSB*   # macOS: tty.usbserial-XXXX · Linux: ttyUSB0</span>
+
+<span class="cmt"># Open it at 9600 baud — the Cisco console default</span>
+<span class="pc">user@laptop:~$</span> <span class="out">screen /dev/tty.usbserial-A5069RR4 9600</span>
+<span class="cmt"># (Linux example:  screen /dev/ttyUSB0 9600  — or use minicom)</span>
+
+<span class="cmt"># Press Enter a couple of times. You should see a prompt appear:</span>
+<span class="pc">Switch&gt;</span> <span class="key">▌</span>
+<span class="cmt"># To quit screen later:  Ctrl+A then \  (confirm with y)</span></pre>
+  </div>
+
+  <p>On Windows, use <strong>PuTTY</strong>: choose <em>Serial</em>, set the COM port (check Device Manager), and set the speed to <strong>9600</strong>. The console line settings are always the same on Cisco gear:</p>
+
+  <table class="cheat">
+    <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Speed (baud)</td><td>9600</td></tr>
+      <tr><td>Data bits</td><td>8</td></tr>
+      <tr><td>Parity</td><td>None</td></tr>
+      <tr><td>Stop bits</td><td>1</td></tr>
+      <tr><td>Flow control</td><td>None</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Blank Screen After Connecting</span>
+    <p>A black, unresponsive console is almost always one of three things: <strong>(1)</strong> wrong baud rate — it must be 9600 (a few devices ship at 115200; try that if 9600 is silent); <strong>(2)</strong> flow control set to something other than <code>None</code>, which freezes input; or <strong>(3)</strong> the wrong COM/tty device. Press <kbd>Enter</kbd> a few times — if the device is mid-boot you'll see boot messages, and the prompt appears once it finishes. It's not broken; it's waiting.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">The Three Modes</h2>
+  <p class="section-thesis"><em>This is the one concept that trips up every beginner. IOS has distinct modes, and what you're allowed to type depends entirely on which one you're in. Read the prompt — it tells you where you are.</em></p>
+
+  <p>The prompt's punctuation is not decoration. The character after the hostname tells you your mode and therefore your power level. Learn to read it before you type anything.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — prompt anatomy, from least to most powerful</span>
+    <pre class="term"><span class="pc">Switch&gt;</span>
+<span class="cmt"> │     └─ ">"  User EXEC mode — look-only. A handful of harmless commands.</span>
+<span class="cmt"> └─────── hostname (default "Switch" on a switch, "Router" on a router)</span>
+
+<span class="pc">Switch#</span>
+<span class="cmt">       └─ "#"  Privileged EXEC — full read access: show, copy, reload, debug.</span>
+
+<span class="pc">Switch(config)#</span>
+<span class="cmt">             └─ "(config)#"  Global Config — this is where you CHANGE things.</span>
+
+<span class="pc">Switch(config-if)#</span>
+<span class="cmt">                 └─ a sub-mode — you're now configuring one interface.</span></pre>
+  </div>
+
+  <h3 class="sub">Moving Between Modes</h3>
+  <p>You climb up with <code>enable</code> and <code>configure terminal</code>, and come back down with <code>exit</code>, <code>end</code>, or <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — walking up and down the modes</span>
+    <pre class="term"><span class="cmt"># Start in User EXEC (the ">"). Climb to Privileged EXEC:</span>
+<span class="pc">Switch&gt;</span> <span class="out">enable</span>
+<span class="pc">Switch#</span> <span class="cmt">← the "#" means you now have full privileges</span>
+
+<span class="cmt"># Enter Global Config to change the device:</span>
+<span class="pc">Switch#</span> <span class="out">configure terminal</span>
+<span class="out">Enter configuration commands, one per line. End with CNTL/Z.</span>
+<span class="pc">Switch(config)#</span>
+
+<span class="cmt"># Drop into a sub-mode (here: one interface):</span>
+<span class="pc">Switch(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">Switch(config-if)#</span>
+
+<span class="cmt"># "exit" steps DOWN one level:</span>
+<span class="pc">Switch(config-if)#</span> <span class="out">exit</span>
+<span class="pc">Switch(config)#</span>
+
+<span class="cmt"># "end" (or Ctrl+Z) jumps ALL the way back to Privileged EXEC:</span>
+<span class="pc">Switch(config)#</span> <span class="out">end</span>
+<span class="pc">Switch#</span>
+
+<span class="cmt"># "disable" drops from Privileged back to plain User EXEC:</span>
+<span class="pc">Switch#</span> <span class="out">disable</span>
+<span class="pc">Switch&gt;</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "Invalid input" Usually Means Wrong Mode</span>
+    <p>If IOS rejects a command with <code>% Invalid input detected at '^' marker</code>, nine times out of ten you're in the wrong mode — you tried a <code>show</code> command inside <code>(config)#</code>, or a config command from <code>Switch&gt;</code>. Check the prompt. To run a show command without leaving config mode, prefix it with <code>do</code> (see the pro tip in section 04). If instead you see <code>% Incomplete command</code>, the syntax is right but you're missing an argument — press <kbd>?</kbd> to see what's expected.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Your Best Friends: ? and Tab</h2>
+  <p class="section-thesis"><em>You do not memorise IOS commands. You discover them. The "?" key lists what's available at any point, Tab completes what you've started, and IOS accepts any unambiguous abbreviation.</em></p>
+
+  <h3 class="sub">? — Context-Sensitive Help</h3>
+  <p>Type <code>?</code> anywhere — on its own, after a word, or jammed against a half-typed word — and IOS tells you what's valid at that exact spot.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — ? at different points</span>
+    <pre class="term"><span class="cmt"># "?" on its own — every command available in this mode</span>
+<span class="pc">Switch#</span> <span class="out">?</span>
+<span class="out">  configure    Enter configuration mode
+  copy         Copy from one file to another
+  ping         Send echo messages
+  reload       Halt and perform a cold restart
+  show         Show running system information
+  ...</span>
+
+<span class="cmt"># A word + " ?" — what can follow this command</span>
+<span class="pc">Switch#</span> <span class="out">show ?</span>
+<span class="out">  interfaces   Interface status and configuration
+  ip           IP information
+  running-config  Current operating configuration
+  version      System hardware and software status
+  vlan         VLAN information
+  ...</span>
+
+<span class="cmt"># "?" jammed onto a partial word — how does this command finish?</span>
+<span class="pc">Switch#</span> <span class="out">show ver?</span>
+<span class="out">version</span></pre>
+  </div>
+
+  <h3 class="sub">Tab — Complete It · Abbreviation — Skip It</h3>
+  <p>Press <kbd>Tab</kbd> to expand a partial keyword to its full form. Even better: you don't have to. IOS runs <em>any</em> abbreviation that's unambiguous — <code>sh ip int br</code> is the same as <code>show ip interface brief</code>. Experienced operators live on abbreviations.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — Tab completion and abbreviation</span>
+    <pre class="term"><span class="cmt"># Tab expands a partial keyword</span>
+<span class="pc">Switch#</span> <span class="out">conf</span><span class="key">[Tab]</span>
+<span class="pc">Switch#</span> <span class="out">configure</span>
+
+<span class="cmt"># These four lines are IDENTICAL to IOS — abbreviation just works:</span>
+<span class="pc">Switch#</span> <span class="out">show ip interface brief</span>
+<span class="pc">Switch#</span> <span class="out">sh ip int brief</span>
+<span class="pc">Switch#</span> <span class="out">sh ip int br</span>
+<span class="pc">Switch#</span> <span class="out">sho ip in b</span>
+
+<span class="cmt"># The only rule: the abbreviation must be unambiguous. "sh c" fails
+# because "clock", "cdp" and others all start with c:</span>
+<span class="pc">Switch#</span> <span class="out">sh c</span>
+<span class="out">% Ambiguous command:  "sh c"</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — ↑ Recalls, and the CLI Never Judges You</span>
+    <p>Press <kbd>↑</kbd> to cycle back through commands you've already typed — edit and re-run instead of retyping. Combine the three tools as a workflow: type a couple of letters, press <kbd>?</kbd> to see your options, <kbd>Tab</kbd> to complete, <kbd>↑</kbd> to repeat. You never need to type a full command from memory, and reading <code>?</code> first means you understand a command <em>before</em> you run it.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Safe Show Commands <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Start every session here. Every "show" command is read-only — it displays state and changes nothing. Run these freely on any live device to understand what you're looking at before you touch a thing.</em></p>
+
+  <p>Before changing anything, build a picture of the device. These commands are the ones you'll type hundreds of times a week. All of them are safe on production gear.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the essential read-only show commands</span>
+    <pre class="term"><span class="cmt"># Model, IOS version, uptime, serial number — always start here</span>
+<span class="pc">Switch#</span> <span class="out">show version</span>
+<span class="out">Cisco IOS Software, C2960X Software, Version 15.2(7)E3
+System uptime is 27 weeks, 4 days, 4 hours, 11 minutes
+Model number      : WS-C2960X-24TS-L
+System serial number : FOC2145X0AB</span>
+
+<span class="cmt"># The single most useful command: every interface, its IP, and its status</span>
+<span class="pc">Switch#</span> <span class="out">show ip interface brief</span>
+<span class="out">Interface        IP-Address    OK?  Method  Status   Protocol
+Vlan1            192.168.1.10  YES  manual  up       up
+GigabitEthernet0/1  unassigned  YES  unset   up       up
+GigabitEthernet0/2  unassigned  YES  unset   down     down</span>
+
+<span class="cmt"># Physical port view: speed, duplex, and which VLAN each access port is in</span>
+<span class="pc">Switch#</span> <span class="out">show interfaces status</span>
+<span class="out">Port    Name    Status       Vlan   Duplex  Speed Type
+Gi0/1           connected    10     a-full  a-1000 10/100/1000BaseTX
+Gi0/2           notconnect   1      auto    auto   10/100/1000BaseTX</span>
+
+<span class="cmt"># VLANs and which ports belong to each (switch only)</span>
+<span class="pc">Switch#</span> <span class="out">show vlan brief</span>
+
+<span class="cmt"># The MAC address table — which device is learned on which port</span>
+<span class="pc">Switch#</span> <span class="out">show mac address-table</span>
+
+<span class="cmt"># The routing table (routers, and switches doing L3)</span>
+<span class="pc">Switch#</span> <span class="out">show ip route</span>
+
+<span class="cmt"># Directly-connected Cisco neighbours — great for mapping a rack</span>
+<span class="pc">Switch#</span> <span class="out">show cdp neighbors</span>
+
+<span class="cmt"># The full running configuration — everything the device is doing right now</span>
+<span class="pc">Switch#</span> <span class="out">show running-config</span></pre>
+  </div>
+
+  <h3 class="sub">Filtering Long Output</h3>
+  <p><code>show running-config</code> can be hundreds of lines. Pipe it through <code>include</code>, <code>section</code>, or <code>begin</code> to cut it down — the equivalent of grep.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the output pipe (| include / section / begin)</span>
+    <pre class="term"><span class="cmt"># Only lines containing "ip address"</span>
+<span class="pc">Switch#</span> <span class="out">show running-config | include ip address</span>
+
+<span class="cmt"># The whole config block for one interface</span>
+<span class="pc">Switch#</span> <span class="out">show running-config | section interface GigabitEthernet0/1</span>
+
+<span class="cmt"># Start the output from the first line that matches, then show the rest</span>
+<span class="pc">Switch#</span> <span class="out">show running-config | begin line vty</span>
+
+<span class="cmt"># Also works on any show command — e.g. only "up" interfaces</span>
+<span class="pc">Switch#</span> <span class="out">show ip interface brief | include up</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — Run a show Command Without Leaving Config Mode</span>
+    <p>Deep inside <code>(config-if)#</code> and need to check something? You don't have to <code>end</code> and come back. Prefix any privileged command with <code>do</code>: <code>do show ip interface brief</code> runs it right there and drops you back exactly where you were. This one keyword saves an enormous amount of mode-hopping.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Your First Real Config <span class="danger-badge">Modifies Config</span></h2>
+  <p class="section-thesis"><em>Now we change things. A hostname, a login banner, and passwords — the minimum every device should have before it goes into a rack. All of this happens in Global Config.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — hostname, DNS-lookup fix, and a banner</span>
+    <pre class="term"><span class="pc">Switch#</span> <span class="out">configure terminal</span>
+<span class="pc">Switch(config)#</span> <span class="out">hostname ACCESS-SW1</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="cmt">← the prompt updates instantly</span>
+
+<span class="cmt"># Stop IOS from trying to DNS-resolve your typos (a 30-second hang otherwise)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">no ip domain-lookup</span>
+
+<span class="cmt"># A legal banner shown at login (the ^ characters delimit the text)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">banner motd ^Authorised access only. NOCTIS-managed device.^</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — enable password vs enable secret</span>
+    <p>There are two commands to protect Privileged EXEC mode. <code>enable password</code> stores the password in <strong>clear text</strong> (or trivially reversible). <code>enable secret</code> stores a proper hash. <strong>Always use <code>enable secret</code></strong>, and never bother with <code>enable password</code> — if both are set, <code>secret</code> wins and <code>password</code> is just a liability sitting in your config.</p>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — passwords: enable secret, console, and VTY lines</span>
+    <pre class="term"><span class="cmt"># Protect Privileged EXEC with a hashed secret</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">enable secret S0meStr0ng!Pass</span>
+
+<span class="cmt"># Password on the console line (physical access)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">line console 0</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">password C0ns0le!Pass</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">login</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">exec-timeout 10 0</span>   <span class="cmt"># auto-logout after 10 min idle</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Password on the VTY lines (remote Telnet/SSH sessions — 0 through 4 = 5 lines)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">line vty 0 4</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">password Vty!Pass</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">login</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Encrypt the clear-text passwords sitting in the config (weak, but no reason not to)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">service password-encryption</span></pre>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Enabling SSH — The Modern Way</h2>
+  <p class="section-thesis"><em>Telnet sends your password across the wire in clear text. Never use it. Here's the full recipe to reach the device securely over the network — five ingredients, in order.</em></p>
+
+  <p>SSH needs four things before it works: a hostname (done), a domain name, RSA crypto keys, and a local user account. Then you point the VTY lines at SSH-only and log in with that account.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — enable SSH from scratch</span>
+    <pre class="term"><span class="pc">ACCESS-SW1(config)#</span> <span class="cmt"># 1. A domain name is required to generate keys</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip domain-name noctis.lan</span>
+
+<span class="cmt"># 2. Generate the RSA key pair. 2048 bits is the sane minimum.</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">crypto key generate rsa modulus 2048</span>
+<span class="out">The name for the keys will be: ACCESS-SW1.noctis.lan
+% Generating 2048 bit RSA keys, keys will be non-exportable...[OK]</span>
+
+<span class="cmt"># 3. A local username with a hashed secret (privilege 15 = full access on login)</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">username admin privilege 15 secret Adm1n!Str0ng</span>
+
+<span class="cmt"># 4. Force SSH v2 and reject the older, weaker v1</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip ssh version 2</span>
+
+<span class="cmt"># 5. Point the VTY lines at SSH only, and authenticate against local users</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">line vty 0 4</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">transport input ssh</span>   <span class="cmt"># SSH only — Telnet now refused</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">login local</span>          <span class="cmt"># use the "admin" account above</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <p>You also need a management IP so the device is reachable. On a switch, that's an IP on a VLAN interface plus a default gateway:</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — a management IP on a switch (SVI)</span>
+    <pre class="term"><span class="pc">ACCESS-SW1(config)#</span> <span class="out">interface vlan 1</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">ip address 192.168.1.10 255.255.255.0</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">no shutdown</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">exit</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip default-gateway 192.168.1.1</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">Your laptop — test the SSH login</span>
+    <pre class="term"><span class="pc">user@laptop:~$</span> <span class="out">ssh admin@192.168.1.10</span>
+<span class="out">Password: </span>
+<span class="cmt"># nothing echoes as you type — that's normal</span>
+<span class="pc">ACCESS-SW1#</span> <span class="cmt">← you're in over SSH, straight to Privileged EXEC (privilege 15)</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — SSH Still Refuses the Connection</span>
+    <p>Three usual suspects: <strong>(1)</strong> keys weren't generated — <code>show ip ssh</code> should report SSH enabled and version 2.0; <strong>(2)</strong> you set <code>login local</code> but never created a <code>username</code>, so there's no account to log in with — you'll be locked out over the network (console in and fix it); <strong>(3)</strong> no IP reachability — confirm the SVI is <code>up/up</code> and you can <code>ping</code> the device first. This is exactly why you keep the console cable handy.</p>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">Saving: running-config vs startup-config</h2>
+  <p class="section-thesis"><em>The single most expensive beginner mistake on Cisco gear. Your changes are live the instant you type them — but they are not saved. A power cut and it's all gone. Understand these two files.</em></p>
+
+  <p>IOS keeps two configurations. Everything you just typed went into <strong>running-config</strong> — the live config in RAM, active immediately. The device boots from <strong>startup-config</strong> in NVRAM. If you don't copy one to the other, a reboot reverts every change you made.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="sap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="150" fill="#e1ded7"/>
+      <!-- running -->
+      <rect x="60" y="40" width="230" height="66" fill="#d4d2cc" rx="6" stroke="#c8c5be"/>
+      <text x="175" y="66" style="font-family:ui-monospace,monospace;font-size:13px;fill:#c63d1f;font-weight:600;text-anchor:middle;">running-config</text>
+      <text x="175" y="84" style="font-family:'Inter',sans-serif;font-size:10px;fill:#555550;text-anchor:middle;">RAM · live now</text>
+      <text x="175" y="97" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">lost on reboot</text>
+      <!-- startup -->
+      <rect x="430" y="40" width="230" height="66" fill="#d4d2cc" rx="6" stroke="#c8c5be"/>
+      <text x="545" y="66" style="font-family:ui-monospace,monospace;font-size:13px;fill:#3a5a78;font-weight:600;text-anchor:middle;">startup-config</text>
+      <text x="545" y="84" style="font-family:'Inter',sans-serif;font-size:10px;fill:#555550;text-anchor:middle;">NVRAM · survives reboot</text>
+      <text x="545" y="97" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">loaded at boot</text>
+      <!-- arrow -->
+      <line x1="292" y1="73" x2="426" y2="73" style="stroke:#c63d1f;stroke-width:1.6;marker-end:url(#sap)"/>
+      <text x="359" y="64" style="font-family:ui-monospace,monospace;font-size:10px;fill:#c63d1f;text-anchor:middle;font-weight:600;">copy run start</text>
+      <text x="359" y="120" style="font-family:'Inter',sans-serif;font-size:10px;fill:#888880;text-anchor:middle;">Changes live in RAM the moment you type them. This copy is the only thing that makes them permanent.</text>
+    </svg>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — save your work (do this constantly)</span>
+    <pre class="term"><span class="cmt"># The full command — copy running-config into startup-config</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">copy running-config startup-config</span>
+<span class="out">Destination filename [startup-config]? </span><span class="cmt">← just press Enter</span>
+<span class="out">Building configuration...
+[OK]</span>
+
+<span class="cmt"># The old-school shortcut everyone actually types — same thing:</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">write memory</span>
+<span class="cmt"># or even shorter:  wr</span>
+
+<span class="cmt"># Confirm what's saved vs what's live (this diff should be empty after a save)</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">show startup-config</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">show running-config</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "It Worked Yesterday, Now It's Gone"</span>
+    <p>You configured a switch, tested it, everything worked — then weeks later a power blip rebooted it and half your config vanished. That's an unsaved <code>running-config</code>. Build the habit: <strong>after every change that works, type <code>wr</code></strong>. Conversely, this behaviour is a <em>safety net</em> — if you break something badly and haven't saved, a <code>reload</code> (without saving) reverts you to the last good startup-config. Just never <code>reload</code> a device you can't physically reach without being sure of what's in startup.</p>
+  </div>
+
+  <!-- 08 -->
+  <p class="section-num">08</p>
+  <h2 class="section-title">Cheatsheets</h2>
+  <p class="section-thesis"><em>The commands and keystrokes you'll reach for daily. Memorise the top rows; the rest you'll absorb by using them.</em></p>
+
+  <h3 class="sub">Everyday Commands</h3>
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>enable</td><td>User EXEC → Privileged EXEC (the "#" prompt).</td></tr>
+      <tr><td>configure terminal</td><td>Privileged EXEC → Global Config. Abbreviate: <code>conf t</code>.</td></tr>
+      <tr><td>end</td><td>Jump from any config sub-mode straight back to Privileged EXEC.</td></tr>
+      <tr><td>show ip interface brief</td><td>Every interface, its IP, and up/down status. The workhorse.</td></tr>
+      <tr><td>show running-config</td><td>The full live config. Pipe with <code>| include</code> or <code>| section</code>.</td></tr>
+      <tr><td>show version</td><td>Model, IOS version, uptime, serial number.</td></tr>
+      <tr><td>show vlan brief</td><td>VLANs and their member ports (switch).</td></tr>
+      <tr><td>copy run start</td><td>Save running-config to startup-config. Or <code>wr</code>.</td></tr>
+      <tr><td>do &lt;show ...&gt;</td><td>Run a Privileged command from inside config mode.</td></tr>
+      <tr><td>reload</td><td>Reboot the device. Prompts to save first.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub">Keyboard Shortcuts</h3>
+  <table class="cheat">
+    <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>?</kbd></td><td>Context help — list valid commands or options at the cursor.</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>Complete the current keyword.</td></tr>
+      <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Cycle through command history.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Same as <code>end</code> — exit config mode to Privileged EXEC.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>Abort the current command / break out of a running one.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>6</kbd></td><td>Break out of a stuck ping/traceroute/DNS lookup.</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd> / <kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Jump to start / end of the line.</td></tr>
+      <tr><td><kbd>Space</kbd> / <kbd>Enter</kbd></td><td>At a <code>--More--</code> prompt: next page / next line.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 09 -->
+  <p class="section-num">09</p>
+  <h2 class="section-title">A Full Workflow — Start to Finish</h2>
+  <p class="section-thesis"><em>Everything above, in the order you'd actually do it: console into a factory-fresh switch and leave it named, secured, reachable over SSH, and saved.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — box out of the shrink-wrap to production-ready</span>
+    <pre class="term"><span class="cmt"># Console in, skip the setup wizard if prompted (answer "no"), then:</span>
+<span class="pc">Switch&gt;</span> <span class="out">enable</span>
+<span class="pc">Switch#</span> <span class="out">configure terminal</span>
+
+<span class="cmt"># Identity + quality-of-life</span>
+<span class="pc">Switch(config)#</span> <span class="out">hostname ACCESS-SW1</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">no ip domain-lookup</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">banner motd ^Authorised access only.^</span>
+
+<span class="cmt"># Passwords</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">enable secret S0meStr0ng!Pass</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">service password-encryption</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">line console 0</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">password C0ns0le!Pass</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">login</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">exec-timeout 10 0</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Management IP + gateway</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">interface vlan 1</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">ip address 192.168.1.10 255.255.255.0</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">no shutdown</span>
+<span class="pc">ACCESS-SW1(config-if)#</span> <span class="out">exit</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip default-gateway 192.168.1.1</span>
+
+<span class="cmt"># SSH</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip domain-name noctis.lan</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">crypto key generate rsa modulus 2048</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">username admin privilege 15 secret Adm1n!Str0ng</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">ip ssh version 2</span>
+<span class="pc">ACCESS-SW1(config)#</span> <span class="out">line vty 0 4</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">transport input ssh</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">login local</span>
+<span class="pc">ACCESS-SW1(config-line)#</span> <span class="out">end</span>
+
+<span class="cmt"># Verify, then SAVE — the step everyone forgets</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">show ip interface brief</span>
+<span class="pc">ACCESS-SW1#</span> <span class="out">write memory</span>
+<span class="out">Building configuration...
+[OK]</span></pre>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Read the prompt before you type.</strong> <code>&gt;</code> is look-only, <code>#</code> is full access, <code>(config)#</code> changes the box. Almost every "Invalid input" error a beginner hits is really a wrong-mode error.</li>
+      <li><strong>The console cable is your parachute.</strong> It works before any config exists and after you've locked yourself out over the network. Keep one in your bag; every remote-management recipe assumes you can fall back to it.</li>
+      <li><strong>? and Tab mean you never memorise commands.</strong> Discover them at the prompt. And abbreviate freely — <code>sh ip int br</code> is real, fast, and exactly equal to the full command.</li>
+      <li><strong>Start every session with <code>show</code>.</strong> Read-only commands change nothing. Build a picture of the device before you touch it, and use <code>| include</code> / <code>| section</code> to cut long output down.</li>
+      <li><strong>Use <code>enable secret</code>, never <code>enable password</code>; use SSH, never Telnet.</strong> The insecure options exist only for backward compatibility. There is no reason to choose them on anything you deploy.</li>
+      <li><strong>Changes are live but not saved.</strong> <code>running-config</code> is RAM; <code>startup-config</code> is what boots. After anything that works, type <code>wr</code>. The one time you skip it is the time a power cut erases an afternoon of work.</li>
+      <li><strong>The same CLI runs everything.</strong> A $200 access switch and a core router speak the same IOS. The muscle memory you build in this first hour scales to every Cisco box you'll ever touch.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Rolling out Cisco switches for an office, hotel, or SMB in Crete?</h3>
+    <p>NOCTIS designs, configures, and documents Cisco networks — from a single access switch to a multi-VLAN site. We hand over clean, commented configs your team can actually read, not a black box only one person understands.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-index.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Series</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">All 27 parts</span></a>
+    <a href="cisco-vlans-trunking.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 2 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">VLANs &amp; Trunking</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

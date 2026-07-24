@@ -7,6 +7,302 @@
     <language>en</language>
     <atom:link href="https://sp1r4.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>What a Penetration Test Is — and Isn't</title>
+      <link>https://sp1r4.github.io/blog.html#what-is-a-pentest</link>
+      <guid>https://sp1r4.github.io/blog.html#what-is-a-pentest</guid>
+      <pubDate>Wed, 09 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A buyer's guide for business owners: what a real pentest involves, why an automated scan report isn't one, what the deliverables are, and the questions (and red flags) before you pay.</description>
+      <category>security</category>
+    </item>
+    <item>
+      <title>MikroTik: Centralised Wi-Fi with CAPsMAN</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-capsman</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-capsman</guid>
+      <pubDate>Tue, 08 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Why Guest Wi-Fi Needs Its Own Network</title>
+      <link>https://sp1r4.github.io/blog.html#guest-wifi-isolation</link>
+      <guid>https://sp1r4.github.io/blog.html#guest-wifi-isolation</guid>
+      <pubDate>Mon, 07 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A plain-language guide for hotel and business owners: what network segmentation is, why a Wi-Fi password protects nothing by itself, and the five things to ask your IT person for — including proof.</description>
+      <category>security</category>
+    </item>
+    <item>
+      <title>MikroTik: Hotspot &amp; Captive Portal for Hotels</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-hotspot</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-hotspot</guid>
+      <pubDate>Sun, 06 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik RouterOS Fundamentals — A 13-Part Series</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-index</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-index</guid>
+      <pubDate>Sat, 05 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A complete, practical RouterOS course in 13 writeups — from terminal habits and backups through VLANs, firewalling, WireGuard, OSPF, and a full hotel-network lab. The MikroTik counterpart to our 27-part Cisco series.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik Lab: The Hotel Network, Start to Finish</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-lab-hotel</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-lab-hotel</guid>
+      <pubDate>Fri, 04 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A complete hotel network on MikroTik — RB5009 gateway, CRS326 core, VLAN-tagged SSIDs, guest isolation firewall, per-VLAN DHCP, and PCQ fairness — built in order, verified, then failure-drilled. Runs on CHR too.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: OSPF on RouterOS 7 — and Talking to Cisco</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-ospf</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-ospf</guid>
+      <pubDate>Wed, 02 Sep 2026 00:00:00 GMT</pubDate>
+      <description>OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: WireGuard VPN</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-wireguard</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-wireguard</guid>
+      <pubDate>Mon, 31 Aug 2026 00:00:00 GMT</pubDate>
+      <description>WireGuard on RouterOS 7 from zero — road-warrior access for phone and laptop, a site-to-site tunnel between offices, the allowed-address logic everyone gets wrong, and the keepalive trick for peers behind NAT.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: The RouterOS Firewall, Properly</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-firewall</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-firewall</guid>
+      <pubDate>Sat, 29 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Connection tracking, a default-deny input chain that can't lock you out, a forward chain with FastTrack that doesn't break QoS, and address-list rate-limiting for brute-force — built from first principles.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco Lab: The Broken Campus — Eight Faults</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-lab-troubleshooting</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-lab-troubleshooting</guid>
+      <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
+      <description>A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco Lab: HQ + Branches — GRE over IPsec WAN</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-lab-gre-ipsec</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-lab-gre-ipsec</guid>
+      <pubDate>Tue, 25 Aug 2026 00:00:00 GMT</pubDate>
+      <description>A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco Lab: Multi-Area OSPF</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-lab-ospf-areas</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-lab-ospf-areas</guid>
+      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Five routers, three areas — ABRs, the LSA types that matter, stub and totally-stubby areas, default-information originate, and cost tuning with a failure drill. Builds fully in Packet Tracer.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco Lab: The Collapsed-Core Campus</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-lab-campus</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-lab-campus</guid>
+      <pubDate>Fri, 21 Aug 2026 00:00:00 GMT</pubDate>
+      <description>A complete Packet Tracer campus build — two access switches, two L3 cores with HSRP and aligned Rapid-PVST roots, an LACP core interlink, and a NAT edge. Full topology, addressing plan, and failure drills.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS Fundamentals — The Complete 27-Part Series</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-index</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-index</guid>
+      <pubDate>Thu, 20 Aug 2026 00:00:00 GMT</pubDate>
+      <description>A complete, practical Cisco IOS course in 27 writeups — from your first console session to firewalls, redundancy, automation, and four full Packet Tracer lab scenarios. Every post cross-mapped to MikroTik.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Buying Used Cisco Switches: Smart or Trap?</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-buying-used</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-buying-used</guid>
+      <pubDate>Wed, 19 Aug 2026 00:00:00 GMT</pubDate>
+      <description>A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Catalyst vs Meraki for a Small Business — An Honest Take</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-catalyst-vs-meraki</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-catalyst-vs-meraki</guid>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Cisco Catalyst (CLI, one-time cost) or Meraki (cloud dashboard, subscription)? An honest, vendor-neutral comparison for SMBs — the licensing trap, when each wins, and what happens if you stop paying.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Managing a Fleet with Ansible</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-ansible</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-ansible</guid>
+      <pubDate>Sat, 15 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: IPv6 Fundamentals</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-ipv6</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-ipv6</guid>
+      <pubDate>Thu, 13 Aug 2026 00:00:00 GMT</pubDate>
+      <description>IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: SPAN &amp; RSPAN Port Mirroring</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-span</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-span</guid>
+      <pubDate>Tue, 11 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Management-Plane Hardening</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-hardening</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-hardening</guid>
+      <pubDate>Sun, 09 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Audit and lock down any Cisco device in 15 minutes — SSH ciphers, SNMPv3, AAA, VTY access-class, control-plane policing, unused services, and the login-hardening checklist we run on every box.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: 802.1X Port Authentication</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-8021x</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-8021x</guid>
+      <pubDate>Fri, 07 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: EEM On-Box Automation</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-eem</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-eem</guid>
+      <pubDate>Wed, 05 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Make the router fix itself — Embedded Event Manager applets that react to syslog, timers, and track state: auto-recover err-disabled ports, back up config on change, and alert on events.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Upgrading Safely</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-ios-upgrade</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-ios-upgrade</guid>
+      <pubDate>Mon, 03 Aug 2026 00:00:00 GMT</pubDate>
+      <description>Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Observability (NTP, Syslog, SNMP &amp; NetFlow)</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-observability</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-observability</guid>
+      <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
+      <description>You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Site-to-Site IPsec VPN</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-site-to-site-vpn</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-site-to-site-vpn</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Connect two offices over the internet securely — an IKEv2 route-based (VTI) IPsec tunnel on Cisco IOS: proposals, keyring, profile, tunnel interface, routing, and the NAT-exemption gotcha.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: QoS for VoIP</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-qos-voip</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-qos-voip</guid>
+      <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Zone-Based Firewall</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-zbf</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-zbf</guid>
+      <pubDate>Sun, 26 Jul 2026 00:00:00 GMT</pubDate>
+      <description>A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Dual-WAN Failover with IP SLA</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-ipsla-failover</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-ipsla-failover</guid>
+      <pubDate>Fri, 24 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Failover that detects a dead ISP even when the link stays up — IP SLA probes, track objects, tracked static routes, and NAT that follows the active WAN.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: First-Hop Redundancy (HSRP &amp; VRRP)</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-hsrp</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-hsrp</guid>
+      <pubDate>Wed, 22 Jul 2026 00:00:00 GMT</pubDate>
+      <description>A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: STP &amp; EtherChannel</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-stp-etherchannel</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-stp-etherchannel</guid>
+      <pubDate>Mon, 20 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Static Routing &amp; OSPF</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-routing-ospf</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-routing-ospf</guid>
+      <pubDate>Sat, 18 Jul 2026 00:00:00 GMT</pubDate>
+      <description>How a Cisco router chooses paths — reading the routing table, static and default routes, floating statics for failover, and single-area OSPF that maintains itself.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Switch Security</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-switch-security</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-switch-security</guid>
+      <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Hardening Cisco access switches — port security and sticky MACs, err-disabled recovery, DHCP snooping, dynamic ARP inspection, BPDU guard, and unused-port hygiene.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Access Control Lists</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-acls</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-acls</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Filtering traffic on a Cisco router — standard vs extended ACLs, wildcard masks, named ACLs with sequence numbers, where to apply them, and protecting the VTY lines.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: DHCP &amp; NAT/PAT</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-dhcp-nat</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-dhcp-nat</guid>
+      <pubDate>Sun, 12 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Backup &amp; Restore</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-backup-restore</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-backup-restore</guid>
+      <pubDate>Fri, 10 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: VLANs &amp; Trunking</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-vlans-trunking</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-vlans-trunking</guid>
+      <pubDate>Wed, 08 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: First Contact</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-first-contact</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-first-contact</guid>
+      <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.</description>
+      <category>cisco</category>
+    </item>
+    <item>
       <title>Starlink + MikroTik Failover</title>
       <link>https://sp1r4.github.io/blog.html#starlink-mikrotik-failover</link>
       <guid>https://sp1r4.github.io/blog.html#starlink-mikrotik-failover</guid>

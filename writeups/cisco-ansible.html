@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Managing a Fleet with Ansible — SP1R4 / NOCTIS</title>
+<meta name="description" content="Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.">
+<meta property="og:title" content="Cisco IOS: Managing a Fleet with Ansible — NOCTIS">
+<meta property="og:description" content="Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-ansible.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ansible.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-ansible.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-ansible.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Managing a Fleet with Ansible",
+  "description": "Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.",
+  "datePublished": "2026-08-15",
+  "dateModified": "2026-08-15",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-ansible.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-ansible.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-ansible"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Automation</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Managing a Fleet with Ansible</h1>
+  <p class="post-subtitle">Configuring one switch by hand is fine. Configuring twenty the same way is how drift and typos creep in. Ansible turns your config into version-controlled code you push to every device at once — with a dry-run that shows exactly what will change before it touches anything.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Ansible</span>
+    <span class="tag">Automation</span>
+    <span class="tag">IaC</span>
+    <span class="tag">cisco.ios</span>
+    <span class="tag">NetDevOps</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 21 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="160" fill="#e1ded7"/>
+      <rect x="40" y="58" width="150" height="46" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="115" y="78" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">playbook.yml</text>
+      <text x="115" y="94" style="font-family:'Inter',sans-serif;font-size:8px;fill:#3a5a78;text-anchor:middle;">in git · one source of truth</text>
+      <line x1="190" y1="81" x2="255" y2="81" style="stroke:#c63d1f;stroke-width:1.6;marker-end:url(#ap)"/>
+      <text x="222" y="72" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">ansible</text>
+      <g font-family="ui-monospace,monospace" font-size="9" fill="#555550">
+        <rect x="270" y="34" width="120" height="26" rx="4" fill="#d4d2cc" stroke="#c8c5be"/><text x="330" y="51" text-anchor="middle">SW-01</text>
+        <rect x="270" y="67" width="120" height="26" rx="4" fill="#d4d2cc" stroke="#c8c5be"/><text x="330" y="84" text-anchor="middle">SW-02</text>
+        <rect x="270" y="100" width="120" height="26" rx="4" fill="#d4d2cc" stroke="#c8c5be"/><text x="330" y="117" text-anchor="middle">SW-03 … SW-20</text>
+      </g>
+      <line x1="390" y1="47" x2="470" y2="47" style="stroke:#558840;stroke-width:1.4;marker-end:url(#ap)"/>
+      <line x1="390" y1="80" x2="470" y2="80" style="stroke:#558840;stroke-width:1.4;marker-end:url(#ap)"/>
+      <line x1="390" y1="113" x2="470" y2="113" style="stroke:#558840;stroke-width:1.4;marker-end:url(#ap)"/>
+      <text x="560" y="84" style="font-family:'Inter',sans-serif;font-size:10px;fill:#3a6a28;text-anchor:middle;font-weight:700;">identical config,</text>
+      <text x="560" y="98" style="font-family:'Inter',sans-serif;font-size:10px;fill:#3a6a28;text-anchor:middle;font-weight:700;">every device</text>
+      <text x="360" y="150" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Agentless: Ansible just SSHes in and runs IOS commands. No software on the switches.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p><a href="cisco-eem.html">EEM</a> automates a single device reacting to its own events. Ansible does the opposite: it orchestrates <em>change across many devices</em> from one place. It's <strong>agentless</strong> — nothing is installed on the switches; Ansible simply SSHes in (using the access you set up in <a href="cisco-first-contact.html">First Contact</a>) and runs IOS commands via the <code>cisco.ios</code> collection. Your intended configuration lives as YAML in git, so every change is reviewed, versioned, and repeatable.</p>
+    <p>The payoff is threefold: <strong>consistency</strong> (the same hardening baseline on all 20 switches, not 20 slightly-different hand jobs), <strong>speed</strong> (add a VLAN to the whole site in one run), and <strong>safety</strong> (<code>--check</code> mode shows the exact diff before anything is applied, and git gives you a rollback). This is the tool that turns "we manage some switches" into "we operate a fleet." Even for the modest sites we run, the day you need to push a security fix to everything at once, you'll be glad the config is code.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>SSH + a login on each device — see <a href="cisco-first-contact.html">First Contact</a></li>
+      <li>A control machine (a laptop or small VM) with Ansible installed: <code>pip install ansible</code></li>
+      <li>The Cisco collection: <code>ansible-galaxy collection install cisco.ios</code></li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Inventory — Describe the Fleet</h2>
+  <p class="section-thesis"><em>Ansible needs to know what devices exist and how to reach them. The inventory lists hosts and groups; group_vars holds the connection settings shared by all Cisco devices.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">inventory.ini — the device list</span>
+    <pre class="term"><span class="cmt"># Group switches so a playbook can target "all switches at once"</span>
+<span class="out">[access_switches]
+sw-01 ansible_host=192.168.99.11
+sw-02 ansible_host=192.168.99.12
+sw-03 ansible_host=192.168.99.13
+
+[core_switches]
+core-01 ansible_host=192.168.99.1
+
+[switches:children]
+access_switches
+core_switches</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">group_vars/switches.yml — how to connect</span>
+    <pre class="term"><span class="out">ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.ios.ios
+ansible_user: ansible
+ansible_password: "{{ vault_ios_password }}"     </span><span class="cmt"># from Vault (section 05)</span>
+<span class="out">ansible_become: true
+ansible_become_method: enable
+ansible_become_password: "{{ vault_enable_password }}"</span></pre>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Read-Only First — Gather Facts &amp; Back Up</h2>
+  <p class="section-thesis"><em>Never start automation by writing. Prove connectivity with a read-only run: gather facts from every device, and back up every config — a safe, useful first playbook.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">backup.yml — pull every running-config (read-only)</span>
+    <pre class="term"><span class="out">---
+- name: Back up all switch configs
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: Grab facts (model, version, uptime)
+      cisco.ios.ios_facts:
+
+    - name: Save running-config to a per-host file
+      cisco.ios.ios_config:
+        backup: true
+        backup_options:
+          filename: "{{ inventory_hostname }}.cfg"
+          dir_path: ./backups/</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">Run it, then commit the backups to git</span>
+    <pre class="term"><span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini backup.yml</span>
+<span class="out">PLAY [Back up all switch configs] ****
+ok: [sw-01]   ok: [sw-02]   ok: [core-01] ...</span>
+<span class="pc">you@laptop:~$</span> <span class="out">git add backups/ && git commit -m "nightly config snapshot"</span>
+<span class="cmt"># Now every device's config is versioned. Diffing two days = "what changed".</span></pre>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Idempotent Change with ios_config</h2>
+  <p class="section-thesis"><em>The heart of it: describe the config you WANT, and Ansible makes only the changes needed to get there. Run it twice and the second run reports "ok" (no change) — that's idempotency, and it's why this is safe to run repeatedly.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">ntp.yml — ensure NTP + logging on every device</span>
+    <pre class="term"><span class="out">---
+- name: Standardize NTP and logging fleet-wide
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: Apply the standard management lines
+      cisco.ios.ios_config:
+        lines:
+          - ntp server 0.gr.pool.ntp.org
+          - ntp server 1.gr.pool.ntp.org
+          - logging host 192.168.1.50
+          - service timestamps log datetime msec localtime
+        save_when: modified          </span><span class="cmt"># write mem ONLY if something changed</span>
+    <span class="out"></span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">The magic: run it, then run it again</span>
+    <pre class="term"><span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini ntp.yml</span>
+<span class="out">changed: [sw-01]   changed: [sw-02] ...     ← first run APPLIES the config</span>
+
+<span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini ntp.yml</span>
+<span class="out">ok: [sw-01]   ok: [sw-02] ...               ← second run: nothing to do</span>
+<span class="cmt"># The playbook is the desired state. It doesn't blindly re-type commands —
+# it compares and only acts on drift. Safe to run on a schedule.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — ios_config Matches Lines Literally; Order &amp; Parents Matter</span>
+    <p><code>ios_config</code> compares your <code>lines</code> against the running-config text. For commands under a parent (an interface, a line vty), you must give the <code>parents:</code> context, or Ansible applies them at the wrong level. And it matches <em>exact</em> strings — <code>ip address 10.0.0.1 255.255.255.0</code> and the same with a trailing space are "different." When a task keeps reporting <code>changed</code> every run even though nothing really changes, that's the tell: your line doesn't textually match what IOS stores (IOS may re-render it). Use <code>--check --diff</code> to see exactly what Ansible thinks differs, and match IOS's own formatting.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Check Mode — See Before You Touch</h2>
+  <p class="section-thesis"><em>The single most important habit. --check runs the whole playbook without applying anything and --diff shows the exact lines it would add or remove. This is the "measure twice, cut once" of network automation.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Dry-run a change across the whole fleet</span>
+    <pre class="term"><span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini add-vlan.yml --check --diff</span>
+<span class="out">TASK [Add VLAN 50 everywhere] ****
+--- before
++++ after
+@@ -12,0 +13,2 @@
++vlan 50
++ name IOT
+changed: [sw-01]   changed: [sw-02] ...    (check mode — NOTHING applied)</span>
+
+<span class="cmt"># You see EXACTLY what would change on every device. Happy? Drop --check:</span>
+<span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini add-vlan.yml --diff</span>
+<span class="cmt"># Roll out gradually with --limit to test on one device first:</span>
+<span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini add-vlan.yml --limit sw-01</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 The Safe Rollout Pattern</span>
+    <p>Professional fleet change goes in four gears, each safer for having the last: <strong>(1)</strong> <code>--check --diff</code> to preview across everything; <strong>(2)</strong> <code>--limit sw-01</code> to apply to one canary device and verify it in the real network; <strong>(3)</strong> apply to the rest; <strong>(4)</strong> commit the playbook to git as the record. If step 2 goes wrong, only one device is affected and your git-committed backups (section 02) restore it. This is how you push a change to 20 switches without the 2am pucker — the same discipline as the <a href="cisco-ios-upgrade.html">upgrade post</a>, applied to config.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Secrets — Ansible Vault</h2>
+  <p class="section-thesis"><em>Never commit a device password to git in the clear. Ansible Vault encrypts the sensitive variables so the repo is safe to store and share, and the playbook decrypts them at runtime with a password you supply.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Encrypt the credentials, use them normally</span>
+    <pre class="term"><span class="cmt"># Create an encrypted vars file holding the passwords</span>
+<span class="pc">you@laptop:~$</span> <span class="out">ansible-vault create group_vars/all/vault.yml</span>
+<span class="cmt"># (opens an editor; you type:)</span>
+<span class="out">vault_ios_password: "TheSSHPassword"
+vault_enable_password: "TheEnableSecret"</span>
+
+<span class="cmt"># The file on disk is now encrypted gibberish — safe to commit to git.
+# Run any playbook, supplying the vault password to decrypt at runtime:</span>
+<span class="pc">you@laptop:~$</span> <span class="out">ansible-playbook -i inventory.ini ntp.yml --ask-vault-pass</span>
+<span class="cmt"># Best practice: SSH KEYS to the devices instead of passwords where possible,
+# and vault only what must be a secret. Never a plaintext password in the repo.</span></pre>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">EEM vs Ansible — Which Tool</h2>
+  <p class="section-thesis"><em>Both automate, but they solve different problems. Reach for the right one.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>&nbsp;</th><th>EEM (on-box)</th><th>Ansible (off-box)</th></tr></thead>
+    <tbody>
+      <tr><td>Runs</td><td>On the device itself</td><td>From a control machine over SSH</td></tr>
+      <tr><td>Scope</td><td>One device reacting to its own events</td><td>Many devices, orchestrated change</td></tr>
+      <tr><td>Works when mgmt net is down?</td><td>Yes — it's local</td><td>No — needs reachability</td></tr>
+      <tr><td>Best for</td><td>Autonomous reflexes (port recovery, failover cleanup)</td><td>Consistency, rollout, config-as-code, backups</td></tr>
+      <tr><td>State lives</td><td>In the device config</td><td>In git</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 MikroTik ↔ Cisco — and Beyond</span>
+    <p>Ansible isn't Cisco-specific — the same control machine manages <a href="mikrotik-terminal.html">MikroTik</a> (<code>community.routeros</code>), Linux servers, and cloud in one workflow, which is exactly why it's the right investment for a mixed shop like the ones we run. RouterOS has its own on-box scripting (the EEM analog), but for pushing a consistent baseline across Cisco <em>and</em> MikroTik <em>and</em> the servers, one Ansible repo beats three different tools. Config-as-code is the same idea everywhere: the intended state is text, reviewed and versioned, and the tooling reconciles reality to it.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Ansible is agentless orchestration.</strong> It SSHes in and runs IOS via <code>cisco.ios</code> — nothing installed on the switches. Your config becomes reviewed, versioned YAML in git.</li>
+      <li><strong>Start read-only.</strong> Prove connectivity and value with <code>ios_facts</code> and a config-backup playbook before you ever write to a device. Commit the backups to git — instant "what changed" history.</li>
+      <li><strong>ios_config is idempotent.</strong> Describe desired state; Ansible applies only the drift. Run twice, the second run is a no-op — safe to schedule.</li>
+      <li><strong>Match IOS's exact line formatting</strong>, and give <code>parents:</code> for sub-mode commands, or tasks report <code>changed</code> forever. <code>--diff</code> shows what Ansible thinks differs.</li>
+      <li><strong>--check --diff before every real run.</strong> Preview the exact change across the whole fleet, canary with <code>--limit</code>, then apply. Four gears, each safer than the last.</li>
+      <li><strong>Vault your secrets.</strong> Never commit a plaintext device password; prefer SSH keys, and encrypt what must be secret with Ansible Vault.</li>
+      <li><strong>EEM for local reflexes, Ansible for fleet change.</strong> One reacts on-box when the network's down; the other pushes consistent config-as-code from a control machine — across Cisco, MikroTik, and servers alike.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Managing more than a handful of devices in Crete?</h3>
+    <p>NOCTIS builds config-as-code with Ansible — versioned backups, consistent hardening baselines, and safe fleet-wide rollouts — for multi-site businesses on Cisco, MikroTik, or both. One security fix, every device, one reviewed change.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-ipv6.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 20</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">IPv6 Fundamentals</span></a>
+    <a href="cisco-catalyst-vs-meraki.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 22 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Catalyst vs Meraki</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

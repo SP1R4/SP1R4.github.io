@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>MikroTik Hotspot &amp; Captive Portal for Hotels — SP1R4 / NOCTIS</title>
+<meta name="description" content="A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.">
+<meta property="og:title" content="MikroTik: Hotspot &amp; Captive Portal for Hotels — NOCTIS">
+<meta property="og:description" content="A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-hotspot.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-hotspot.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-hotspot.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-hotspot.html">
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Hotspot & Captive Portal for Hotels",
+  "description": "A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.",
+  "datePublished": "2026-09-06",
+  "dateModified": "2026-09-06",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-hotspot.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-hotspot.png",
+  "keywords": [
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-hotspot"
+  },
+  "timeRequired": "PT12M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; September 2026</p>
+  <h1 class="post-title">Hotspot &amp; Captive Portal<br>for Hotels</h1>
+  <p class="post-subtitle">The branded "accept the terms and connect" page every guest expects — and every hotel owner asks us for. This is the MikroTik hotspot done properly: a login page you can put a logo on, voucher codes at reception, optional RADIUS, a walled garden so the login itself always loads, per-guest bandwidth, and the HTTPS-redirect reality nobody warns you about.</p>
+  <div class="tags">
+    <span class="tag">RouterOS</span>
+    <span class="tag">Hotspot</span>
+    <span class="tag">Captive Portal</span>
+    <span class="tag">Hospitality</span>
+    <span class="tag">Vouchers</span>
+    <span class="tag">User Manager</span>
+    <span class="tag">RADIUS</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="mikrotik-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; MikroTik RouterOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 12 of 13</span>
+  </div>
+
+  <!-- Hero diagram: captive portal flow -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="hp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <!-- phone -->
+      <rect x="34" y="70" width="86" height="60" rx="8" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="77" y="96" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">Guest</text>
+      <text x="77" y="112" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">joins Wi-Fi</text>
+      <!-- router -->
+      <rect x="300" y="66" width="120" height="68" rx="6" fill="#d4d2cc" stroke="#c63d1f" stroke-width="1.4"/>
+      <text x="360" y="88" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">Hotspot gateway</text>
+      <text x="360" y="104" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">intercepts HTTP</text>
+      <text x="360" y="118" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">→ login page</text>
+      <!-- internet -->
+      <ellipse cx="632" cy="100" rx="56" ry="34" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="632" y="104" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">Internet</text>
+      <!-- flow arrows -->
+      <line x1="120" y1="100" x2="298" y2="100" style="stroke:#c63d1f;stroke-width:2;marker-end:url(#hp)"/>
+      <text x="205" y="92" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#8a5a10;text-anchor:middle;">any web request</text>
+      <line x1="420" y1="100" x2="572" y2="100" style="stroke:#558840;stroke-width:2;stroke-dasharray:6,4;marker-end:url(#hp)"/>
+      <text x="496" y="92" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a6a28;text-anchor:middle;">after login</text>
+      <text x="360" y="170" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Until the guest authenticates, every request is redirected to the portal. The walled garden is the short list of things allowed through it.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>A captive portal is a small, well-worn trick: the router runs a tiny web server, and until a device authenticates, <strong>every HTTP request it makes is redirected to the login page</strong>. Accept the terms (or enter a voucher), the router flips that device's MAC to "authorised," and traffic flows normally. Phones recognise the pattern and pop the page automatically — that's the "Sign in to Wi-Fi" sheet every guest has seen.</p>
+    <p>On MikroTik this is the <strong>hotspot</strong> feature, and it's genuinely good — a five-minute wizard gets you a working portal, and the login page is just editable HTML you can brand. This post takes it from that wizard to something you'd actually hand a hotel: a terms-acceptance page, <strong>voucher codes printed at reception</strong> via User Manager, an optional RADIUS backend, the walled garden that keeps the portal itself reachable, and per-guest speed limits. It's the guest-facing front door to the segmented network from the <a href="mikrotik-lab-hotel.html">hotel lab</a>.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li><a href="mikrotik-vlans.html">VLAN Segmentation</a> — the hotspot runs on the guest VLAN/interface, isolated from everything else</li>
+      <li><a href="mikrotik-firewall.html">The RouterOS Firewall</a> and <a href="mikrotik-qos.html">QoS</a> for isolation and per-guest fairness</li>
+      <li>RouterOS 7.x; a guest bridge/VLAN interface with its own subnet + DHCP</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Stand Up the Hotspot</h2>
+  <p class="section-thesis"><em>The setup command wires the whole thing — an IP pool, DHCP, a NAT rule, the portal server, and a default profile — onto one interface. Run it on the guest interface, never the WAN.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — the guided setup, then verify</span>
+    <pre class="term"><span class="cmt"># Point it at the guest interface (a VLAN interface or a guest bridge).
+# The wizard asks a handful of questions — accept the sensible defaults.</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot setup</span>
+<span class="out">hotspot interface: vlan20-guest
+local address of network: 10.10.20.1/24   (auto)
+masquerade network: yes
+address pool: 10.10.20.10-10.10.20.254
+select certificate: none
+ip address of smtp server: 0.0.0.0
+dns servers: 10.10.20.1
+dns name: wifi.hotel.local
+name of local user: (skip — we use vouchers)</span>
+
+<span class="cmt"># What it created, in one place:</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot print</span>
+<span class="out"> 0  name="hotspot1" interface=vlan20-guest address-pool=hs-pool-guest
+    profile=hsprof1 idle-timeout=5m keepalive-timeout=none</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The DNS Name Is Not Optional, and Keep It <code>.local</code>-ish</span>
+    <p>The <code>dns name</code> (here <code>wifi.hotel.local</code>) is the hostname the portal answers on — guests are redirected to <code>http://wifi.hotel.local/login</code>. Pick something that clearly isn't a real public domain, and <strong>never</strong> use your actual website's name (the portal would shadow it for every connected guest). It also must resolve <em>only</em> inside the hotspot — the wizard's built-in DNS handles that. If you later add HTTPS to the portal, this name must match the certificate (see the HTTPS gotcha in section 06).</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">The Login Page — Terms Acceptance</h2>
+  <p class="section-thesis"><em>The simplest hotel portal isn't a username box — it's a logo, a "I accept the terms" checkbox, and a Connect button. That's a two-line change to the login profile plus a branded HTML file.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — a login profile that only needs consent</span>
+    <pre class="term"><span class="cmt"># "trial" login lets a guest on for a set time with no credentials —
+# perfect for accept-and-connect. Give everyone the same shared voucher-free access.</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot user profile set [find name=default] \
+    shared-users=1 rate-limit=10M/40M session-timeout=1d idle-timeout=15m</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot profile set [find name=hsprof1] \
+    login-by=cookie,http-chap trial-uptime-limit=1d trial-uptime-reset=1d</span>
+<span class="cmt"># cookie login remembers a returning guest's device for the day so they
+# don't re-accept on every reconnect (the MAC-cookie in section 06).</span></pre>
+  </div>
+
+  <p>The portal's HTML lives on the router's flash, in the <code>hotspot/</code> directory — <code>login.html</code>, <code>alogin.html</code> (the "you're connected" page), <code>logout.html</code>, and a few includes. Pull them off with WinBox's Files browser or SFTP, edit them, and drop them back. For an accept-and-connect page you keep MikroTik's login form but replace the username/password inputs with a single checkbox and a hidden trial submit:</p>
+
+  <div class="term-wrap">
+    <span class="term-label">login.html — the essential terms-acceptance form (excerpt)</span>
+    <pre class="term"><span class="out">&lt;img src="logo.png" alt="Hotel"&gt;
+&lt;h1&gt;Welcome — free guest Wi-Fi&lt;/h1&gt;
+
+&lt;form name="login" action="$(link-login-only)" method="post"&gt;
+  &lt;input type="hidden" name="dst" value="$(link-orig)"&gt;
+  &lt;input type="hidden" name="popup" value="true"&gt;
+
+  &lt;label&gt;&lt;input type="checkbox" required&gt;
+    I accept the &lt;a href="/terms.html"&gt;terms of use&lt;/a&gt;&lt;/label&gt;
+
+  &lt;!-- "trial" hands out the free timed session; no username needed --&gt;
+  &lt;input type="submit" name="" value="Connect"&gt;
+&lt;/form&gt;
+
+&lt;!-- MikroTik replaces $(...) macros server-side before serving the page --&gt;</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Keep Assets Local — the Login Page Loads Before the Internet Does</span>
+    <p>The guest isn't online yet when they see this page, so <strong>every asset it references must be on the router</strong>: the logo, CSS, fonts, any image. Link a Google Font or a CDN logo and it renders broken, because the guest can't reach the internet until <em>after</em> they submit. Put <code>logo.png</code> and a small <code>style.css</code> in the same <code>hotspot/</code> folder and reference them relatively. This is the single most common reason a "custom portal" looks broken on the guest's phone.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Voucher Codes with User Manager</h2>
+  <p class="section-thesis"><em>When "free for everyone" isn't the model — paid Wi-Fi, per-room codes, a code printed on the checkout receipt — you need vouchers. User Manager is MikroTik's built-in RADIUS server that generates and tracks them.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — enable User Manager, point the hotspot at it</span>
+    <pre class="term"><span class="cmt"># RouterOS 7 ships User Manager v5 as a package — enable it once.</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/user-manager set enabled=yes</span>
+
+<span class="cmt"># Register the router itself as a RADIUS client of its own User Manager</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/user-manager router add name=local address=127.0.0.1 shared-secret=hotspot-secret</span>
+
+<span class="cmt"># Tell the hotspot to authenticate against RADIUS instead of local users</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot profile set [find name=hsprof1] use-radius=yes</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/radius add service=hotspot address=127.0.0.1 secret=hotspot-secret</span>
+
+<span class="cmt"># A profile that shapes every voucher user, then a batch of 50 codes</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/user-manager profile add name=guest-1day validity=1d</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/user-manager user create-and-activate-profile=guest-1day \
+    count=50 name-length=6 shared-users=1</span>
+
+<span class="cmt"># Print the batch to hand to reception:</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/user-manager user print where profile=guest-1day</span>
+<span class="out"> #  NAME    PASSWORD   PROFILE
+ 0  a7f3k9  a7f3k9     guest-1day
+ 1  m2x8qp  m2x8qp     guest-1day
+ …</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "Validity" Starts on First Login, Not on Creation</span>
+    <p>A common panic: "I made 50 one-day codes last month, are they all expired?" No — with User Manager v5, a voucher's <code>validity</code> countdown begins the moment it's <strong>first used</strong>, not when it's generated. So a stack of unused codes at reception stays good indefinitely; only handed-out ones burn down. Confirm the intended behaviour with a test code before a busy weekend — the difference between "validity" and "session-timeout" trips up everyone the first time, and getting it wrong means either codes that die on the shelf or codes that never expire.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Walled Garden</h2>
+  <p class="section-thesis"><em>Some traffic must pass before login: the portal's own assets, a payment provider if you sell access, captive-portal detection URLs so phones auto-pop the page. That allow-list is the walled garden.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — let the essentials through the portal</span>
+    <pre class="term"><span class="cmt"># Payment gateway (if guests pay by card for access)</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot walled-garden add dst-host=*.stripe.com action=allow</span>
+
+<span class="cmt"># Captive-portal detection endpoints — so iOS/Android reliably auto-open
+# the login sheet instead of silently deciding "no internet"</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot walled-garden add dst-host=captive.apple.com action=allow</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot walled-garden add dst-host=connectivitycheck.gstatic.com action=allow</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot walled-garden add dst-host=www.msftconnecttest.com action=allow</span>
+
+<span class="cmt"># For raw IPs / non-HTTP, use the IP walled garden instead</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot walled-garden ip add dst-address=1.1.1.1 action=accept</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Don't Over-Open the Garden</span>
+    <p>Every walled-garden entry is free, unauthenticated internet for anyone in Wi-Fi range — so keep it to detection URLs and (if used) the payment host. We've audited "free Wi-Fi" hotspots whose walled garden had grown to include social media and streaming "so guests could preview" — which is just open Wi-Fi with extra steps, and on a metered or capped line, a bill. The garden is a short list; if it's long, something's wrong with the model.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Per-Guest Bandwidth &amp; Fairness</h2>
+  <p class="section-thesis"><em>The hotspot has its own rate-limit that composes with — and should defer to — the PCQ fairness from the QoS post. Set a per-session cap here; let PCQ share the pool.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">RouterOS — a sane per-guest cap</span>
+    <pre class="term"><span class="cmt"># rate-limit on the user profile: rx/tx from the GUEST's perspective.
+# 10M down / 5M up per device is plenty for a hotel guest.</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/ip hotspot user profile set [find name=default] rate-limit=5M/10M</span>
+
+<span class="cmt"># Advanced rate-limit syntax also supports burst — generous for a few
+# seconds (snappy page loads) then settles to the sustained cap:
+#   rate-limit=5M/10M 8M/16M 6M/12M 8 8 8   (rx/tx  burst  threshold  time)</span>
+
+<span class="cmt"># Then let PCQ (from the QoS post) share the total guest pool fairly on
+# top of the per-device cap — the two layers stack:</span>
+<span class="pc">[admin@GW] &gt;</span> <span class="out">/queue simple add name=guest-pool target=10.10.20.0/24 \
+    max-limit=300M/300M queue=pcq-up/pcq-down</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Hotspot Rate-Limit vs FastTrack, Again</span>
+    <p>The same trap as the <a href="mikrotik-firewall.html">firewall post</a>: if a FastTrack rule matches guest traffic, the hotspot's shaping (and your PCQ queues) never see the packets, and every "limit" silently does nothing. On a box running a guest hotspot, scope FastTrack to <em>exclude</em> the guest subnet, or don't FastTrack at all. Symptom: you set 10M per guest, one guest pulls 400M, and the queue counters read zero. The packets are being fast-pathed around the shaper.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The HTTPS Reality &amp; Other Field Gotchas <span class="safe-badge">Read Before Go-Live</span></h2>
+  <p class="section-thesis"><em>Captive portals were designed for a plaintext-HTTP web. The modern all-HTTPS web breaks the classic "redirect any page" trick — here's what actually happens on a guest's phone, and how to make it smooth.</em></p>
+
+  <p>A hotspot works by intercepting an HTTP request and answering with a redirect. But browsers now default to HTTPS, and the router <strong>cannot</strong> transparently intercept an HTTPS request — doing so would be a certificate error, which is exactly what HTTPS exists to prevent. So if a guest's first action is opening <code>https://…</code>, they get a connection failure, not your portal.</p>
+
+  <p>What saves you is <strong>captive-portal detection</strong>: every modern phone, on joining Wi-Fi, quietly fetches a known plaintext URL (Apple's <code>captive.apple.com</code>, Android's <code>connectivitycheck.gstatic.com</code>). If it gets your redirect instead of the expected response, it pops the login sheet automatically. So the fix isn't fighting HTTPS — it's making sure those detection URLs are handled and <em>not</em> accidentally allowed through the walled garden (allow them to the portal, don't let them bypass it).</p>
+
+  <table class="cheat">
+    <thead><tr><th>Symptom in the field</th><th>Cause &amp; fix</th></tr></thead>
+    <tbody>
+      <tr><td>"No internet" but no login page</td><td>Detection URL blocked or mis-handled — ensure the walled garden allows the detection hosts to the portal, not around it.</td></tr>
+      <tr><td>Login page loads broken / no logo</td><td>Portal assets referenced from a CDN — put logo/CSS on the router (section 02).</td></tr>
+      <tr><td>Guest re-accepts on every reconnect</td><td>Enable <code>login-by=cookie</code> so the device MAC is remembered for the session (section 02).</td></tr>
+      <tr><td>Portal throws a cert warning</td><td>You enabled HTTPS login without a cert whose CN matches the <code>dns name</code>. Either use plain HTTP for the portal (fine on an isolated guest VLAN) or install a matching cert.</td></tr>
+      <tr><td>Some devices never see the portal</td><td>They opened an HTTPS page first and cached it. Toggle Wi-Fi off/on, or open <code>http://neverssl.com</code> — the reception-desk trick.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 What We Actually Deploy on Cretan Hotels</span>
+    <p>For most small properties: an accept-and-connect portal on plain HTTP (the guest VLAN is already isolated, so there's no credential to steal), <code>cookie</code> login so returning guests skip the page, a two-line walled garden, and a per-guest cap under PCQ. Vouchers only where the owner wants paid or per-room access. We keep the portal's HTML in the <a href="mikrotik-backup.html">config backup</a> so a reflash restores the branding too — the logo on that page is often the only thing the owner personally checks after we hand over.</p>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Guest Access</h2>
+  <p class="section-thesis"><em>Cisco's equivalent lives on the wireless controller, not the router — worth knowing if a site is mixed.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco</th></tr></thead>
+    <tbody>
+      <tr><td>/ip hotspot (built into the router)</td><td>WLC guest anchor + web-auth policy (on the controller)</td></tr>
+      <tr><td>Editable login.html on flash</td><td>Custom web-auth bundle uploaded to the WLC</td></tr>
+      <tr><td>User Manager vouchers</td><td>ISE guest sponsor portal / local web-auth accounts</td></tr>
+      <tr><td>Walled garden</td><td>Pre-auth ACL on the guest WLAN</td></tr>
+      <tr><td>use-radius=yes → User Manager</td><td>RADIUS to ISE / a NAC</td></tr>
+      <tr><td>rate-limit on the user profile</td><td>QoS profile / rate limit per WLAN</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>A captive portal is a redirect-until-authorised trick</strong> — the router intercepts HTTP and flips a device to "authorised" on consent. <code>/ip hotspot setup</code> builds the whole stack on one guest interface.</li>
+      <li><strong>Run it on the isolated guest VLAN</strong>, never the WAN, and pick a fake portal hostname that isn't your real domain.</li>
+      <li><strong>Accept-and-connect is a login profile plus branded HTML.</strong> Keep every asset on the router — the guest has no internet until after they submit.</li>
+      <li><strong>Vouchers = User Manager (built-in RADIUS).</strong> Validity counts from first use, so unused codes at reception stay good.</li>
+      <li><strong>The walled garden is a short allow-list</strong> — captive-portal detection URLs and a payment host, nothing more. A long garden is a misconfigured model (or a bill).</li>
+      <li><strong>Per-guest rate-limit stacks with PCQ</strong> — and both die if FastTrack matches guest traffic. Scope FastTrack out of the guest subnet.</li>
+      <li><strong>HTTPS broke transparent interception;</strong> captive-portal detection is what makes the page auto-pop. Handle the detection URLs and the "no internet" complaint disappears.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Want branded guest Wi-Fi with a login page that just works?</h3>
+    <p>NOCTIS builds captive portals for hotels and villas across Crete — your logo, terms acceptance or vouchers, isolated from your real network, fair in high season, and tested on the phones your guests actually carry.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="MikroTik RouterOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="mikrotik-lab-hotel.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 11</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: The Hotel Network</span></a>
+    <a href="mikrotik-capsman.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 13 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Centralised Wi-Fi with CAPsMAN</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="mikrotik-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 13 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

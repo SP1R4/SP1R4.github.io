@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: DHCP &amp; NAT/PAT — SP1R4 / NOCTIS</title>
+<meta name="description" content="Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.">
+<meta property="og:title" content="Cisco IOS: DHCP &amp; NAT/PAT — NOCTIS">
+<meta property="og:description" content="Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-dhcp-nat.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-dhcp-nat.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-dhcp-nat.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-dhcp-nat.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  /* keyboard shortcut pills */
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  /* cheatsheet table */
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  /* safe badge */
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: DHCP & NAT/PAT",
+  "description": "Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.",
+  "datePublished": "2026-07-12",
+  "dateModified": "2026-07-12",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-dhcp-nat.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-dhcp-nat.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-dhcp-nat"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>DHCP &amp; NAT/PAT</h1>
+  <p class="post-subtitle">The two services that make a LAN usable: handing out addresses automatically, and sharing one public IP across the whole office. DHCP pools, relay, PAT overload, and static NAT for port forwarding — with the verify commands that make troubleshooting quick.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">DHCP</span>
+    <span class="tag">NAT</span>
+    <span class="tag">PAT</span>
+    <span class="tag">Port Forwarding</span>
+    <span class="tag">Router</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 4 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: PAT overload -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="nap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <!-- inside hosts -->
+      <rect x="30" y="34" width="120" height="22" rx="3" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="90" y="49" style="font-family:ui-monospace,monospace;font-size:10px;fill:#3a5a78;text-anchor:middle;">192.168.1.10</text>
+      <rect x="30" y="74" width="120" height="22" rx="3" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="90" y="89" style="font-family:ui-monospace,monospace;font-size:10px;fill:#3a5a78;text-anchor:middle;">192.168.1.11</text>
+      <rect x="30" y="114" width="120" height="22" rx="3" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="90" y="129" style="font-family:ui-monospace,monospace;font-size:10px;fill:#3a5a78;text-anchor:middle;">192.168.1.12</text>
+      <text x="90" y="160" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">inside (private)</text>
+      <!-- router -->
+      <rect x="300" y="70" width="120" height="60" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="96" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#1a1a18;text-anchor:middle;">R1</text>
+      <text x="360" y="112" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">PAT overload</text>
+      <!-- outside -->
+      <rect x="560" y="88" width="130" height="24" rx="3" fill="#d7e7cf" stroke="#558840"/>
+      <text x="625" y="104" style="font-family:ui-monospace,monospace;font-size:10px;fill:#3a6a28;text-anchor:middle;">203.0.113.7</text>
+      <text x="625" y="150" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">outside (one public IP)</text>
+      <!-- arrows -->
+      <line x1="150" y1="45" x2="298" y2="82" style="stroke:#3a5a78;stroke-width:1.2;marker-end:url(#nap)"/>
+      <line x1="150" y1="85" x2="298" y2="100" style="stroke:#3a5a78;stroke-width:1.2;marker-end:url(#nap)"/>
+      <line x1="150" y1="125" x2="298" y2="118" style="stroke:#3a5a78;stroke-width:1.2;marker-end:url(#nap)"/>
+      <line x1="420" y1="100" x2="556" y2="100" style="stroke:#c63d1f;stroke-width:1.8;marker-end:url(#nap)"/>
+      <text x="360" y="185" style="font-family:'Inter',sans-serif;font-size:10px;fill:#888880;text-anchor:middle;">Many private hosts → one public IP. The router tracks each flow by port number so replies find their way home.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Two services turn a bare router into a working internet gateway. <strong>DHCP</strong> hands every device an IP, gateway, and DNS server automatically — no one configures a laptop by hand. <strong>NAT</strong> translates the many private addresses behind you into the one (or few) public addresses your ISP gave you, so the whole office shares a single WAN IP.</p>
+    <p>In practice you'll use one flavour of NAT constantly — <strong>PAT</strong>, "NAT overload", which multiplexes an entire LAN onto one public IP by tracking port numbers — and occasionally its inverse, <strong>static NAT</strong>, to publish an internal server to the internet (port forwarding). This tutorial builds all of it on an IOS router, then maps it to the MikroTik equivalents. If you set up masquerade and dst-nat on RouterOS, you already know the shapes.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Comfort with the IOS CLI and interface config — see <a href="cisco-first-contact.html">Cisco IOS: First Contact</a></li>
+      <li>A router with an inside (LAN) and outside (WAN) interface, both with IPs</li>
+      <li>Basic subnetting and the idea of an access-list (we build a simple one here)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">DHCP Server on IOS</h2>
+  <p class="section-thesis"><em>A Cisco router makes a perfectly good DHCP server for a small site. Exclude the static addresses first, then define a pool — network, gateway, DNS, lease time.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — a DHCP pool for the LAN</span>
+    <pre class="term"><span class="cmt"># 1. Reserve the addresses DHCP must NOT hand out (gateway, servers, printers)</span>
+<span class="pc">R1(config)#</span> <span class="out">ip dhcp excluded-address 192.168.1.1 192.168.1.20</span>
+
+<span class="cmt"># 2. Define the pool</span>
+<span class="pc">R1(config)#</span> <span class="out">ip dhcp pool LAN</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">network 192.168.1.0 255.255.255.0</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">default-router 192.168.1.1</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">dns-server 1.1.1.1 8.8.8.8</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">domain-name noctis.lan</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">lease 0 12 0</span>          <span class="cmt"># 0 days, 12 hours, 0 minutes</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Exclude BEFORE You Rely on the Pool</span>
+    <p>The <code>network</code> statement makes the router willing to lease <em>every</em> address in that subnet — including your gateway <code>.1</code> and any static servers — unless you excluded them. If you skip <code>ip dhcp excluded-address</code>, DHCP will happily hand a client the same IP as your router or a printer, and you'll chase a duplicate-address ghost for an hour. Exclude the static block first, every time.</p>
+  </div>
+
+  <h3 class="sub">Verify the Leases <span class="safe-badge">Safe to Run</span></h3>
+  <div class="term-wrap">
+    <span class="term-label">IOS — confirm DHCP is handing out addresses</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show ip dhcp binding</span>
+<span class="out">IP address       Client-ID/Hardware   Lease expiration      Type
+192.168.1.21     0100.1a2b.3c4d.5e     Jul 12 2026 09:14 PM  Automatic
+192.168.1.22     0100.1a2b.3c4d.6f     Jul 12 2026 09:15 PM  Automatic</span>
+
+<span class="pc">R1#</span> <span class="out">show ip dhcp pool</span>
+<span class="out">Pool LAN :
+ Total addresses            : 254
+ Leased addresses           : 2
+ Excluded addresses         : 20</span>
+
+<span class="cmt"># Conflicts (an address DHCP found already in use) show up here:</span>
+<span class="pc">R1#</span> <span class="out">show ip dhcp conflict</span></pre>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">DHCP Relay — When the Server Is Elsewhere</h2>
+  <p class="section-thesis"><em>DHCP uses broadcasts, and routers don't forward broadcasts. So a client in VLAN 20 can't reach a DHCP server in VLAN 10 — unless the gateway relays the request. That's <code>ip helper-address</code>.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — relay DHCP from a client subnet to a central server</span>
+    <pre class="term"><span class="cmt"># On the interface/SVI that faces the CLIENTS (their default gateway),
+# point at the DHCP server's unicast address:</span>
+<span class="pc">R1(config)#</span> <span class="out">interface vlan 20</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip helper-address 192.168.10.5</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span>
+<span class="cmt"># The router now converts the client's DHCP broadcast into a unicast to
+# 192.168.10.5, stamping the source subnet so the server picks the right pool.</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — helper-address Goes on the Client Side, Not the Server Side</span>
+    <p>The most common relay mistake is putting <code>ip helper-address</code> on the wrong interface. It belongs on the interface closest to the <em>clients</em> — the one that receives their broadcast — pointing at the server. One helper per client subnet. And <code>ip helper-address</code> relays more than DHCP by default (TFTP, DNS, NTP and a few others); if you only want DHCP, prune the rest with <code>no ip forward-protocol udp &lt;port&gt;</code>.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">NAT — The Vocabulary First</h2>
+  <p class="section-thesis"><em>NAT confuses people because of four terms that sound alike. Nail them once and every NAT command reads plainly. Inside/outside is about which side of the router; local/global is about which address — private or public.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Term</th><th>Means</th></tr></thead>
+    <tbody>
+      <tr><td>inside local</td><td>The private IP a host really has (192.168.1.10).</td></tr>
+      <tr><td>inside global</td><td>The public IP the world sees that host as (203.0.113.7).</td></tr>
+      <tr><td>outside global</td><td>A public IP out on the internet (e.g. a web server you visit).</td></tr>
+      <tr><td>inside interface</td><td>The router leg facing your LAN — marked <code>ip nat inside</code>.</td></tr>
+      <tr><td>outside interface</td><td>The router leg facing the WAN — marked <code>ip nat outside</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Every NAT config starts the same way: tell the router which interface is inside and which is outside. Nothing translates until you do.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — mark the interfaces (always step one)</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip nat inside</span>          <span class="cmt"># LAN side</span>
+<span class="pc">R1(config-if)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">ip nat outside</span>         <span class="cmt"># WAN side</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">PAT — One Public IP for the Whole LAN</h2>
+  <p class="section-thesis"><em>This is the NAT you'll configure 95% of the time. PAT (NAT overload) maps every inside host to the single public IP on your WAN interface, keeping flows apart by port number. It's exactly what your home router does.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — PAT overload onto the WAN interface IP</span>
+    <pre class="term"><span class="cmt"># 1. An access-list describing WHO is allowed to be translated (the LAN)</span>
+<span class="pc">R1(config)#</span> <span class="out">access-list 1 permit 192.168.1.0 0.0.0.255</span>
+<span class="cmt">#   (0.0.0.255 is the wildcard mask — the inverse of 255.255.255.0)</span>
+
+<span class="cmt"># 2. Translate that list, overloaded onto the outside interface's IP</span>
+<span class="pc">R1(config)#</span> <span class="out">ip nat inside source list 1 interface GigabitEthernet0/0 overload</span>
+<span class="pc">R1(config)#</span> <span class="out">end</span>
+<span class="cmt"># "overload" is the keyword that turns NAT into PAT (port multiplexing).
+# Every LAN host now reaches the internet as the WAN interface's public IP.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — No Route, No NAT</span>
+    <p>NAT translates addresses; it does not route packets. If the router can't already reach the internet — a default route <code>ip route 0.0.0.0 0.0.0.0 &lt;next-hop&gt;</code> out the outside interface — then translated traffic still goes nowhere. Likewise, if you forget <code>ip nat inside</code>/<code>outside</code> on the interfaces, the <code>ip nat inside source</code> rule matches nothing and hosts get no translation at all. Interfaces marked, route present, then NAT.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Static NAT — Port Forwarding</h2>
+  <p class="section-thesis"><em>PAT lets inside hosts reach out. To let the outside reach IN — publish a web server, a mail server, a camera NVR — you need a static mapping: a fixed public IP:port to a fixed private IP:port.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — forward one public port to an internal server</span>
+    <pre class="term"><span class="cmt"># Publish internal 192.168.1.10:443 as the WAN IP's port 443</span>
+<span class="pc">R1(config)#</span> <span class="out">ip nat inside source static tcp 192.168.1.10 443 interface GigabitEthernet0/0 443</span>
+
+<span class="cmt"># Or, if you have a spare dedicated public IP, map it whole:</span>
+<span class="pc">R1(config)#</span> <span class="out">ip nat inside source static 192.168.1.10 203.0.113.8</span>
+<span class="pc">R1(config)#</span> <span class="out">end</span>
+<span class="cmt"># Remember the firewall/ACL still has to PERMIT the inbound traffic —
+# NAT opens the address translation, not the door.</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — Forward Only the Exact Port You Mean</span>
+    <p>Prefer the <code>tcp &lt;ip&gt; &lt;port&gt; interface … &lt;port&gt;</code> form over mapping a whole address whenever you can. Exposing a single service port (443) is a far smaller attack surface than publishing an entire host to the internet. And always pair a static NAT with an inbound ACL that permits <em>only</em> that port from the sources that need it — a forwarded RDP or camera port open to the whole internet is one of the most-scanned holes there is.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot NAT <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Two commands answer almost every NAT question: what's currently translated, and are translations even happening.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the NAT translation table and counters</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show ip nat translations</span>
+<span class="out">Pro  Inside global        Inside local       Outside local     Outside global
+tcp  203.0.113.7:1044     192.168.1.10:1044  93.184.216.34:443 93.184.216.34:443
+tcp  203.0.113.7:443      192.168.1.10:443   ---               ---            </span>
+<span class="cmt"># Top line: a host reaching out (PAT). Bottom: your static port-forward.</span>
+
+<span class="pc">R1#</span> <span class="out">show ip nat statistics</span>
+<span class="out">Total active translations: 2 (1 static, 1 dynamic; 1 extended)
+Outside interfaces: GigabitEthernet0/0
+Inside interfaces:  GigabitEthernet0/1
+Hits: 1523  Misses: 0</span>
+
+<span class="cmt"># Watch translations happen live (turn it OFF the moment you're done):</span>
+<span class="pc">R1#</span> <span class="out">debug ip nat</span>
+<span class="pc">R1#</span> <span class="out">undebug all</span>
+
+<span class="cmt"># Clear the dynamic table to start fresh (static entries stay):</span>
+<span class="pc">R1#</span> <span class="out">clear ip nat translation *</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "show ip nat translations" Is Empty</span>
+    <p>An empty dynamic table when hosts should be online almost always means one of three things: the <strong>interfaces aren't marked</strong> <code>ip nat inside</code>/<code>outside</code>; the <strong>access-list doesn't match</strong> the source subnet (check the wildcard mask — <code>0.0.0.255</code>, not <code>255.255.255.0</code>); or there's <strong>no route to the outside</strong>. Static entries always show even with zero traffic, so if your static forward is listed but no dynamic entries appear, suspect the ACL or the inside/outside marking.</p>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — The Same Two Jobs</h2>
+  <p class="section-thesis"><em>If you built masquerade and dst-nat on RouterOS, Cisco NAT is the identical concept with different keywords. Here's the direct map.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>/ip pool + /ip dhcp-server</td><td><code>ip dhcp pool</code> + <code>ip dhcp excluded-address</code></td></tr>
+      <tr><td>dhcp-relay</td><td><code>ip helper-address</code></td></tr>
+      <tr><td>action=masquerade (srcnat)</td><td><code>ip nat inside source list … overload</code> (PAT)</td></tr>
+      <tr><td>action=src-nat to-addresses=&lt;pub&gt;</td><td><code>ip nat inside source static &lt;local&gt; &lt;global&gt;</code></td></tr>
+      <tr><td>action=dst-nat (port forward)</td><td><code>ip nat inside source static tcp … interface … &lt;port&gt;</code></td></tr>
+      <tr><td>/ip firewall connection tracking</td><td><code>show ip nat translations</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 The Real Difference</span>
+    <p>On MikroTik, NAT is a firewall action — a rule in the <code>srcnat</code>/<code>dstnat</code> chain, evaluated with everything else. On Cisco, NAT is its own subsystem: you mark interfaces inside/outside and write <code>ip nat</code> rules separately from the ACL/firewall. Same result, different mental model. When we run mixed sites — a MikroTik edge and Cisco core, common in Crete SMBs — this table is what keeps the two straight in everyone's head.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Exclude static addresses before you trust a DHCP pool.</strong> The <code>network</code> statement offers the whole subnet; <code>ip dhcp excluded-address</code> is the only thing stopping DHCP from leasing your gateway and servers out from under you.</li>
+      <li><strong>Routers don't forward broadcasts — that's why relay exists.</strong> <code>ip helper-address</code> goes on the interface facing the <em>clients</em>, pointing at a central DHCP server. One per client subnet.</li>
+      <li><strong>Learn the four NAT terms once.</strong> inside/outside = which side of the router; local/global = private/public address. Every <code>ip nat</code> command reads plainly after that.</li>
+      <li><strong>Mark interfaces first.</strong> No <code>ip nat inside</code>/<code>outside</code> means no translation, no matter how correct the rules are. Interfaces marked → route present → NAT rule.</li>
+      <li><strong>PAT (overload) is the everyday NAT.</strong> An ACL for the LAN plus <code>ip nat inside source list … interface … overload</code> puts the whole office behind one public IP.</li>
+      <li><strong>Static NAT publishes inward — forward the exact port, and firewall it.</strong> NAT opens the translation, not the door; pair every port-forward with an inbound ACL scoped to just that service and source.</li>
+      <li><strong>Two show commands debug almost everything.</strong> <code>show ip nat translations</code> (what's mapped) and <code>show ip nat statistics</code> (is it happening) — an empty table points straight at interface marking, the ACL wildcard, or a missing route.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Standing up a gateway for an office, hotel, or SMB in Crete?</h3>
+    <p>NOCTIS configures DHCP, NAT, and secure port-forwarding on Cisco and MikroTik edges — with the firewall rules that keep published services safe — and documents every mapping so your team knows exactly what's exposed and why.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-backup-restore.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 3</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Backup &amp; Restore</span></a>
+    <a href="cisco-acls.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 5 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Access Control Lists</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

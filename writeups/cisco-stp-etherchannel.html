@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Spanning Tree &amp; EtherChannel — SP1R4 / NOCTIS</title>
+<meta name="description" content="Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.">
+<meta property="og:title" content="Cisco IOS: STP &amp; EtherChannel — NOCTIS">
+<meta property="og:description" content="Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-stp-etherchannel.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-stp-etherchannel.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-stp-etherchannel.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-stp-etherchannel.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  /* keyboard shortcut pills */
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  /* cheatsheet table */
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  /* safe badge */
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: STP & EtherChannel",
+  "description": "Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.",
+  "datePublished": "2026-07-20",
+  "dateModified": "2026-07-20",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-stp-etherchannel.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-stp-etherchannel.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-stp-etherchannel"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Spanning Tree &amp; EtherChannel</h1>
+  <p class="post-subtitle">Redundant links are a loop waiting to happen — so spanning tree blocks one, and half your bandwidth sleeps. Understand the election, choose your root bridge on purpose, switch to Rapid PVST+, and then bundle those redundant links into an EtherChannel that uses them all.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">STP</span>
+    <span class="tag">Rapid PVST+</span>
+    <span class="tag">Root Bridge</span>
+    <span class="tag">EtherChannel</span>
+    <span class="tag">LACP</span>
+    <span class="tag">CCNA</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 8 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: triangle with blocked port vs etherchannel -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <!-- left: STP triangle -->
+      <text x="185" y="30" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">SPANNING TREE — block the loop</text>
+      <rect x="130" y="46" width="110" height="30" rx="4" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="185" y="65" style="font-family:'Inter',sans-serif;font-size:9.5px;fill:#3a5a78;text-anchor:middle;font-weight:700;">CORE (root)</text>
+      <rect x="60" y="150" width="100" height="30" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="110" y="169" style="font-family:'Inter',sans-serif;font-size:9.5px;fill:#555550;text-anchor:middle;">SW-A</text>
+      <rect x="210" y="150" width="100" height="30" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="260" y="169" style="font-family:'Inter',sans-serif;font-size:9.5px;fill:#555550;text-anchor:middle;">SW-B</text>
+      <line x1="150" y1="76" x2="115" y2="150" stroke="#558840" stroke-width="2"/>
+      <line x1="220" y1="76" x2="255" y2="150" stroke="#558840" stroke-width="2"/>
+      <line x1="160" y1="165" x2="210" y2="165" stroke="#c63d1f" stroke-width="2" stroke-dasharray="5,4"/>
+      <text x="185" y="196" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">✕ blocking — loop prevented, link idle</text>
+      <!-- divider -->
+      <line x1="368" y1="24" x2="368" y2="192" stroke="#c8c5be" stroke-width="1"/>
+      <!-- right: etherchannel -->
+      <text x="545" y="30" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">ETHERCHANNEL — bundle, don't block</text>
+      <rect x="410" y="88" width="110" height="34" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="465" y="109" style="font-family:'Inter',sans-serif;font-size:9.5px;fill:#555550;text-anchor:middle;">SW-A</text>
+      <rect x="570" y="88" width="110" height="34" rx="4" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="625" y="109" style="font-family:'Inter',sans-serif;font-size:9.5px;fill:#555550;text-anchor:middle;">SW-B</text>
+      <line x1="520" y1="96" x2="570" y2="96" stroke="#558840" stroke-width="2"/>
+      <line x1="520" y1="105" x2="570" y2="105" stroke="#558840" stroke-width="2"/>
+      <line x1="520" y1="114" x2="570" y2="114" stroke="#558840" stroke-width="2"/>
+      <ellipse cx="545" cy="105" rx="17" ry="22" fill="none" stroke="#c63d1f" stroke-width="1.4"/>
+      <text x="545" y="150" style="font-family:ui-monospace,monospace;font-size:9px;fill:#c63d1f;text-anchor:middle;">Port-channel1</text>
+      <text x="545" y="170" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#888880;text-anchor:middle;">STP sees ONE logical link —</text>
+      <text x="545" y="182" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#888880;text-anchor:middle;">all members forward, nothing blocks</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Plug two switches together twice — for redundancy — and without protection you've built a <strong>bridging loop</strong>: ethernet frames have no TTL, so one broadcast circulates forever, multiplying until both switches melt at 100% CPU. That's a broadcast storm, and it takes down networks in seconds. <strong>Spanning tree</strong> (STP) is the immune system: the switches elect a root bridge, compute the shortest loop-free tree, and deliberately <em>block</em> every redundant path. Loops prevented — but blocked links carry nothing.</p>
+    <p>That's the trade this post resolves. First, understand and control STP: if you don't pick the root bridge, the network picks for you — usually the oldest, slowest switch in the building. Then reclaim the wasted bandwidth: <strong>EtherChannel</strong> bundles parallel links into one logical interface that STP treats as a single path, so all members forward at once. Redundancy <em>and</em> throughput — this is how switch uplinks should be built.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>VLANs and trunking — see <a href="cisco-vlans-trunking.html">Cisco IOS: VLANs &amp; Trunking</a></li>
+      <li>BPDU guard context from <a href="cisco-switch-security.html">Switch Security</a> helps — this post explains the protocol behind it</li>
+      <li>Two or three switches (or a lab) with at least one redundant link between them</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Election — Who Becomes Root</h2>
+  <p class="section-thesis"><em>Everything in spanning tree flows from one choice: the root bridge. Every switch measures its distance to the root, keeps its best path, and blocks the rest. The election is won by the lowest bridge ID — priority first, then MAC address.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — see the current tree (safe)</span>
+    <pre class="term"><span class="pc">SW1#</span> <span class="out">show spanning-tree vlan 10</span>
+<span class="out">VLAN0010
+  Spanning tree enabled protocol rstp
+  Root ID    Priority    24586
+             Address     0cd0.f894.1a00
+             Cost        4
+             Port        24 (GigabitEthernet0/24)   ← my way toward the root
+  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
+             Address     70b3.d5aa.2c00              ← this switch's own ID
+
+Interface        Role Sts Cost      Prio.Nbr Type
+Gi0/1            Desg FWD 4         128.1    P2p Edge
+Gi0/23           Altn BLK 4         128.23   P2p        ← the blocked redundancy
+Gi0/24           Root FWD 4         128.24   P2p</span></pre>
+  </div>
+
+  <p>Read it top-down: the <strong>Root ID</strong> block names the elected root and my cost to reach it; the <strong>Bridge ID</strong> block is me. If the two blocks show the same address, <em>this switch is the root</em>. Below, each port has a role: <code>Root</code> (my best path toward the root), <code>Desg</code> (designated — forwarding for its segment), <code>Altn BLK</code> (the loop-breaker, parked in blocking). One blocked port per redundant loop is spanning tree working exactly as designed.</p>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Default Priorities Mean the Oldest Switch Wins</span>
+    <p>Every switch defaults to priority 32768, so the election tie-breaks on the <strong>lowest MAC address</strong> — which usually belongs to the <em>oldest</em> switch in the building. Result: a ten-year-old access switch under a desk becomes the root, and all inter-VLAN traffic hairpins through it. If you've never set a priority, this is your topology right now. Check with <code>show spanning-tree root</code> — if the root isn't your core, fix it in section 02.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Choose the Root on Purpose</h2>
+  <p class="section-thesis"><em>The root bridge should be your core switch — the box in the middle of the traffic patterns. One command per VLAN pins it, and a second names the backup.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS (core switch) — pin the root and its standby</span>
+    <pre class="term"><span class="cmt"># The readable way: "primary" sets priority low enough to win (24576 or lower)</span>
+<span class="pc">CORE(config)#</span> <span class="out">spanning-tree vlan 10,20,99 root primary</span>
+
+<span class="cmt"># On the second-best switch — the designated backup root:</span>
+<span class="pc">DIST(config)#</span> <span class="out">spanning-tree vlan 10,20,99 root secondary</span>
+
+<span class="cmt"># Or set the number explicitly (must be a multiple of 4096):</span>
+<span class="pc">CORE(config)#</span> <span class="out">spanning-tree vlan 10 priority 24576</span>
+
+<span class="cmt"># Verify the core now wins:</span>
+<span class="pc">CORE#</span> <span class="out">show spanning-tree vlan 10 | include This bridge is the root</span>
+<span class="out">             This bridge is the root</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Why Per-VLAN — and the sys-id-ext Oddity</span>
+    <p>Cisco runs <strong>one spanning-tree instance per VLAN</strong> (PVST+/Rapid PVST+), which is why every command takes a VLAN list — and why a priority shows as 32778 for VLAN 10: the VLAN ID is added to the base priority (32768 + 10) as the "sys-id-ext". Per-VLAN trees also mean you can make one switch root for VLANs 10–20 and another for 30–40, splitting load across two uplinks that would otherwise sit half-blocked. That's a free optimization on any dual-core design.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Rapid PVST+ — Seconds, Not Half-Minutes</h2>
+  <p class="section-thesis"><em>Classic STP takes 30–50 seconds to converge after a failure. Rapid PVST+ does it in about a second, with the same commands you already know. On modern Catalysts it's usually the default — but verify, don't assume.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — enable and confirm Rapid PVST+</span>
+    <pre class="term"><span class="cmt"># One global command, on EVERY switch:</span>
+<span class="pc">SW1(config)#</span> <span class="out">spanning-tree mode rapid-pvst</span>
+<span class="pc">SW1(config)#</span> <span class="out">end</span>
+
+<span class="cmt"># Confirm — "protocol rstp" in the header means rapid is active:</span>
+<span class="pc">SW1#</span> <span class="out">show spanning-tree summary | include mode</span>
+<span class="out">Switch is in rapid-pvst mode</span>
+
+<span class="cmt"># And the PortFast/BPDU-guard defaults from the Switch Security post:</span>
+<span class="pc">SW1(config)#</span> <span class="out">spanning-tree portfast bpduguard default</span></pre>
+  </div>
+
+  <p>Rapid PVST+ interoperates with old STP — a legacy switch on the network quietly drags that segment back to slow timers. Migrate everything, then verify per switch. And the PortFast + BPDU guard pairing from the <a href="cisco-switch-security.html">Switch Security post</a> now makes full sense: PortFast tells STP "this is a host port, skip the listening/learning wait," and BPDU guard enforces that promise by killing the port if a switch ever appears there.</p>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">EtherChannel — Bundle Instead of Block</h2>
+  <p class="section-thesis"><em>Two or four parallel links between the same pair of switches, one logical interface. STP sees a single link so nothing blocks; traffic hashes across all members; one member dying is invisible to the topology.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — LACP bundle, both switches (mirror config)</span>
+    <pre class="term"><span class="cmt"># Pick the member ports — they must be IDENTICAL (speed, duplex, mode, VLANs)</span>
+<span class="pc">SW-A(config)#</span> <span class="out">interface range GigabitEthernet0/23 - 24</span>
+<span class="pc">SW-A(config-if-range)#</span> <span class="out">channel-group 1 mode active</span>     <span class="cmt"># active = initiate LACP</span>
+<span class="out">Creating a port-channel interface Port-channel 1</span>
+<span class="pc">SW-A(config-if-range)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Configure the BUNDLE, not the members — trunk settings go here:</span>
+<span class="pc">SW-A(config)#</span> <span class="out">interface Port-channel1</span>
+<span class="pc">SW-A(config-if)#</span> <span class="out">switchport mode trunk</span>
+<span class="pc">SW-A(config-if)#</span> <span class="out">switchport trunk native vlan 99</span>
+<span class="pc">SW-A(config-if)#</span> <span class="out">switchport trunk allowed vlan 10,20,99</span>
+<span class="pc">SW-A(config-if)#</span> <span class="out">end</span>
+
+<span class="cmt"># SW-B: the exact same block. "active" on both sides is the clean pattern.
+# (mode on = static bundle, no protocol — only if a device can't speak LACP.)</span>
+
+<span class="pc">SW-A#</span> <span class="out">show etherchannel summary</span>
+<span class="out">Flags:  P - bundled in port-channel   S - Layer2   U - in use
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------
+1      Po1(SU)         LACP      Gi0/23(P)  Gi0/24(P)</span>
+<span class="cmt"># (SU) and every member (P) = healthy. (SD) or (s) members = see the gotcha.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Mismatched Members Suspend, and DON'T Mix on/active</span>
+    <p>Every member port must match exactly — speed, duplex, switchport mode, allowed VLANs, native VLAN. One mismatch and that member shows <code>(s)</code> suspended in <code>show etherchannel summary</code> while the rest carry on: you silently paid for four links and run on three. Worse: <code>mode on</code> (static) on one side with LACP on the other creates a bundle that <em>looks</em> up but can loop or blackhole, because one side isn't checking anything. Rule: <strong>active/active with LACP, configure through the Port-channel interface, and read the flags after every change.</strong></p>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Reality Check — One Flow Won't Go Faster</span>
+    <p>EtherChannel load-balances by hashing (src/dst MAC or IP), so each <em>flow</em> sticks to one member link. A 4×1G bundle gives you 4 Gbps of aggregate capacity, not a 4 Gbps pipe for a single backup job — one flow still tops out at 1G. That's the right trade for switch uplinks carrying many users' traffic, but if a single server-to-server transfer needs more than a member link, you need a faster link, not a wider bundle. Check the hash with <code>show etherchannel load-balance</code>; <code>src-dst-ip</code> spreads best in most networks.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>The recurring questions: who is root, why is this port blocking, why did the topology just change, and is the bundle healthy.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td>show spanning-tree root</td><td>Root bridge, its priority, and my cost/port toward it — per VLAN.</td></tr>
+      <tr><td>show spanning-tree vlan 10</td><td>The full tree for one VLAN: roles, states, who blocks.</td></tr>
+      <tr><td>show spanning-tree summary</td><td>Mode (rapid?), PortFast/BPDU-guard defaults, blocked-port counts.</td></tr>
+      <tr><td>show spanning-tree detail | include ieee|occurr</td><td>When and where the last topology change came from — the flapping-port finder.</td></tr>
+      <tr><td>show etherchannel summary</td><td>Bundle health at a glance — (SU) good, (SD)/(s) broken.</td></tr>
+      <tr><td>show etherchannel load-balance</td><td>The hashing method in use.</td></tr>
+      <tr><td>show lacp neighbor</td><td>Confirms the other side actually speaks LACP.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — chasing a topology-change storm</span>
+    <pre class="term"><span class="cmt"># Users report random 1-second freezes. Suspect STP topology changes:</span>
+<span class="pc">CORE#</span> <span class="out">show spanning-tree vlan 10 detail | include occurr</span>
+<span class="out">  Number of topology changes 4817 last change occurred 00:00:41 ago
+          from GigabitEthernet0/14</span>
+<span class="cmt"># 4817 changes and counting, all from Gi0/14 — a flapping link or a host
+# port without PortFast bouncing. Fix: portfast on host ports (edge ports
+# don't generate topology changes), and investigate Gi0/14's cabling.</span></pre>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Same Tree, Different Bark</h2>
+  <p class="section-thesis"><em>RouterOS bridges run (R)STP too, and bonding is its EtherChannel. The concepts carry straight over.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>bridge protocol-mode=rstp</td><td><code>spanning-tree mode rapid-pvst</code></td></tr>
+      <tr><td>bridge priority=0x6000</td><td><code>spanning-tree vlan X priority 24576</code></td></tr>
+      <tr><td>One tree per bridge</td><td>One tree per VLAN (PVST+) — finer control, more to check</td></tr>
+      <tr><td>bridge port edge=yes</td><td><code>spanning-tree portfast</code></td></tr>
+      <tr><td>bridge port bpdu-guard=yes</td><td><code>spanning-tree bpduguard enable</code></td></tr>
+      <tr><td>/interface bonding mode=802.3ad</td><td>EtherChannel <code>channel-group N mode active</code> (LACP)</td></tr>
+      <tr><td>transmit-hash-policy=layer-2-and-3</td><td><code>port-channel load-balance src-dst-ip</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Loops are fatal because ethernet has no TTL.</strong> One redundant patch cable without STP is a broadcast storm. Spanning tree buys safety by blocking redundancy — that blocked port in <code>show spanning-tree</code> is a feature.</li>
+      <li><strong>Elect your root on purpose.</strong> Default priorities hand the crown to the lowest MAC — the oldest switch you own. <code>spanning-tree vlan X root primary</code> on the core, <code>secondary</code> on its backup, verify with <code>show spanning-tree root</code>.</li>
+      <li><strong>Run Rapid PVST+ everywhere.</strong> Sub-second convergence instead of 30–50 s, same commands — and one legacy-STP switch drags its segment back to slow timers, so migrate all of them.</li>
+      <li><strong>PortFast on host ports, BPDU guard as its bodyguard.</strong> Hosts skip the STP wait and stop generating topology changes; any BPDU on an edge port kills the port. This is the protocol story behind the Switch Security post.</li>
+      <li><strong>EtherChannel turns blocked redundancy into used capacity.</strong> STP sees one logical link, all members forward, and a member failure doesn't ripple the topology. LACP <code>active</code> on both sides, always.</li>
+      <li><strong>Members must match exactly, and bundles balance flows, not packets.</strong> A mismatched member silently suspends; a single flow never exceeds one member's speed. Read <code>show etherchannel summary</code> flags after every change.</li>
+      <li><strong>Topology-change counters are your outage forensics.</strong> Thousands of changes from one port = a flapping link or a missing PortFast. The counter names the port; the fix is usually one command or one cable.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Building redundancy for an office, hotel, or SMB in Crete?</h3>
+    <p>NOCTIS designs switch topologies where the root bridge is chosen, the uplinks are bundled, and failover is tested by pulling cables — not assumed. Cisco, MikroTik, or mixed, with documentation your team can follow.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-routing-ospf.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 7</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Static Routing &amp; OSPF</span></a>
+    <a href="cisco-hsrp.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 9 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">First-Hop Redundancy (HSRP/VRRP)</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

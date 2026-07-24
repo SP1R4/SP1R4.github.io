@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Buying Used Cisco Switches: Smart or Trap? — SP1R4 / NOCTIS</title>
+<meta name="description" content="A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.">
+<meta property="og:title" content="Buying Used Cisco Switches: Smart or Trap? — NOCTIS">
+<meta property="og:description" content="A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-buying-used.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-buying-used.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-buying-used.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-buying-used.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{color:var(--mid);font-weight:600;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Buying Used Cisco Switches: Smart or Trap?",
+  "description": "A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.",
+  "datePublished": "2026-08-19",
+  "dateModified": "2026-08-19",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-buying-used.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-buying-used.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-buying-used"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Buyer's Guide</span> &nbsp;·&nbsp; Opinion &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Buying Used Cisco<br>Smart or Trap?</h1>
+  <p class="post-subtitle">A refurbished Catalyst costs a tenth of new — and for a lot of SMBs that's a genuinely smart buy. But there are four traps that turn a bargain into a liability: counterfeits, dead-end licensing, end-of-life security holes, and no support when it fails. Here's how to buy used without getting burned.</p>
+  <div class="tags">
+    <span class="tag">Cisco</span>
+    <span class="tag">Used Gear</span>
+    <span class="tag">Refurbished</span>
+    <span class="tag">Buyer's Guide</span>
+    <span class="tag">EOL</span>
+    <span class="tag">SMB</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 23 of 27</span>
+  </div>
+
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>The secondary market for Cisco is huge, and for good reason: enterprises retire perfectly good switches on a refresh cycle, and a three-generations-old Catalyst that a corporate ran for four years will happily serve a small hotel for another six — at a fraction of new pricing. We buy used gear for clients regularly, and it's often the right call. This isn't a "never buy used" warning.</p>
+    <p>It's a "buy used <em>with your eyes open</em>" guide. Because the same market is full of <strong>counterfeits</strong> (Cisco is one of the most cloned brands on earth), <strong>licensing dead-ends</strong> (a switch locked to features you can't legally transfer), <strong>end-of-life models</strong> that will never get another security patch, and sellers who vanish the day the unit fails. Get those four things right and used Cisco is smart money. Get them wrong and you've bought a liability that fails an audit or gets you popped. Here's the checklist we actually use.</p>
+    <div class="prereqs-label">Who this is for</div>
+    <ul class="prereqs-list">
+      <li>An SMB or hotel stretching a budget who's been offered cheap refurbished Cisco</li>
+      <li>Anyone eyeing eBay/marketplace Catalysts and unsure what to check</li>
+      <li>IT decision-makers weighing "buy used" against new or an alternative brand</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Trap 1 — Counterfeits</h2>
+  <p class="section-thesis"><em>Cisco is among the most counterfeited hardware brands in the world. A fake can work for months then fail, run modified firmware, or simply be a lower model relabelled. Verify the serial before money changes hands.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">On the unit — the authenticity checks</span>
+    <pre class="term"><span class="cmt"># The serial and PID must be real AND match the chassis label</span>
+<span class="pc">Switch#</span> <span class="out">show version | include Processor board ID|Model</span>
+<span class="pc">Switch#</span> <span class="out">show inventory</span>
+<span class="out">NAME: "1", DESCR: "WS-C2960X-24TS-L"
+PID: WS-C2960X-24TS-L , VID: V04 , SN: FOC2145X0AB</span>
+
+<span class="cmt"># Then: check that serial on Cisco's site (serial-status / warranty lookup).
+# A real serial returns a coherent product + manufacture date. A fake serial
+# returns "not found" or data that contradicts the physical label.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Physical Tells of a Fake</span>
+    <p>Beyond the serial lookup, inspect the hardware: <strong>mismatched or blurry labels</strong>, a PID on the CLI that doesn't match the chassis sticker, <strong>missing or crude holographic seals</strong>, sloppy solder or non-standard fonts, and a suspiciously "new" look on an allegedly old model. Counterfeits also often ship with <strong>modified or non-genuine IOS</strong> — a real red flag, because you have no idea what's in that firmware (backdoors are not paranoia here). Buy from a reputable refurbisher who guarantees genuine Cisco and takes returns, not an anonymous marketplace seller with a stock photo. The cheapest listing is cheap for a reason more often than not.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Trap 2 — The Licensing Dead-End</h2>
+  <p class="section-thesis"><em>The feature set and licence tier of a used switch may not be what you need — or legally transferable to you. Confirm what it can actually do before you buy, not after.</em></p>
+
+  <p>Two things bite here. First, <strong>model suffix = feature ceiling</strong>: a Catalyst <code>2960X-24TS-<u>L</u></code> (LAN Base) can't do the L3 routing a <code>-S</code> (IP Lite) or <code>3560/3650</code> can — no amount of config unlocks features the licence tier doesn't include. Second, on newer <strong>Smart Licensing</strong> platforms, the previous owner's DNA/Advantage entitlement generally <em>doesn't transfer</em> to you, so a switch that "had all the features" at the corporate may drop to base capability in your hands, and Cisco won't honour a support contract on grey-market hardware.</p>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Match the Model to the Job Before You Pay</span>
+    <p>Decide what the switch must <em>do</em> — pure L2 access? inter-VLAN routing? PoE for phones/APs? — then buy the model whose base licence includes it, so you're never depending on a transferred entitlement. For most SMB access-layer use, an older LAN-Base Catalyst does everything in this series' access-switch content perfectly and forever, with no licence to worry about. If you need routing, buy a model with routing in its base tier (older 3560/3650/3750), not a LAN-Base you're hoping to "upgrade." Confirm <code>show license</code> / <code>show version</code> feature set on the actual unit before the money moves.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Trap 3 — End-of-Life &amp; Security Patches</h2>
+  <p class="section-thesis"><em>The most important check, and the one buyers skip. A switch past its last-software-support date will never get another security fix — so any CVE found after that date is permanent. On an internet-facing or sensitive device, that's a real risk, not a theoretical one.</em></p>
+
+  <p>Cisco publishes lifecycle dates for every model: <strong>End-of-Sale</strong>, <strong>End-of-Software-Maintenance</strong> (last bug/security releases), and <strong>End-of-Support</strong>. The one that matters for security is end-of-software-maintenance — after it, a newly disclosed vulnerability in that IOS train is <em>never patched</em>. Buying a switch already past that date means you're deploying known-unpatchable software. For a locked-down internal access switch that may be an acceptable, budgeted risk; for anything touching the edge or handling sensitive data, it's usually not.</p>
+
+  <table class="cheat">
+    <thead><tr><th>Lifecycle date</th><th>What it means for you</th></tr></thead>
+    <tbody>
+      <tr><td>End-of-Sale</td><td>Cisco stopped selling it new. Fine — it's why it's cheap. Not itself a problem.</td></tr>
+      <tr><td>End-of-SW-Maintenance</td><td><strong>The security line.</strong> No more patches after this. Check it before buying.</td></tr>
+      <tr><td>End-of-Support (LDoS)</td><td>No TAC, no RMA, truly on your own. Buy spares.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Check the CVE + EOL Date Together, Before You Buy</span>
+    <p>The purchase check is two lookups: find the model's <strong>End-of-Software-Maintenance</strong> date on Cisco's lifecycle page, and skim the known CVEs for its IOS train. A model that's EoS but still within software maintenance is a fine buy. A model years past software maintenance, sitting at the internet edge, is how an SMB ends up in a breach report — the exact kind of finding we write up on assessments. If the budget only reaches unpatchable hardware, it's often smarter to buy a <em>slightly</em> newer model, or a MikroTik that's current, than to save €50 on a switch that can never be secured again.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Trap 4 — No Support, No Recourse</h2>
+  <p class="section-thesis"><em>Used gear has no Cisco warranty and no TAC. When it dies — and electronics eventually do — you're the support department. Plan for that before you deploy, not during the outage.</em></p>
+
+  <p>A grey-market switch can't open a Cisco TAC case or get an RMA. So your resilience has to come from <em>you</em>: buy from a refurbisher that offers <strong>its own warranty</strong> (a year is common from good sellers), and <strong>buy a cold spare</strong> — for the price of used gear, a spare identical unit on the shelf turns a dead switch into a five-minute swap (with the config restored from the backups the <a href="cisco-backup-restore.html">Backup post</a> insists you keep). For a single non-redundant switch running a whole site, no spare is the real risk — far more than the switch's age.</p>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">The Pre-Purchase Checklist</h2>
+  <p class="section-thesis"><em>Print this. Run it before any used Cisco purchase. If you can't tick the top four, walk away.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Check</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>Genuine hardware</td><td>Serial verifies on Cisco; PID matches chassis label; genuine IOS; physical seals intact.</td></tr>
+      <tr><td>Right feature tier</td><td>Model suffix / <code>show license</code> includes what the job needs — in the base, not a transferred entitlement.</td></tr>
+      <tr><td>Still gets security patches</td><td>Within End-of-Software-Maintenance; CVEs for its train reviewed.</td></tr>
+      <tr><td>Support plan</td><td>Seller warranty + a cold spare on the shelf.</td></tr>
+      <tr><td>Physical condition</td><td>Fans spin, no PoE port damage, reasonable port-error counters (<code>show interfaces</code>).</td></tr>
+      <tr><td>Clean slate</td><td>Wipe it: <code>write erase</code>, delete vlan.dat, reload — never trust an inherited config.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Always Factory-Reset Before Deploying</span>
+    <p>A used switch arrives with the previous owner's config — possibly including their credentials, VLANs, and, occasionally, live secrets. Before it touches your network, wipe it completely: <code>write erase</code>, <code>delete flash:vlan.dat</code> (VLANs live outside the config), then <code>reload</code> and build fresh from your own hardened <a href="cisco-hardening.html">baseline</a>. Never deploy an inherited config — you don't know what's in it, and "it worked when it arrived" is how someone else's backdoor becomes yours. Treat every used device as untrusted until you've reset and re-provisioned it.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Used Cisco is often genuinely smart money.</strong> Enterprise refresh cycles retire good hardware cheap; a retired Catalyst serves an SMB for years. This is a "buy carefully," not "don't buy."</li>
+      <li><strong>Verify it's genuine.</strong> Serial lookup on Cisco, PID matching the chassis, genuine IOS, intact seals. Cisco is heavily counterfeited; buy from a reputable refurbisher with returns.</li>
+      <li><strong>Match the model's base licence to the job.</strong> Feature tier is fixed by model suffix, and Smart-Licensing entitlements usually don't transfer — don't buy hoping to "unlock" routing later.</li>
+      <li><strong>Check End-of-Software-Maintenance — the security line.</strong> Past it, no CVE ever gets patched. Fine for a locked-down internal switch; risky at the edge. Check the date and known CVEs before paying.</li>
+      <li><strong>You are the support department.</strong> No TAC, no RMA — get a seller warranty and, more importantly, buy a cold spare. No spare on a single site switch is the bigger risk than age.</li>
+      <li><strong>Factory-reset before deploying, always.</strong> <code>write erase</code> + delete vlan.dat + reload, then build from your own hardened baseline. Never trust an inherited config.</li>
+      <li><strong>Sometimes newer-but-modest beats older-but-Cisco.</strong> If the budget only reaches unpatchable gear, a current MikroTik can be the safer, smarter buy than a switch that can never be secured again.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Weighing used gear for a business in Crete?</h3>
+    <p>NOCTIS sources, verifies, wipes, and hardens refurbished Cisco (and MikroTik) for SMBs on a budget — genuine hardware, still-patchable models, with spares and documentation. The bargain without the traps.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-catalyst-vs-meraki.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 22</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Catalyst vs Meraki</span></a>
+    <a href="cisco-lab-campus.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 24 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: The Collapsed-Core Campus</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

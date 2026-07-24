@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: QoS for VoIP — SP1R4 / NOCTIS</title>
+<meta name="description" content="Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.">
+<meta property="og:title" content="Cisco IOS: QoS for VoIP — NOCTIS">
+<meta property="og:description" content="Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-qos-voip.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-qos-voip.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-qos-voip.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-qos-voip.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: QoS for VoIP",
+  "description": "Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.",
+  "datePublished": "2026-07-28",
+  "dateModified": "2026-07-28",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-qos-voip.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-qos-voip.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-qos-voip"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>QoS for VoIP</h1>
+  <p class="post-subtitle">Voice is tiny but merciless: 100 kbps of RTP that turns to garbage the instant it waits behind someone's file upload. QoS gives those packets a fast lane — mark them at the phone, trust the mark, and put voice in a strict-priority queue so calls stay crystal clear even when the link is full.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">QoS</span>
+    <span class="tag">VoIP</span>
+    <span class="tag">DSCP</span>
+    <span class="tag">LLQ</span>
+    <span class="tag">MQC</span>
+    <span class="tag">CCNP</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 12 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: priority queue -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="qp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <text x="360" y="26" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">CLASSIFY → QUEUE → SCHEDULE (out the WAN)</text>
+      <!-- incoming mixed -->
+      <rect x="30" y="50" width="120" height="20" rx="3" fill="#e8c8c0" stroke="#c63d1f"/><text x="90" y="64" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">voice RTP · EF</text>
+      <rect x="30" y="88" width="120" height="20" rx="3" fill="#cfe0ee" stroke="#3a5a78"/><text x="90" y="102" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a5a78;text-anchor:middle;">signaling · CS3</text>
+      <rect x="30" y="126" width="120" height="20" rx="3" fill="#d4d2cc" stroke="#888880"/><text x="90" y="140" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#555550;text-anchor:middle;">web / bulk · default</text>
+      <!-- queues -->
+      <rect x="280" y="46" width="150" height="28" rx="4" fill="#e8c8c0" stroke="#c63d1f"/><text x="355" y="64" style="font-family:'Inter',sans-serif;font-weight:700;font-size:9px;fill:#c63d1f;text-anchor:middle;">PRIORITY (LLQ) — served first</text>
+      <rect x="280" y="84" width="150" height="24" rx="4" fill="#cfe0ee" stroke="#3a5a78"/><text x="355" y="100" style="font-family:'Inter',sans-serif;font-size:9px;fill:#3a5a78;text-anchor:middle;">signaling — bandwidth 5%</text>
+      <rect x="280" y="118" width="150" height="24" rx="4" fill="#d4d2cc" stroke="#888880"/><text x="355" y="134" style="font-family:'Inter',sans-serif;font-size:9px;fill:#555550;text-anchor:middle;">default — the rest</text>
+      <line x1="150" y1="60" x2="278" y2="60" style="stroke:#c63d1f;stroke-width:1.4;marker-end:url(#qp)"/>
+      <line x1="150" y1="98" x2="278" y2="96" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#qp)"/>
+      <line x1="150" y1="136" x2="278" y2="130" style="stroke:#888880;stroke-width:1.4;marker-end:url(#qp)"/>
+      <!-- link -->
+      <rect x="560" y="80" width="120" height="40" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="620" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#1a1a18;text-anchor:middle;">WAN link</text>
+      <text x="620" y="112" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">(congested)</text>
+      <line x1="430" y1="60" x2="558" y2="94" style="stroke:#c63d1f;stroke-width:2.2;marker-end:url(#qp)"/>
+      <line x1="430" y1="96" x2="558" y2="100" style="stroke:#3a5a78;stroke-width:1.2;marker-end:url(#qp)"/>
+      <line x1="430" y1="130" x2="558" y2="106" style="stroke:#888880;stroke-width:1.2;marker-end:url(#qp)"/>
+      <text x="360" y="176" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">QoS only matters when the link is FULL — that's when the scheduler decides who waits. Voice never does.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>A VoIP call is about 80–100 kbps of small UDP/RTP packets, and it has zero tolerance for delay or loss: 150 ms of latency or a 1% drop and callers start talking over each other. The killer isn't bandwidth — a call is tiny — it's <strong>queuing delay</strong>. When the link fills up (someone uploads to the cloud, a backup kicks off), voice packets sit in the same FIFO queue behind big data packets, and the call stutters. QoS is the fix: identify voice, and let it jump the queue.</p>
+    <p>Three moves do it. <strong>Classify &amp; mark</strong> — tag voice packets with DSCP <code>EF</code> (Expedited Forwarding) so every device recognizes them. <strong>Trust the boundary</strong> — let the IP phone mark, and have the switch trust that mark rather than re-inspecting. <strong>Queue with priority</strong> — a Low-Latency Queue (LLQ) that services voice strictly first, with a policer so it can't starve everything else. It's all built with the same Modular QoS CLI (MQC) — class-maps and policy-maps — you met in the <a href="cisco-zbf.html">firewall post</a>. This mirrors our <a href="mikrotik-qos.html">MikroTik QoS writeup</a>; the concepts are identical.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>The MQC pattern (class-map / policy-map / service-policy) — seen in <a href="cisco-zbf.html">Zone-Based Firewall</a></li>
+      <li>VLANs, ideally a dedicated voice VLAN — see <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a></li>
+      <li>A WAN link that actually gets congested (QoS does nothing on an idle link)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Marking — Speak DSCP</h2>
+  <p class="section-thesis"><em>Every packet's IP header has a DSCP field. Voice bearer traffic gets EF, call signaling gets CS3. Mark once, near the edge, and every downstream device can act on it without re-inspecting.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Traffic</th><th>DSCP</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Voice bearer (RTP)</td><td>EF (46)</td><td>The audio itself — strict priority, lowest latency.</td></tr>
+      <tr><td>Call signaling (SIP/SCCP)</td><td>CS3 (24)</td><td>Sets up/tears down calls — important but not latency-critical.</td></tr>
+      <tr><td>Everything else</td><td>Default (0)</td><td>Best effort — web, email, file transfers.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Mark at the Edge, Act in the Core</span>
+    <p>The golden rule of QoS: <strong>classify and mark as close to the source as possible</strong>, then trust that marking everywhere else. Re-classifying deep-packet-style at every hop is expensive and fragile; a consistent DSCP set once at the access edge lets every switch and router downstream make a cheap, instant decision. This only works if you also control <em>who</em> is allowed to set marks — which is the trust boundary, next.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">The Trust Boundary</h2>
+  <p class="section-thesis"><em>A Cisco IP phone marks its own RTP as EF — but an attached PC could mark its game or torrent EF too and steal the priority lane. The switch decides whose marks to believe. Trust the phone; re-mark the PC to zero.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS (access switch) — trust the phone, distrust the PC behind it</span>
+    <pre class="term"><span class="cmt"># Enable QoS globally (off by default on many Catalysts)</span>
+<span class="pc">SW1(config)#</span> <span class="out">mls qos</span>
+
+<span class="pc">SW1(config)#</span> <span class="out">interface GigabitEthernet0/5</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport access vlan 10</span>       <span class="cmt"># data VLAN (the PC)</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport voice vlan 110</span>       <span class="cmt"># voice VLAN (the phone)</span>
+
+<span class="cmt"># Trust the DSCP the phone sets — but only via the phone (CDP-verified):</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">mls qos trust device cisco-phone</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">mls qos trust dscp</span>
+<span class="cmt"># The PC hangs off the phone's switch port; the phone RE-MARKS the PC's
+# traffic to DSCP 0, so a PC can't fake EF and jump the voice queue.</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — An Untrusted Port Erases Your Marks</span>
+    <p>With <code>mls qos</code> globally enabled, ports default to <strong>untrusted</strong> — they rewrite incoming DSCP to 0. So enabling QoS without setting trust can make voice <em>worse</em>: the phone marks EF, the switch wipes it to 0, and downstream LLQ never matches. Either extend the trust boundary correctly (trust the phone at the edge) or explicitly re-mark voice yourself with a policy. Verify with <code>show mls qos interface gi0/5</code> — it tells you the trust state and whether marks survive.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Classify — Match the Voice</h2>
+  <p class="section-thesis"><em>On the router that will queue, define classes that match the DSCP values the edge already set. Matching a trusted mark is cheap; matching by ACL/port is the fallback when you can't trust the source.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS (WAN router) — classes for voice and signaling</span>
+    <pre class="term"><span class="cmt"># Preferred: match the DSCP the edge already marked</span>
+<span class="pc">R1(config)#</span> <span class="out">class-map match-all VOICE</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match dscp ef</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">class-map match-any SIGNALING</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match dscp cs3</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match dscp af31</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Fallback if you must classify by port instead of trusting a mark:</span>
+<span class="cmt">#   match ip rtp 16384 16383   ← the standard RTP UDP port range</span></pre>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">LLQ — The Strict-Priority Queue</h2>
+  <p class="section-thesis"><em>This is the heart of voice QoS. A Low-Latency Queue serves voice before everything else, every time — but with a bandwidth cap (a built-in policer) so a flood of voice can't starve the link. Everything else shares what's left by weight.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — the policy-map: priority for voice, bandwidth for the rest</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">policy-map WAN-QOS</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class VOICE</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">priority percent 20</span>     <span class="cmt"># LLQ: strict priority, capped at 20%</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">exit</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class SIGNALING</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">bandwidth percent 5</span>      <span class="cmt"># guaranteed 5%, not strict-priority</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">exit</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class class-default</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">fair-queue</span>            <span class="cmt"># everyone else shares fairly</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">random-detect dscp-based</span> <span class="cmt"># WRED: drop early, avoid TCP sync</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">end</span>
+
+<span class="cmt"># Attach it OUTBOUND on the WAN interface — QoS acts on egress congestion</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">service-policy output WAN-QOS</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Don't Give Voice More Than ~33% of the Link</span>
+    <p>The <code>priority</code> queue is strict — it will happily starve everything else if you let it. The rule of thumb is to cap voice at <strong>no more than a third of the link</strong> (20–33%), sized to your real call count: roughly 100 kbps per G.711 call plus overhead. Over-provisioning the priority class means a burst of voice (or anything mismarked as EF) can choke data and even routing keepalives. The policer built into <code>priority</code> protects the rest of the link — but only if you set it sanely.</p>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 On Slow Links, Shape First</span>
+    <p>QoS only engages when the interface queue fills. On a sub-line-rate WAN (a 50/10 Mbps service on a GigE handoff), the router's physical interface never looks "full," so the queue never forms and your policy never triggers — the ISP drops your packets instead, with no QoS. The fix is a parent <strong>shaper</strong>: <code>shape average</code> to your real contracted rate in an outer policy, with <code>WAN-QOS</code> nested inside it. This hierarchical (parent-shape, child-queue) policy is how QoS is done on nearly every real internet circuit — worth its own deep-dive.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Verify Under Load <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>QoS is invisible until the link is busy. The one command that matters shows per-class packet counts, drops, and — critically — whether the priority queue is dropping anything (it never should).</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — read the policy counters during congestion</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show policy-map interface GigabitEthernet0/0</span>
+<span class="out"> Class-map: VOICE (match-all)
+   2841000 packets
+   Priority: 20% (2000 kbps), burst 50000, b/w exceed drops: 0
+                                              ↑ MUST be 0 — voice never dropped
+
+ Class-map: SIGNALING (match-any)
+   14200 packets   bandwidth 5% (500 kbps)
+
+ Class-map: class-default
+   8100000 packets
+   queue limit 64 packets
+   (drops) 24710                        ← data drops under load: EXPECTED &amp; fine</span>
+
+<span class="cmt"># The whole point in one screen: voice "exceed drops: 0" while data drops
+# during congestion. That's QoS working — the right traffic waits.</span></pre>
+  </div>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td>show policy-map interface g0/0</td><td>Per-class counts and drops — the money command. Voice drops must be 0.</td></tr>
+      <tr><td>show mls qos interface g0/5</td><td>Switch-side trust state — are the phone's marks surviving?</td></tr>
+      <tr><td>show policy-map WAN-QOS</td><td>The configured policy, as parsed.</td></tr>
+      <tr><td>show class-map</td><td>What each class matches.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">MikroTik ↔ Cisco — Same Priorities</h2>
+  <p class="section-thesis"><em>Our MikroTik QoS post solves the identical problem with queue trees and mangle marks. The DSCP values are universal; only the queuing engine differs.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>MikroTik / RouterOS</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>mangle mark-packet by port/DSCP</td><td>class-map <code>match dscp</code> / <code>match ip rtp</code></td></tr>
+      <tr><td>Set DSCP in mangle (change-dscp)</td><td><code>set dscp ef</code> in a policy-map</td></tr>
+      <tr><td>Queue tree, priority=1 for voice</td><td>LLQ <code>priority percent 20</code></td></tr>
+      <tr><td>max-limit on the voice queue</td><td>The policer built into <code>priority</code></td></tr>
+      <tr><td>Parent queue = link speed</td><td>Parent <code>shape average</code> (HQoS)</td></tr>
+      <tr><td>bridge port trust for phone marks</td><td><code>mls qos trust device cisco-phone</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Voice fails on delay, not bandwidth.</strong> A call is tiny; the enemy is queuing delay when the link fills. QoS only matters during congestion — it decides who waits, and voice never should.</li>
+      <li><strong>Mark once at the edge, act everywhere.</strong> Voice bearer = DSCP EF, signaling = CS3. Consistent marks let every downstream device make a cheap, instant decision.</li>
+      <li><strong>The trust boundary is the security of QoS.</strong> Trust the phone's marks, re-mark the PC to 0 — or a torrent tagged EF steals the voice lane. An untrusted port silently wipes marks to 0.</li>
+      <li><strong>LLQ is the heart of it.</strong> <code>priority</code> serves voice strictly first, with a built-in policer so it can't starve the link. Cap it at ~20–33%, sized to real call count.</li>
+      <li><strong>Attach the policy outbound, on the congested (WAN) interface.</strong> QoS acts on egress; inbound shaping is a different, harder problem.</li>
+      <li><strong>On sub-rate circuits, shape first.</strong> If the physical interface never looks full, nest the queuing policy inside a parent <code>shape average</code> at your real contracted rate.</li>
+      <li><strong>Verify under load with one command.</strong> <code>show policy-map interface</code> — voice "exceed drops: 0" while data drops during congestion is QoS working exactly as designed.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>VoIP breaking up when the office gets busy in Crete?</h3>
+    <p>NOCTIS designs QoS for hotels and SMBs running voice over the same link as everything else — proper marking, trust boundaries, and priority queuing tuned to your call volume. On Cisco or MikroTik, verified under real load.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-zbf.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 11</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Zone-Based Firewall</span></a>
+    <a href="cisco-site-to-site-vpn.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 13 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Site-to-Site IPsec VPN</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

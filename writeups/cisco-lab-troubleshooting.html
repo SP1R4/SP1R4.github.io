@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco Lab: The Broken Campus — Eight Faults — SP1R4 / NOCTIS</title>
+<meta name="description" content="A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.">
+<meta property="og:title" content="Cisco Lab: The Broken Campus — Eight Faults — NOCTIS">
+<meta property="og:description" content="A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-lab-troubleshooting.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-lab-troubleshooting.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-lab-troubleshooting.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-lab-troubleshooting.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco Lab: The Broken Campus — Eight Faults",
+  "description": "A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.",
+  "datePublished": "2026-08-27",
+  "dateModified": "2026-08-27",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-lab-troubleshooting.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-lab-troubleshooting.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-lab-troubleshooting"
+  },
+  "timeRequired": "PT12M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Lab</span> &nbsp;·&nbsp; Lab Scenario &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco Lab<br>The Broken Campus</h1>
+  <p class="post-subtitle">The final exam of the series. Take the campus you built in part 24, hand it to a colleague (or your own future self), and let them plant these eight faults while you're not looking. Then sit down with the tickets — "guests can't get online in the west wing" — and find every one, using nothing but show commands and a method. This is the closest a lab gets to a real Tuesday.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Packet Tracer</span>
+    <span class="tag">Lab</span>
+    <span class="tag">Troubleshooting</span>
+    <span class="tag">VLANs</span>
+    <span class="tag">HSRP</span>
+    <span class="tag">DHCP</span>
+    <span class="tag">NAT</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 27 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: the campus with fault markers -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="300" fill="#e1ded7"/>
+      <!-- edge -->
+      <rect x="300" y="24" width="120" height="38" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="40" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10.5px;fill:#1a1a18;text-anchor:middle;">EDGE</text>
+      <text x="360" y="54" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">DHCP · NAT</text>
+      <!-- links to cores -->
+      <line x1="330" y1="62" x2="180" y2="120" style="stroke:#888880;stroke-width:1.6;"/>
+      <line x1="390" y1="62" x2="540" y2="120" style="stroke:#888880;stroke-width:1.6;"/>
+      <!-- cores -->
+      <rect x="105" y="120" width="150" height="44" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="180" y="138" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10.5px;fill:#1a1a18;text-anchor:middle;">CORE-1</text>
+      <text x="180" y="152" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">SVIs · HSRP</text>
+      <rect x="465" y="120" width="150" height="44" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="540" y="138" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10.5px;fill:#1a1a18;text-anchor:middle;">CORE-2</text>
+      <text x="540" y="152" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">SVIs · HSRP</text>
+      <line x1="255" y1="142" x2="465" y2="142" style="stroke:#558840;stroke-width:2.6;"/>
+      <!-- access -->
+      <line x1="160" y1="164" x2="205" y2="222" style="stroke:#888880;stroke-width:1.4;"/>
+      <line x1="520" y1="164" x2="245" y2="228" style="stroke:#888880;stroke-width:1.4;stroke-dasharray:5,4;"/>
+      <line x1="560" y1="164" x2="515" y2="222" style="stroke:#888880;stroke-width:1.4;"/>
+      <line x1="200" y1="164" x2="475" y2="228" style="stroke:#888880;stroke-width:1.4;stroke-dasharray:5,4;"/>
+      <rect x="150" y="222" width="115" height="36" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="207" y="244" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10.5px;fill:#1a1a18;text-anchor:middle;">ACC-1</text>
+      <rect x="455" y="222" width="115" height="36" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="512" y="244" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10.5px;fill:#1a1a18;text-anchor:middle;">ACC-2</text>
+      <!-- fault markers -->
+      <g style="font-family:'Inter',sans-serif;font-weight:800;font-size:11px;">
+        <circle cx="300" cy="46" r="10" fill="#c63d1f"/><text x="300" y="50" fill="#fff" text-anchor="middle">7</text>
+        <circle cx="252" cy="90" r="10" fill="#c63d1f"/><text x="252" y="94" fill="#fff" text-anchor="middle">8</text>
+        <circle cx="360" cy="142" r="10" fill="#c63d1f"/><text x="360" y="146" fill="#fff" text-anchor="middle">5</text>
+        <circle cx="130" cy="182" r="10" fill="#c63d1f"/><text x="130" y="186" fill="#fff" text-anchor="middle">6</text>
+        <circle cx="480" cy="196" r="10" fill="#c63d1f"/><text x="480" y="200" fill="#fff" text-anchor="middle">3</text>
+        <circle cx="384" cy="200" r="10" fill="#c63d1f"/><text x="384" y="204" fill="#fff" text-anchor="middle">2</text>
+        <circle cx="180" cy="272" r="10" fill="#c63d1f"/><text x="180" y="276" fill="#fff" text-anchor="middle">1</text>
+        <circle cx="540" cy="272" r="10" fill="#c63d1f"/><text x="540" y="276" fill="#fff" text-anchor="middle">4</text>
+      </g>
+      <text x="360" y="290" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">the part-24 campus with eight planted faults — each number is a ticket below</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Building a network teaches you commands. <strong>Fixing one teaches you the network.</strong> Troubleshooting is a search problem, and amateurs search badly — they jump to the layer they last read about, change three things at once, and can't say afterwards what the fault was. Professionals compress the search space methodically: <em>which users, which VLANs, which switch, which layer?</em> Every answer halves the territory.</p>
+    <p>This scenario gives you eight faults planted in the part-24 campus, presented the way reality presents them — as user complaints, not config diffs. For each: the ticket, the diagnosis walk with real command output, the root cause, the fix, and the habit to keep. Do it honestly: load your saved part-24 file, have someone (or a random-number generator and this list) break it, and work the tickets <em>before</em> reading each answer.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li><a href="cisco-lab-campus.html">Lab: The Collapsed-Core Campus</a> — built, working, and saved</li>
+      <li>The show commands from parts 2, 6, 8, 9 — this lab is where they pay rent</li>
+      <li>Discipline to not open the config of the box you suspect (that's cheating — reality won't hand you a diff)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Method — Halve, Don't Hop</h2>
+  <p class="section-thesis"><em>Before any command: turn the complaint into a boundary. What works, what doesn't, and where is the line between them? The fault always lives on the line.</em></p>
+
+  <p>Three questions turn a vague ticket into a located fault:</p>
+  <p><strong>1. Scope</strong> — one user, one switch's users, one VLAN everywhere, or everyone? One user = port problem. One switch = that switch or its uplinks. One VLAN across switches = SVI/gateway/DHCP for that VLAN. Everyone = edge or core. You've eliminated ~80% of the network before touching a keyboard.</p>
+  <p><strong>2. Layer</strong> — walk up from the bottom, and stop at the first broken layer: link light (<code>show interfaces status</code>) → VLAN membership → can it reach its gateway? → does it have a DHCP lease? → can it reach the internet? Each test assumes the ones below it passed.</p>
+  <p><strong>3. What changed?</strong> — networks don't rot; they get changed. <code>show logging</code> is the closest thing to a confession you'll get.</p>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 One Change at a Time</span>
+    <p>The iron rule when you start fixing: <strong>change one thing, retest, write it down.</strong> Fix two things at once and something starts working, and you've learned nothing — worse, one of your two changes may be a new latent fault. In Packet Tracer this discipline feels pedantic. At 2 a.m. on a production switch it's the difference between an incident report and a second incident.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Tickets 1–2: One Port, Then One Wing</h2>
+  <p class="section-thesis"><em>The two smallest scopes — a single user, then a single switch's guests. Access-layer faults, found from the access layer.</em></p>
+
+  <h3 class="sub">Ticket 1 — "The new PC in room 114 has no network at all."</h3>
+  <div class="term-wrap">
+    <span class="term-label">ACC-1 — link is up, so check L2 membership</span>
+    <pre class="term"><span class="pc">ACC-1#</span> <span class="out">show interfaces status | include Fa0/7</span>
+<span class="out">Fa0/7    room114      connected    <span class="key">100</span>        a-full  a-100 10/100BaseTX</span>
+<span class="cmt">                                    ↑ VLAN 100? The staff VLAN is 10.</span>
+<span class="pc">ACC-1#</span> <span class="out">show vlan brief | include 100</span>
+<span class="out">100  VLAN0100   active   Fa0/7</span>   <span class="cmt">← VLAN 100 exists but routes nowhere —
+                                       a typo'd access VLAN, classic fat-finger</span>
+<span class="pc">ACC-1(config)#</span> <span class="out">interface Fa0/7</span>
+<span class="pc">ACC-1(config-if)#</span> <span class="out">switchport access vlan 10</span>   <span class="cmt">← fixed; PC pulls DHCP instantly</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> <code>switchport access vlan 100</code> instead of <code>10</code>. IOS "helpfully" created VLAN 100 when it was assigned, so nothing even logged an error. <strong>Habit:</strong> after any port change, <code>show interfaces status</code> — the VLAN column catches typos your eyes skipped in config mode.</p>
+
+  <h3 class="sub">Ticket 2 — "A contractor plugged something in, now that whole corner is dead."</h3>
+  <div class="term-wrap">
+    <span class="term-label">ACC-2 — the port didn't fail, it was executed</span>
+    <pre class="term"><span class="pc">ACC-2#</span> <span class="out">show interfaces status err-disabled</span>
+<span class="out">Port    Name    Status        Reason
+Fa0/18          err-disabled  <span class="key">bpduguard</span></span>
+<span class="pc">ACC-2#</span> <span class="out">show logging | include Fa0/18</span>
+<span class="out">%SPANTREE-2-BLOCK_BPDUGUARD: Received BPDU on port Fa0/18 with BPDU Guard enabled. Disabling port.</span>
+<span class="cmt"># The contractor's box was a cheap switch — it spoke STP, BPDU Guard fired.
+# Remove the offending device, then:</span>
+<span class="pc">ACC-2(config)#</span> <span class="out">interface Fa0/18</span>
+<span class="pc">ACC-2(config-if)#</span> <span class="out">shutdown</span>
+<span class="pc">ACC-2(config-if)#</span> <span class="out">no shutdown</span>   <span class="cmt">← err-disabled needs a manual bounce</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> none — the network <em>worked</em>. BPDU Guard (part 6) did exactly its job when a rogue switch appeared; the "fault" is that nobody knew what err-disabled means. <strong>Habit:</strong> <code>show interfaces status err-disabled</code> belongs in your first-five commands on any "port suddenly dead" ticket, and the Reason column names the guilty protection.</p>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Tickets 3–4: Faults That Live on Trunks</h2>
+  <p class="section-thesis"><em>Scope: "one VLAN, one switch" and "weird noise in the logs". Both are trunk misconfigurations — the place where a fault can hide because most traffic still flows.</em></p>
+
+  <h3 class="sub">Ticket 3 — "Guest Wi-Fi works in the lobby but not in the restaurant."</h3>
+  <p>Guests (VLAN 20) work on ACC-1, fail on ACC-2 — but staff on ACC-2 are fine. One VLAN, one switch, other VLANs healthy: that's a <strong>trunk carrying a partial VLAN list</strong>.</p>
+  <div class="term-wrap">
+    <span class="term-label">ACC-2 — interrogate the trunk, not the access port</span>
+    <pre class="term"><span class="pc">ACC-2#</span> <span class="out">show interfaces trunk</span>
+<span class="out">Port        Vlans allowed on trunk
+Gi0/1       10,30,99</span>          <span class="cmt">← 20 is missing. Someone "cleaned up"
+                                    the allowed list and dropped GUEST.</span>
+<span class="out">Gi0/2       10,20,30,99</span>       <span class="cmt">← the CORE-2 uplink still has it — but STP
+                                    blocks that path in steady state, so no luck</span>
+<span class="pc">ACC-2(config)#</span> <span class="out">interface Gi0/1</span>
+<span class="pc">ACC-2(config-if)#</span> <span class="out">switchport trunk allowed vlan add 20</span>   <span class="cmt">← ADD, not a bare list!</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> an edited allowed-VLAN list. Note the fix uses <code>add</code> — typing <code>switchport trunk allowed vlan 20</code> would <em>replace</em> the whole list with just 20 and take the other three VLANs down with it. That one missing word has caused real outages everywhere. <strong>Habit:</strong> when one VLAN dies on one switch, <code>show interfaces trunk</code> before anything else.</p>
+
+  <h3 class="sub">Ticket 4 — "Everything works, but the log keeps complaining."</h3>
+  <div class="term-wrap">
+    <span class="term-label">ACC-2 — CDP is telling you exactly what's wrong</span>
+    <pre class="term"><span class="out">%CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/2 (99), with CORE-2 GigabitEthernet1/0/2 (1).</span>
+<span class="cmt"># CORE-2's downlink was rebuilt and lost its native-vlan setting:</span>
+<span class="pc">CORE-2(config)#</span> <span class="out">interface GigabitEthernet1/0/2</span>
+<span class="pc">CORE-2(config-if)#</span> <span class="out">switchport trunk native vlan 99</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> native VLAN 99 on one end, 1 on the other. Untagged frames — including some control traffic — cross the trunk and land in <em>different VLANs</em> on each side. Today it's log noise; the day someone actually uses those VLANs, it becomes a leak between segments that no ACL saw coming. <strong>Habit:</strong> warnings that "don't break anything" are faults with a delayed fuse. Fix them the day they appear.</p>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Tickets 5–6: The Gateway Layer</h2>
+  <p class="section-thesis"><em>Scope: one VLAN everywhere, or intermittent everything. When the access layer checks out, suspect the things both cores must agree on — HSRP and the DHCP relay.</em></p>
+
+  <h3 class="sub">Ticket 5 — "The network is up and down like a yo-yo for everyone."</h3>
+  <div class="term-wrap">
+    <span class="term-label">CORE-1 — two actives is one too many</span>
+    <pre class="term"><span class="pc">CORE-1#</span> <span class="out">show standby brief</span>
+<span class="out">Interface   Grp  Pri P State    Active          Standby         Virtual IP
+Vl10        10   110 P <span class="key">Active   local           unknown</span>        10.10.10.1</span>
+<span class="cmt">                                                 ↑ CORE-1 can't see its peer…</span>
+<span class="pc">CORE-2#</span> <span class="out">show standby brief</span>
+<span class="out">Vl10        10   90  P <span class="key">Active   local           unknown</span>        10.10.10.1</span>
+<span class="cmt"># BOTH claim Active for the same VIP = split brain. HSRP hellos aren't
+# crossing the interlink. Is VLAN 10 still allowed on Po1?</span>
+<span class="pc">CORE-1#</span> <span class="out">show interfaces trunk | include Po1</span>
+<span class="out">Po1         <span class="key">20,30,99</span></span>          <span class="cmt">← VLAN 10 pruned from the port-channel!</span>
+<span class="pc">CORE-1(config)#</span> <span class="out">interface Port-channel1</span>
+<span class="pc">CORE-1(config-if)#</span> <span class="out">switchport trunk allowed vlan add 10</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> VLAN 10 was dropped from the interlink trunk, so the two cores stopped hearing each other's HSRP hellos on that VLAN and <em>both</em> went active — duplicate virtual MAC, ARP chaos, intermittent everything. <strong>Habit:</strong> "two Actives" in <code>show standby brief</code> never means HSRP is broken; it means <strong>the path between the peers</strong> is. Chase the trunk, not the protocol.</p>
+
+  <h3 class="sub">Ticket 6 — "New voice VLAN phones show 169.254 addresses."</h3>
+  <div class="term-wrap">
+    <span class="term-label">CORE-2 — the relay only exists where you typed it</span>
+    <pre class="term"><span class="pc">CORE-2#</span> <span class="out">show running-config interface vlan 30</span>
+<span class="out">interface Vlan30
+ ip address 10.10.30.3 255.255.255.0
+ standby 30 ip 10.10.30.1
+ standby 30 priority 110
+ standby 30 preempt</span>
+<span class="cmt"># No ip helper-address — and CORE-2 is the ACTIVE gateway for VLAN 30,
+# so it's the router that receives (and drops) every phone's DISCOVER.</span>
+<span class="pc">CORE-2(config)#</span> <span class="out">interface vlan 30</span>
+<span class="pc">CORE-2(config-if)#</span> <span class="out">ip helper-address 10.255.0.5</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> the helper was configured on CORE-1 (standby for VLAN 30) but forgotten on CORE-2 (active). Broadcasts die at the active gateway; a relay on the standby helps nobody. A 169.254.x.x self-assigned address is always the same sentence: <em>"my DHCP broadcast got no answer"</em> — the fault is the relay, the trunk to the DHCP server, or the pool, in that order of likelihood. <strong>Habit:</strong> anything configured per-SVI must exist on <strong>both</strong> cores — audit with <code>show run | include helper</code> on each.</p>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Tickets 7–8: The Edge</h2>
+  <p class="section-thesis"><em>Scope: "we can reach everything internal, but not the internet" — the boundary is EDGE, and the two usual suspects there are NAT and the return route.</em></p>
+
+  <h3 class="sub">Ticket 7 — "The voice VLAN can't reach the phone provider — everything else can."</h3>
+  <div class="term-wrap">
+    <span class="term-label">EDGE — routing is fine; NAT is picky</span>
+    <pre class="term"><span class="cmt"># From a phone: ping 10.255.0.1 works (internal routing fine), 8.8.8.8 dies.
+# On EDGE — is NAT translating VLAN 30 at all?</span>
+<span class="pc">EDGE#</span> <span class="out">show ip nat translations | include 10.10.30</span>
+<span class="cmt">                                    (nothing)</span>
+<span class="pc">EDGE#</span> <span class="out">show access-list 1</span>
+<span class="out">Standard IP access list 1
+    10 permit 10.10.10.0, wildcard bits 0.0.0.255 (8231 matches)
+    20 permit 10.10.20.0, wildcard bits 0.0.0.255 (5044 matches)</span>
+<span class="cmt"># The NAT ACL enumerates subnets — and VLAN 30 was added to the network
+# after the ACL was written. Packets route to EDGE, fail the ACL, exit
+# UNTRANSLATED with a 10.x source, and the ISP silently discards them.</span>
+<span class="pc">EDGE(config)#</span> <span class="out">access-list 1 permit 10.10.30.0 0.0.0.255</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> a NAT ACL written as a list of specific subnets instead of the <code>10.10.0.0 0.0.255.255</code> summary from part 24 — so every future VLAN is born broken. <strong>Habit:</strong> "internal works, internet doesn't, for one subnet" is a NAT-scope problem until proven otherwise, and <code>show ip nat translations</code> filtered by the subnet settles it in one command.</p>
+
+  <h3 class="sub">Ticket 8 — "After the weekend maintenance, half the sessions are slow or weird."</h3>
+  <div class="term-wrap">
+    <span class="term-label">EDGE — trust traceroute over assumptions</span>
+    <pre class="term"><span class="pc">EDGE#</span> <span class="out">show ip route | include 10.10.0.0</span>
+<span class="out">S    10.10.0.0/16 [1/0] via 10.255.0.2
+S    10.10.0.0/16 [1/0] via <span class="key">10.255.0.9</span></span>   <span class="cmt">← .9? Our core links are .2 and .6 —
+                                              a mistyped next-hop from the weekend</span>
+<span class="cmt"># Half of EDGE's return traffic (ECMP alternates flows) is routed at a
+# next-hop that answers ARP for nothing. Those flows die; the rest work.</span>
+<span class="pc">EDGE(config)#</span> <span class="out">no ip route 10.10.0.0 255.255.0.0 10.255.0.9</span>
+<span class="pc">EDGE(config)#</span> <span class="out">ip route 10.10.0.0 255.255.0.0 10.255.0.6</span></pre>
+  </div>
+  <p><strong>Root cause:</strong> a fat-fingered static during maintenance. The cruel detail: with ECMP, <em>half</em> the flows still work, so the network feels "slow and flaky" rather than "down", and everyone blames Wi-Fi for a day. <strong>Habit:</strong> "intermittent by session, consistent per session" screams <em>one of several equal paths is broken</em>. Check every ECMP next-hop; a route that installs is not a route that works.</p>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Symptom → First Command Map <span class="safe-badge">Print This</span></h2>
+  <p class="section-thesis"><em>Eight tickets distilled into the reflex table. The first command doesn't find every fault — it eliminates half the possibilities in ten seconds, which is better.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Symptom</th><th>First command &amp; what it rules out</th></tr></thead>
+    <tbody>
+      <tr><td>One user dead</td><td>show interfaces status — link, speed/duplex, and the VLAN column (ticket 1)</td></tr>
+      <tr><td>Port suddenly dead after someone plugged in</td><td>show interfaces status err-disabled — protections that fired, by name (ticket 2)</td></tr>
+      <tr><td>One VLAN dead on one switch only</td><td>show interfaces trunk — allowed lists on every uplink (ticket 3)</td></tr>
+      <tr><td>Native-VLAN log noise</td><td>show interfaces trunk on both ends — native columns must match (ticket 4)</td></tr>
+      <tr><td>Everyone intermittent / ARP weirdness</td><td>show standby brief on BOTH cores — two Actives = broken peer path (ticket 5)</td></tr>
+      <tr><td>Clients on 169.254.x.x</td><td>show run interface vlan N on the ACTIVE core — helper-address present? (ticket 6)</td></tr>
+      <tr><td>Internal fine, internet dead, one subnet</td><td>show ip nat translations | include &lt;subnet&gt; — NAT scope (ticket 7)</td></tr>
+      <tr><td>Flaky per-flow after a change</td><td>show ip route — verify every ECMP next-hop actually exists (ticket 8)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Running This as a Game</span>
+    <p>The best version of this lab is adversarial: two people, one Packet Tracer file. Each plants two faults from this list (or invents ones in the same spirit — config-only, no deleted cables), saves, and swaps. Score by tickets closed per thirty minutes, and require a written root cause for each — "I reloaded it and it works now" scores zero. This is, not coincidentally, exactly how we interview network engineers at NOCTIS.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Scope first:</strong> one user / one switch / one VLAN / everyone. The answer eliminates most of the network before you type a command.</li>
+      <li><strong>Walk layers bottom-up and stop at the first failure</strong> — every test assumes the layers below it passed, so skipping ahead produces false conclusions.</li>
+      <li><strong>err-disabled is a verdict, not a malfunction.</strong> Read the Reason column, remove the cause, bounce the port.</li>
+      <li><strong>Trunk allowed-lists and native VLANs cause the sneakiest faults</strong> — most traffic still flows, so nobody suspects the trunk. And it's always <code>allowed vlan add</code>.</li>
+      <li><strong>Two HSRP Actives means the peers can't hear each other.</strong> Fix the path between the cores, not the protocol on them.</li>
+      <li><strong>Per-SVI config must exist on both cores</strong> — a helper-address on the standby gateway is a fault waiting for a failover to matter (or for the active to be the one missing it).</li>
+      <li><strong>A route that installs isn't a route that works</strong> — with ECMP, one bad next-hop turns into "half of everything is flaky", the most misdiagnosed symptom in networking.</li>
+      <li><strong>One change, one retest, one note.</strong> That's the entire difference between troubleshooting and thrashing.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Got a network that fails like these tickets?</h3>
+    <p>NOCTIS troubleshoots and rehabilitates business networks across Crete — root-cause diagnosis, not reboot-and-hope, with a written report of what was wrong and what we changed. And if it's the whole series applied: we build them too.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-lab-gre-ipsec.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 26</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Lab: GRE over IPsec WAN</span></a>
+    <a href="cisco-index.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Series</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">All 27 parts</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

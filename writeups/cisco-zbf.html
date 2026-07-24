@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: Zone-Based Firewall — SP1R4 / NOCTIS</title>
+<meta name="description" content="A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.">
+<meta property="og:title" content="Cisco IOS: Zone-Based Firewall — NOCTIS">
+<meta property="og:description" content="A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-zbf.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-zbf.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-zbf.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-zbf.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Zone-Based Firewall",
+  "description": "A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.",
+  "datePublished": "2026-07-26",
+  "dateModified": "2026-07-26",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-zbf.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-zbf.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-zbf"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Zone-Based Firewall</h1>
+  <p class="post-subtitle">ACLs judge every packet alone. A real firewall remembers conversations — let a reply back in because you allowed the request out. The Zone-Based Firewall turns an IOS router into exactly that: group interfaces into zones, and write stateful policy for traffic between them.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">ZBF</span>
+    <span class="tag">Firewall</span>
+    <span class="tag">Stateful Inspection</span>
+    <span class="tag">Security</span>
+    <span class="tag">Zone-Pair</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 11 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: zones + zone-pairs -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="zi" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#558840"/></marker>
+        <marker id="zx" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#c63d1f"/></marker>
+      </defs>
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <!-- zones -->
+      <rect x="40" y="70" width="130" height="66" rx="8" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="105" y="100" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#3a5a78;text-anchor:middle;">LAN</text>
+      <text x="105" y="118" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a5a78;text-anchor:middle;">trusted</text>
+      <rect x="295" y="40" width="130" height="60" rx="8" fill="#eee6d8" stroke="#c08020"/>
+      <text x="360" y="66" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#8a5a10;text-anchor:middle;">DMZ</text>
+      <text x="360" y="84" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#8a5a10;text-anchor:middle;">public server</text>
+      <rect x="550" y="70" width="130" height="66" rx="8" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="615" y="100" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#c63d1f;text-anchor:middle;">WAN</text>
+      <text x="615" y="118" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">untrusted</text>
+      <!-- zone-pairs -->
+      <line x1="170" y1="96" x2="547" y2="100" style="stroke:#558840;stroke-width:2;marker-end:url(#zi)"/>
+      <text x="360" y="118" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#3a6a28;text-anchor:middle;">LAN→WAN: inspect (stateful, allowed)</text>
+      <line x1="547" y1="112" x2="175" y2="120" style="stroke:#c63d1f;stroke-width:1.6;stroke-dasharray:5,3;marker-end:url(#zx)"/>
+      <text x="360" y="140" style="font-family:'Inter',sans-serif;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">WAN→LAN: drop (default — replies still return via state)</text>
+      <text x="360" y="180" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Traffic between two zones is denied until a zone-pair policy permits it.</text>
+      <text x="360" y="196" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Inspected sessions auto-allow their return traffic — no mirror rule needed.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>The <a href="cisco-acls.html">ACL post</a> ended honestly: classic ACLs are <strong>stateless</strong>. Each packet is judged in isolation, so to let web replies back in you either open a wide inbound hole or lean on the crude <code>established</code> keyword — TCP-only, and blind to the actual conversation. A real firewall is <strong>stateful</strong>: it remembers that an inside host opened a connection outward, and automatically permits <em>that connection's</em> return traffic while blocking everything unsolicited. No mirror rules, every protocol.</p>
+    <p>Cisco's Zone-Based Firewall (ZBF) brings stateful inspection to any IOS/IOS-XE router — no separate appliance. The model is clean once it clicks: put interfaces into <strong>security zones</strong> (LAN, WAN, DMZ), and traffic between any two zones is <strong>denied by default</strong> until you attach a <strong>zone-pair</strong> policy that says otherwise. The policy is built from the same modular CLI (class-maps and policy-maps) that QoS uses. This post builds a working three-zone edge — internet access out, nothing unsolicited in, a published DMZ server — and the model scales straight to guest isolation.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>ACLs — see <a href="cisco-acls.html">Access Control Lists</a> (ZBF uses them to match traffic)</li>
+      <li>NAT on the edge — see <a href="cisco-dhcp-nat.html">DHCP &amp; NAT/PAT</a></li>
+      <li>An IOS router with a feature set that includes the firewall (<code>show version</code> / license)</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Model — Zones, Pairs, and Default-Deny</h2>
+  <p class="section-thesis"><em>Four moving parts, always in the same order: define zones, match traffic (class-map), decide what to do with it (policy-map), and bind the policy to a direction between two zones (zone-pair).</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Piece</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>zone security</td><td>A named group of interfaces (LAN, WAN, DMZ).</td></tr>
+      <tr><td>class-map type inspect</td><td>Matches <em>which</em> traffic — usually via an ACL. "What are we talking about?"</td></tr>
+      <tr><td>policy-map type inspect</td><td>Says what to do with each class: inspect / pass / drop. "What do we do with it?"</td></tr>
+      <tr><td>zone-pair security</td><td>Binds a policy to traffic FROM one zone TO another. Direction matters.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Two rules make the whole system predictable. <strong>Traffic within the same zone flows freely</strong> (two LAN interfaces talk with no policy). <strong>Traffic between different zones is dropped</strong> unless a zone-pair explicitly allows it — and a zone-pair is <em>unidirectional</em>, so LAN→WAN and WAN→LAN are separate policies. An interface with no zone can't talk to any interface that has one, which is a classic "why did everything stop" surprise.</p>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Step 1 — Define the Zones</h2>
+  <p class="section-thesis"><em>Name the trust domains, then assign each interface to exactly one. This is the moment the firewall starts dropping inter-zone traffic, so plan before you assign.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — create zones and place interfaces</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">zone security LAN</span>
+<span class="pc">R1(config)#</span> <span class="out">zone security WAN</span>
+<span class="pc">R1(config)#</span> <span class="out">zone security DMZ</span>
+
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/1</span>
+<span class="pc">R1(config-if)#</span> <span class="out">zone-member security LAN</span>
+<span class="pc">R1(config-if)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">zone-member security WAN</span>
+<span class="pc">R1(config-if)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/2</span>
+<span class="pc">R1(config-if)#</span> <span class="out">zone-member security DMZ</span>
+<span class="pc">R1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Assigning a Zone to Your Management Interface Locks You Out</span>
+    <p>The instant an interface joins a zone, all traffic to/from other zones — <em>including your own SSH session if it crosses a zone boundary</em> — is dropped until a zone-pair permits it. Assign the WAN or management interface to a zone with no matching self-zone policy and you'll lose the box. Two defences: configure over the console for the initial cutover, and remember the special <strong>self zone</strong> (next gotcha) governs traffic to the router itself. Build the zone-pairs <em>first</em>, assign interfaces last, or do it on the console.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Step 2 — Match &amp; Police: Class-Map + Policy-Map</h2>
+  <p class="section-thesis"><em>Define what traffic you care about (an ACL wrapped in a class-map), then a policy that inspects it. "Inspect" is the magic word — it means stateful.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — allow the LAN out to the internet, statefully</span>
+    <pre class="term"><span class="cmt"># What traffic? An ACL, referenced by a class-map (the ACL habit pays off)</span>
+<span class="pc">R1(config)#</span> <span class="out">ip access-list extended LAN-OUT</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit ip 192.168.1.0 0.0.0.255 any</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">exit</span>
+
+<span class="pc">R1(config)#</span> <span class="out">class-map type inspect match-any LAN-TRAFFIC</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match access-group name LAN-OUT</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">exit</span>
+
+<span class="cmt"># What do we do? Inspect it — this is the STATEFUL action</span>
+<span class="pc">R1(config)#</span> <span class="out">policy-map type inspect LAN-TO-WAN-POLICY</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class type inspect LAN-TRAFFIC</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">inspect</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">exit</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class class-default</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">drop log</span>       <span class="cmt"># everything else out this pair: drop + log</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 inspect vs pass — Know the Difference</span>
+    <p>A policy class has three possible actions. <code>inspect</code> is stateful: it permits the traffic <em>and</em> builds a session so the return traffic is auto-allowed — this is what you want for TCP/UDP/ICMP flows initiated by a trusted zone. <code>pass</code> permits statelessly in one direction only (no return session) — used for stateless protocols like some IPsec/ESP where the router shouldn't track state. <code>drop</code> denies. The <code>class class-default</code> at the bottom of every policy is your explicit default-deny — always set it to <code>drop</code> (add <code>log</code> to see what you're refusing), the ZBF equivalent of an ACL's implicit deny made visible.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Step 3 — Bind It: the Zone-Pair</h2>
+  <p class="section-thesis"><em>Nothing happens until a zone-pair connects the policy to a direction. This is the line that actually turns traffic on between two zones.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — apply the policy from LAN to WAN</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">zone-pair security LAN-TO-WAN source LAN destination WAN</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">service-policy type inspect LAN-TO-WAN-POLICY</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">end</span>
+
+<span class="cmt"># That's it. LAN hosts now reach the internet, and because the sessions
+# are INSPECTED, all their return traffic is auto-permitted. There is NO
+# WAN-TO-LAN zone-pair, so unsolicited inbound is dropped by default —
+# exactly the stateful behaviour ACLs made you fake.</span>
+
+<span class="pc">R1#</span> <span class="out">show policy-map type inspect zone-pair sessions</span>
+<span class="out">  Zone-pair: LAN-TO-WAN
+    Number of established sessions = 42
+    Established Sessions
+     Session 192.168.1.20:51344=&gt;93.184.216.34:443 tcp SIS_OPEN</span></pre>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Publishing a DMZ Server</h2>
+  <p class="section-thesis"><em>The one case where you deliberately allow unsolicited inbound: a public web server in the DMZ. A WAN→DMZ zone-pair, scoped to exactly one port, paired with the static NAT from the NAT post.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — allow only HTTPS from WAN into the DMZ server</span>
+    <pre class="term"><span class="cmt"># Match ONLY tcp/443 to the DMZ server</span>
+<span class="pc">R1(config)#</span> <span class="out">ip access-list extended WEB-IN</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit tcp any host 192.168.50.10 eq 443</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">class-map type inspect match-any WEB</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match access-group name WEB-IN</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">policy-map type inspect WAN-TO-DMZ-POLICY</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class type inspect WEB</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">inspect</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class class-default</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">drop log</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">zone-pair security WAN-TO-DMZ source WAN destination DMZ</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">service-policy type inspect WAN-TO-DMZ-POLICY</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">end</span>
+<span class="cmt"># Pair with: ip nat inside source static tcp 192.168.50.10 443 interface g0/0 443</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — NAT and ZBF Order: Match the Real (Inside) Address</span>
+    <p>On inbound WAN→DMZ traffic, NAT untranslates the destination <em>before</em> the firewall inspects it, so your ZBF ACL must match the server's <strong>private</strong> address (192.168.50.10), not its public one. Get this backwards and the class never matches, the traffic hits <code>class-default</code>, and it's silently dropped — a very common "port-forward + firewall = nothing works" cause. When in doubt, <code>show policy-map type inspect zone-pair</code> shows per-class counters: if WEB shows zero and class-default is climbing, your match address is wrong.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Self Zone — Protecting the Router</h2>
+  <p class="section-thesis"><em>Traffic TO the router itself (SSH, SNMP, routing protocols, your IP SLA pings) lives in a special built-in zone called "self". By default self-traffic is allowed — tighten it deliberately.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — allow SSH to the router only from the LAN</span>
+    <pre class="term"><span class="cmt"># Match management protocols destined to the router</span>
+<span class="pc">R1(config)#</span> <span class="out">ip access-list extended TO-ROUTER</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit tcp 192.168.1.0 0.0.0.255 any eq 22</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit icmp any any</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">class-map type inspect match-any MGMT</span>
+<span class="pc">R1(config-cmap)#</span> <span class="out">match access-group name TO-ROUTER</span>
+<span class="pc">R1(config)#</span> <span class="out">policy-map type inspect TO-SELF</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class type inspect MGMT</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">inspect</span>
+<span class="pc">R1(config-pmap)#</span> <span class="out">class class-default</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">drop</span>
+<span class="pc">R1(config-pmap-c)#</span> <span class="out">exit</span>
+<span class="pc">R1(config)#</span> <span class="out">zone-pair security WAN-TO-SELF source WAN destination self</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">service-policy type inspect TO-SELF</span>
+<span class="pc">R1(config-sec-zone-pair)#</span> <span class="out">end</span>
+<span class="cmt"># This complements the VTY access-class from the ACL post — belt and braces.</span></pre>
+  </div>
+
+  <!-- 07 -->
+  <p class="section-num">07</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>ZBF fails in predictable ways — an unassigned interface, a missing zone-pair, or a class that never matches. These commands localize all three.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Shows</th></tr></thead>
+    <tbody>
+      <tr><td>show zone security</td><td>Every zone and its member interfaces — spot the unassigned one.</td></tr>
+      <tr><td>show zone-pair security</td><td>All zone-pairs and the policy attached — spot the missing direction.</td></tr>
+      <tr><td>show policy-map type inspect zone-pair</td><td>Per-class packet counters — the "which class is eating my traffic" view.</td></tr>
+      <tr><td>show policy-map type inspect zone-pair sessions</td><td>The live stateful session table.</td></tr>
+      <tr><td>show class-map type inspect</td><td>What each class-map matches.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 ACL or Zone-Based Firewall — When to Use Which</span>
+    <p>Not everything needs ZBF. For simple L3 segmentation and management-plane control — guest can't reach the LAN, only mgmt subnet may SSH — <a href="cisco-acls.html">ACLs</a> are lighter and perfectly adequate, and that's most SMB switch/router work. Reach for ZBF when you need <strong>true statefulness at an internet edge</strong>: return-traffic handling for every protocol, a DMZ, protocol inspection, or per-zone policy that would be a nightmare of mirrored ACLs. On sites that need a serious stateful edge, a dedicated firewall (or IOS-XE's newer policies) may be the better call — ZBF is the "real firewall without buying an appliance" middle ground, and it's plenty for most Cretan SMBs.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Stateful beats stateless.</strong> ACLs judge packets alone; ZBF remembers conversations, so inspected outbound sessions auto-permit their return traffic — for every protocol, not just TCP <code>established</code>.</li>
+      <li><strong>Four pieces, always in order:</strong> zones (group interfaces) → class-map (match traffic, usually an ACL) → policy-map (inspect/pass/drop) → zone-pair (bind to a direction).</li>
+      <li><strong>Different zones are deny-by-default; same zone is open.</strong> A zone-pair is one-directional — LAN→WAN and WAN→LAN are separate — and an unzoned interface can't talk to any zoned one.</li>
+      <li><strong>inspect = stateful, pass = stateless one-way, drop = deny.</strong> End every policy with <code>class class-default drop log</code> as your visible default-deny.</li>
+      <li><strong>Publish servers with a scoped WAN→DMZ pair</strong>, matching the server's <em>private</em> address (NAT untranslates before inspection) and exactly one port — paired with a static NAT.</li>
+      <li><strong>The self zone protects the router.</strong> Lock management traffic to the box with a to-self policy; it complements the VTY <code>access-class</code>.</li>
+      <li><strong>Assign zones last (or from the console).</strong> The moment an interface joins a zone, inter-zone traffic — possibly your own session — drops until a pair permits it.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Need a real firewall at the edge without buying an appliance?</h3>
+    <p>NOCTIS builds stateful Zone-Based Firewall policies on Cisco routers — internet edges, DMZs, guest isolation — for hotels and SMBs in Crete. Locked down by default, documented zone by zone, and pressure-tested from the outside.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-ipsla-failover.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 10</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Dual-WAN Failover (IP SLA)</span></a>
+    <a href="cisco-qos-voip.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 12 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">QoS for VoIP</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

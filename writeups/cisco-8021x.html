@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}@media(min-width:601px){.writeup-back-link{display:none!important;}}</style>
+<title>Cisco IOS: 802.1X Port Authentication — SP1R4 / NOCTIS</title>
+<meta name="description" content="Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.">
+<meta property="og:title" content="Cisco IOS: 802.1X Port Authentication — NOCTIS">
+<meta property="og:description" content="Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-8021x.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-8021x.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-8021x.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-8021x.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<style>
+  :root{--bg:#eae8e3;--card:#e1ded7;--code-bg:#dddbd5;--term-bg:#d4d2cc;--rule:#c8c5be;--body:#888880;--mid:#555550;--head:#1a1a18;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;border-bottom:1px solid var(--rule);background:var(--bg);}
+  .nav-brand{font-family:var(--font-disp);font-weight:900;font-size:1.25rem;letter-spacing:.12em;color:var(--head);text-transform:uppercase;}
+  .nav-links{display:flex;gap:1.6rem;}
+  .nav-links a{font-family:var(--font-body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);}
+  .nav-links a:hover{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0b0c0f; --card:#14161c; --code-bg:#14161c; --term-bg:#0f1116; --rule:#23262e;
+    --body:#a9aeb9; --mid:#d4d8df; --head:#eef0f4; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+  @media (max-width: 600px) {
+    nav { display: none; }
+    .writeup-back-link { top: 12px !important; left: 12px !important; }
+    .wrap { padding-top: 4.75rem; }
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: 802.1X Port Authentication",
+  "description": "Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.",
+  "datePublished": "2026-08-07",
+  "dateModified": "2026-08-07",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-8021x.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-8021x.png",
+  "keywords": [
+    "cisco"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-8021x"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<nav>
+  <a class="nav-brand" href="https://sp1r4.github.io/" style="text-decoration:none;">NOCTIS<span style="color:var(--accent);">.</span></a>
+  <div class="nav-links">
+    <a href="https://sp1r4.github.io/services.html">Services</a>
+    <a href="https://sp1r4.github.io/projects.html">Projects</a>
+    <a href="https://sp1r4.github.io/blog.html">Blog</a>
+  </div>
+</nav>
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; August 2026</p>
+  <h1 class="post-title">Cisco IOS<br>802.1X Port Authentication</h1>
+  <p class="post-subtitle">Port security asks "is this the right MAC?" — which a laptop can spoof in seconds. 802.1X asks "who are you, and can you prove it?" before the port forwards a single frame. Real identity-based access control at the wall socket, with RADIUS, MAB fallback for printers, and a rollout that won't lock out the office.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">802.1X</span>
+    <span class="tag">RADIUS</span>
+    <span class="tag">NAC</span>
+    <span class="tag">MAB</span>
+    <span class="tag">Security</span>
+    <span class="tag">CCNP</span>
+  </div>
+  <hr class="title-rule">
+  <!-- series-top -->
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 2rem;font-family:var(--font-disp);font-size:.78rem;">
+    <a href="cisco-index.html" style="display:inline-flex;align-items:center;gap:.45rem;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:.32em .95em;color:var(--accent);font-weight:700;letter-spacing:.04em;text-decoration:none;">&#9636; Cisco IOS Fundamentals</a>
+    <span style="color:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase;">Part 17 of 27</span>
+  </div>
+
+
+  <!-- Hero diagram: three roles -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="xp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L7,3z" fill="#3a5a78"/></marker>
+      </defs>
+      <rect width="720" height="160" fill="#e1ded7"/>
+      <rect x="30" y="58" width="150" height="48" rx="6" fill="#eee6d8" stroke="#c08020"/>
+      <text x="105" y="78" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#8a5a10;text-anchor:middle;">SUPPLICANT</text>
+      <text x="105" y="94" style="font-family:'Inter',sans-serif;font-size:8px;fill:#8a5a10;text-anchor:middle;">the PC / phone</text>
+      <rect x="285" y="58" width="150" height="48" rx="6" fill="#d4d2cc" stroke="#c8c5be"/>
+      <text x="360" y="78" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#1a1a18;text-anchor:middle;">AUTHENTICATOR</text>
+      <text x="360" y="94" style="font-family:'Inter',sans-serif;font-size:8px;fill:#888880;text-anchor:middle;">the Cisco switch</text>
+      <rect x="540" y="58" width="150" height="48" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="615" y="78" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">AUTH SERVER</text>
+      <text x="615" y="94" style="font-family:'Inter',sans-serif;font-size:8px;fill:#3a5a78;text-anchor:middle;">RADIUS (ISE/FreeRADIUS)</text>
+      <line x1="180" y1="82" x2="283" y2="82" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#xp)"/>
+      <text x="231" y="74" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">EAPOL</text>
+      <line x1="435" y1="82" x2="538" y2="82" style="stroke:#3a5a78;stroke-width:1.4;marker-end:url(#xp)"/>
+      <text x="486" y="74" style="font-family:'Inter',sans-serif;font-size:8px;fill:#555550;text-anchor:middle;">RADIUS</text>
+      <text x="360" y="136" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">The switch is a relay: it carries EAP between the device and RADIUS, and opens the port only on "Access-Accept".</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>The <a href="cisco-switch-security.html">Switch Security post</a> hardened the access layer with port security — but MAC addresses are trivially spoofed, so that's a speed bump, not a lock. <strong>802.1X</strong> is the lock: before a port will forward anything but authentication traffic, the connected device must <em>prove an identity</em> — a certificate or username/password checked against a central server. Fail, and the port stays shut (or drops you in a quarantine VLAN). It's the difference between "the network trusts whoever plugs in" and "the network trusts whoever it can authenticate."</p>
+    <p>Three roles make it work: the <strong>supplicant</strong> (the device's 802.1X client), the <strong>authenticator</strong> (the switch, which relays but never decides), and the <strong>authentication server</strong> (RADIUS — Cisco ISE in enterprises, FreeRADIUS for the SMB budgets we usually work with). We'll wire all three, add <strong>MAB</strong> so printers and cameras that can't do 802.1X still get on, use <strong>dynamic VLAN assignment</strong> so identity decides which VLAN you land in, and — most importantly — roll it out in <strong>monitor mode first</strong> so you don't lock out the whole office on day one.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Access-layer security basics — see <a href="cisco-switch-security.html">Switch Security</a></li>
+      <li>A reachable RADIUS server (FreeRADIUS or ISE) with a shared secret</li>
+      <li>VLANs configured, including a quarantine/guest VLAN for failures — see <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a></li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Point the Switch at RADIUS</h2>
+  <p class="section-thesis"><em>First, global AAA: tell the switch to use RADIUS for 802.1X, define the server, and enable dot1x system-wide. Nothing authenticates until this scaffolding exists.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — AAA + RADIUS + global dot1x</span>
+    <pre class="term"><span class="pc">SW1(config)#</span> <span class="out">aaa new-model</span>
+
+<span class="cmt"># The RADIUS server (modern "radius server" block)</span>
+<span class="pc">SW1(config)#</span> <span class="out">radius server RAD-1</span>
+<span class="pc">SW1(config-radius-server)#</span> <span class="out">address ipv4 192.168.1.60 auth-port 1812 acct-port 1813</span>
+<span class="pc">SW1(config-radius-server)#</span> <span class="out">key R@dius-Shared-Secret</span>
+<span class="pc">SW1(config-radius-server)#</span> <span class="out">exit</span>
+
+<span class="cmt"># Use RADIUS for 802.1X auth and accounting</span>
+<span class="pc">SW1(config)#</span> <span class="out">aaa authentication dot1x default group radius</span>
+<span class="pc">SW1(config)#</span> <span class="out">aaa authorization network default group radius</span>   <span class="cmt"># for dynamic VLAN</span>
+<span class="pc">SW1(config)#</span> <span class="out">aaa accounting dot1x default start-stop group radius</span>
+
+<span class="cmt"># Turn on 802.1X globally, and let RADIUS push VLAN/ACL attributes</span>
+<span class="pc">SW1(config)#</span> <span class="out">dot1x system-auth-control</span>
+<span class="pc">SW1(config)#</span> <span class="out">end</span>
+
+<span class="pc">SW1#</span> <span class="out">show radius server-group all</span>   <span class="cmt"># confirm the server is reachable</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — aaa new-model Can Change How You Log In</span>
+    <p>The moment you type <code>aaa new-model</code>, IOS switches to the AAA method for <em>all</em> logins — including your own console and VTY. If you haven't defined a fallback, you can lock yourself out. Before enabling it, ensure a local login path survives: <code>aaa authentication login default group radius local</code> (RADIUS, then <em>local</em> user as fallback) plus a <code>username admin privilege 15 secret …</code> that exists on the box. Test the SSH/console login in a second session before you disconnect the first. This is the same "don't strand yourself" discipline as the ZBF and password-recovery posts.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Roll Out in Monitor Mode First</h2>
+  <p class="section-thesis"><em>The cardinal rule of NAC deployment: never go straight to enforcement. Open (monitor) mode authenticates and logs, but lets everyone on regardless — so you find the devices that fail before they generate help-desk tickets.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — an access port in OPEN (monitor) mode</span>
+    <pre class="term"><span class="pc">SW1(config)#</span> <span class="out">interface range GigabitEthernet0/2 - 24</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">switchport mode access</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">authentication port-control auto</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">authentication open</span>              <span class="cmt"># MONITOR: auth, but allow all</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">dot1x pae authenticator</span>
+<span class="pc">SW1(config-if-range)#</span> <span class="out">end</span>
+
+<span class="cmt"># Watch who authenticates and who fails — WITHOUT blocking anyone yet</span>
+<span class="pc">SW1#</span> <span class="out">show authentication sessions interface Gi0/4 details</span>
+<span class="out"> Interface:  GigabitEthernet0/4
+ MAC Address: 001a.2b3c.4d5e
+ Status:      Authorized      ← 802.1X success
+ Method:      dot1x</span>
+
+<span class="cmt"># When the logs show everyone authenticating cleanly, remove
+# "authentication open" to switch to ENFORCEMENT (closed mode).</span></pre>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">MAB — For Things That Can't Log In</h2>
+  <p class="section-thesis"><em>Printers, cameras, badge readers, and old kit have no 802.1X supplicant. MAC Authentication Bypass lets the switch fall back to checking their MAC against RADIUS after 802.1X times out — a managed allow-list, not open access.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — 802.1X first, MAB fallback, ordered</span>
+    <pre class="term"><span class="pc">SW1(config)#</span> <span class="out">interface GigabitEthernet0/10</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">switchport mode access</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication port-control auto</span>
+<span class="cmt"># Try 802.1X first; if the device is silent, fall back to MAB</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication order dot1x mab</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication priority dot1x mab</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">mab</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">dot1x pae authenticator</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">dot1x timeout tx-period 7</span>   <span class="cmt"># how long to wait for a supplicant</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">end</span>
+<span class="cmt"># The printer's MAC must exist as a user in RADIUS. It's an allow-list you
+# manage centrally — far better than static port-security MACs on 200 ports.</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 MAB Is Weaker — Scope It Tightly</span>
+    <p>MAB authenticates by MAC address, which is spoofable — so it's a convenience for dumb devices, not real security. Contain the risk: put MAB-authenticated devices in a <strong>restricted VLAN</strong> with an ACL that permits only what they need (a printer reaches the print server and nothing else), and use RADIUS <strong>device profiling</strong> where available so a "printer" MAC that suddenly acts like a laptop gets flagged. The goal is that even if someone clones a printer's MAC, the network they inherit is a dead end. This is defense-in-depth layered on top of the DHCP-snooping/DAI work from the Switch Security post.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Dynamic VLAN &amp; the Failure Paths</h2>
+  <p class="section-thesis"><em>Identity can decide placement: RADIUS returns a VLAN in its Access-Accept, so staff land in staff VLAN and contractors in a restricted one — from the same port. And every failure mode needs a defined destination, never "wide open."</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">IOS — VLANs for auth-fail, no-response, and server-dead</span>
+    <pre class="term"><span class="cmt"># RADIUS pushes the success VLAN automatically via the Tunnel-* attributes
+# (aaa authorization network, set in section 01). For the failure paths: </span>
+<span class="pc">SW1(config)#</span> <span class="out">interface GigabitEthernet0/4</span>
+
+<span class="cmt"># Authenticated but REJECTED → restricted/quarantine VLAN 900</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication event fail action authorize vlan 900</span>
+
+<span class="cmt"># No supplicant AND MAB failed → guest VLAN 800</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">dot1x auth-fail vlan 900</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication event no-response action authorize vlan 800</span>
+
+<span class="cmt"># RADIUS server unreachable → critical VLAN (fail-OPEN to keep working)</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication event server dead action authorize vlan 10</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">authentication event server alive action reinitialize</span>
+<span class="pc">SW1(config-if)#</span> <span class="out">end</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Decide Fail-Open vs Fail-Closed Deliberately</span>
+    <p>What happens when the RADIUS server dies? Without a <strong>critical VLAN</strong> (<code>server dead</code> action), every port on every switch that can't reach RADIUS goes <em>closed</em> — a RADIUS outage becomes a total network outage, which is a catastrophic single point of failure. The usual choice is <strong>fail-open</strong>: if the auth server is unreachable, drop clients into a working VLAN so the business keeps running, and re-authenticate when RADIUS returns (<code>server alive … reinitialize</code>). Security purists prefer fail-closed; for an SMB, an auth-server hiccup taking down the whole office is almost never the right trade. Make the choice consciously and document it — auditors ask.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Verify &amp; Troubleshoot <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>One command shows every port's auth state, method, and assigned VLAN. When a device won't authenticate, the failure is at the supplicant, the switch relay, or RADIUS — these isolate which.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Command</th><th>Shows</th></tr></thead>
+    <tbody>
+      <tr><td>show authentication sessions</td><td>Every authenticating port: MAC, method (dot1x/mab), status, VLAN.</td></tr>
+      <tr><td>show authentication sessions interface Gi0/4 details</td><td>The full story for one port — why it's authorized or not.</td></tr>
+      <tr><td>show dot1x interface Gi0/4 details</td><td>802.1X state machine and EAP exchange detail.</td></tr>
+      <tr><td>show radius statistics</td><td>Are requests reaching RADIUS and getting answered?</td></tr>
+      <tr><td>test aaa group radius user pass new-code</td><td>Prove the switch↔RADIUS path and shared secret work.</td></tr>
+      <tr><td>debug dot1x all / debug radius</td><td>Live EAP/RADIUS trace for a stubborn port (turn off after).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "Authentication Failed" Is Three Different Problems</span>
+    <p>Localize before you dig: if <code>show radius statistics</code> shows requests but no responses, it's the <strong>shared secret or server config</strong> (the switch and RADIUS disagree on the key, or the switch's IP isn't a defined client on the RADIUS side). If requests get an Access-Reject, it's <strong>credentials/policy</strong> on RADIUS. If nothing reaches RADIUS at all, it's <strong>reachability</strong> (routing/ACL to the server). And if the supplicant never starts, it's the <strong>client</strong> — 802.1X disabled on the NIC, or wrong EAP method. <code>test aaa</code> is the fastest way to cut the problem in half: it proves the switch↔RADIUS leg independently of any real device.</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">Where It Fits — and Realism for SMBs</h2>
+  <p class="section-thesis"><em>802.1X is powerful and operationally heavy. Know when it's worth it and when the lighter access-layer controls are enough.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Control</th><th>Strength / cost</th></tr></thead>
+    <tbody>
+      <tr><td>Port security (sticky MAC)</td><td>Cheap, MAC-spoofable. Good baseline everywhere.</td></tr>
+      <tr><td>MAB</td><td>Central MAC allow-list, still spoofable. For dumb devices.</td></tr>
+      <tr><td>802.1X (user/machine cert)</td><td>Real identity, strong. Needs RADIUS + supplicants + operational care.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Our Honest Take for Cretan SMBs</span>
+    <p>Full 802.1X shines where a wrong device on the LAN is a real risk — clinics, finance, anywhere with compliance — and where there's someone to run the RADIUS side. For a small hotel or shop, the combination of <strong>VLAN segmentation + DHCP snooping + DAI + port security + a locked-down guest network</strong> (the Switch Security post) delivers most of the benefit at a fraction of the operational weight. We deploy 802.1X when the threat model and the staffing both justify it, and we're upfront when it doesn't — a NAC that nobody maintains fails open and gives false confidence, which is worse than not having it.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>802.1X authenticates identity, not a spoofable MAC.</strong> The port forwards nothing but EAP until the device proves who it is against RADIUS — the real lock port security only approximates.</li>
+      <li><strong>Three roles:</strong> supplicant (device), authenticator (switch, a relay that never decides), authentication server (RADIUS). The switch opens the port only on Access-Accept.</li>
+      <li><strong>Roll out in monitor/open mode first.</strong> Authenticate and log while letting everyone on, find the devices that fail, then remove <code>authentication open</code> to enforce. Never flip straight to closed.</li>
+      <li><strong>MAB for the dumb devices, scoped tightly.</strong> Printers and cameras fall back to a central MAC allow-list — but it's spoofable, so pen them into a restricted VLAN.</li>
+      <li><strong>Define every failure path.</strong> Auth-fail VLAN, no-response guest VLAN, and — critically — a <em>critical VLAN</em> for when RADIUS itself is down, or a server outage becomes a network outage.</li>
+      <li><strong>Guard your own access.</strong> <code>aaa new-model</code> changes login for everyone — keep a <code>local</code> fallback and a real username, and test it in a second session.</li>
+      <li><strong>Match the tool to the threat and the team.</strong> 802.1X where a rogue device is a real risk and someone runs RADIUS; segmentation + snooping + DAI where it isn't. An unmaintained NAC is false confidence.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Need real access control for a clinic, office, or hotel in Crete?</h3>
+    <p>NOCTIS deploys 802.1X with RADIUS — staged in monitor mode, MAB for legacy devices, sane failure paths — where the threat model justifies it, and honest, lighter segmentation where it doesn't. Either way, documented and maintainable.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+  <!-- series-nav -->
+  <nav aria-label="Cisco IOS Fundamentals series navigation" style="margin-top:2.8rem;border-top:1px solid var(--rule);padding-top:1.5rem;display:flex;flex-wrap:wrap;gap:.8rem;">
+    <a href="cisco-eem.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:left;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">&larr; Part 16</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">EEM Automation</span></a>
+    <a href="cisco-hardening.html" style="flex:1 1 240px;display:block;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:8px;text-decoration:none;text-align:right;transition:border-color .15s;"><span style="display:block;font-family:var(--font-disp);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem;">Part 18 &rarr;</span><span style="display:block;font-family:var(--font-disp);font-size:.98rem;font-weight:600;color:var(--head);line-height:1.2;">Management-Plane Hardening</span></a>
+  </nav>
+  <p style="text-align:center;margin:1.1rem 0 0;font-family:var(--font-disp);font-size:.82rem;"><a href="cisco-index.html" style="color:var(--accent);font-weight:600;text-decoration:none;letter-spacing:.03em;">&#9636; See all 27 parts of the series &rarr;</a></p>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>
