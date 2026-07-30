@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik: First Contact — SP1R4 / NOCTIS</title>
+<meta name="description" content="Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.">
+<meta property="og:title" content="MikroTik: First Contact — NOCTIS">
+<meta property="og:description" content="Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-first-contact.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-first-contact.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-first-contact.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-first-contact.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: First Contact",
+  "description": "Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-first-contact.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-first-contact.png",
+  "keywords": ["mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-first-contact"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Tutorial &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik<br>First Contact</h1>
+  <p class="post-subtitle">The Cisco series opened with plugging into a bare IOS box; this is the same first ten minutes for RouterOS. A new MikroTik arrives with a default config that already does more than a factory Cisco — a bridge, a DHCP server, NAT, and a firewall — so the job isn't "configure from nothing," it's "get in, read what's there, and make it yours without locking yourself out."</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">WinBox</span>
+    <span class="tag">First Steps</span>
+    <span class="tag">Safe Mode</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>RouterOS is the same OS on a €50 hEX and a carrier CCR — learn it once and it scales the whole range. Unlike a factory-default Cisco switch that boots empty, a MikroTik ships with a <strong>default configuration</strong>: <code>ether1</code> is the WAN (DHCP client), the remaining ports are bridged into a LAN on <strong>192.168.88.1/24</strong> with a DHCP server, masquerade NAT, and a starter firewall. Your first task is to <em>reach</em> it, <em>read</em> it, and <em>rename</em> it into your environment.</p>
+    <p>The tool that makes MikroTik forgiving is <strong>Safe Mode</strong>: changes made in it are rolled back automatically if your session drops, so a bad firewall rule can't strand you. We'll use it from the first command. This is the RouterOS counterpart to <a href="cisco-first-contact.html">Cisco IOS: First Contact</a> — same goals, very different menus.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>WinBox (Windows/Wine) or a browser for WebFig — plus a laptop and an Ethernet cable</li>
+      <li>The device powered up; connect to any LAN port (not <code>ether1</code>)</li>
+      <li>Nothing else — MAC-connect works even with no IP configured</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Get In — WinBox &amp; MAC-Connect</h2>
+  <p class="section-thesis"><em>You don't need an IP to reach a MikroTik. WinBox discovers it by MAC over Layer 2, so even a misconfigured box with no reachable address is one click away — the single best reason to keep WinBox on your toolbelt.</em></p>
+  <p>Open WinBox, look at the <strong>Neighbors</strong> tab, and the device appears by MAC address and identity. Click the <strong>MAC address</strong> (not the IP) to connect over MAC-telnet — this works regardless of IP configuration. Default credentials are user <code>admin</code> with a blank password on older RouterOS; modern v7 devices force you to set a password on first login. Set a real one immediately.</p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — confirm where you landed, and turn on Safe Mode first</span>
+    <pre class="term"><span class="cmt"># In the terminal, Ctrl-X toggles Safe Mode. Do this before you change anything:
+# if your session drops mid-change, RouterOS reverts it automatically.</span>
+<span class="pc">[admin@MikroTik] &gt;</span>              <span class="cmt"># prompt shows &lt;SAFE&gt; when active</span>
+<span class="pc">[admin@MikroTik] &lt;SAFE&gt; &gt;</span> <span class="out">/system resource print</span>
+<span class="out">        board-name: hEX
+          platform: MikroTik
+           version: 7.15.3 (stable)</span></pre>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Read the Default Config</h2>
+  <p class="section-thesis"><em>Before changing anything, see what the box already does. <code>/export</code> is your friend and your documentation — it prints the running config as the exact commands that would recreate it.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — the whole config, sensitive values masked</span>
+    <pre class="term"><span class="pc">[admin@MikroTik] &gt;</span> <span class="out">/export hide-sensitive</span>
+<span class="out">/interface bridge add name=bridge
+/interface bridge port add bridge=bridge interface=ether2
+ ... (ether3..5 too)
+/ip address add address=192.168.88.1/24 interface=bridge
+/ip dhcp-client add interface=ether1                 </span><span class="cmt"># WAN pulls DHCP</span>
+<span class="out">/ip dhcp-server ... (LAN pool 192.168.88.10-254)
+/ip firewall nat add chain=srcnat action=masquerade out-interface-list=WAN
+/ip firewall filter ... (default input protection)</span>
+
+<span class="cmt"># Read one subsystem at a time with print:</span>
+<span class="pc">[admin@MikroTik] &gt;</span> <span class="out">/ip address print</span>
+<span class="pc">[admin@MikroTik] &gt;</span> <span class="out">/interface bridge port print</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — <code>/export file=</code> Is Your First Backup</span>
+    <p><code>/export file=day0</code> writes a text config to the router's storage you can pull off with WinBox drag-and-drop. It's human-readable, diff-able, and version-controllable — unlike the binary <code>/system backup</code>. Take one before your first change so you always have a known-good starting point. More in <a href="mikrotik-backup.html">Backup and Recovery</a>.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Make It Yours — Identity, Users, Password</h2>
+  <p class="section-thesis"><em>Three changes turn an anonymous factory box into a managed device: a name you'll recognise in Neighbors, a real admin account, and the death of the default <code>admin</code>.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — identity, a named admin, remove default admin</span>
+    <pre class="term"><span class="pc">[admin@MikroTik] &lt;SAFE&gt; &gt;</span> <span class="out">/system identity set name=CORE-RTR</span>
+
+<span class="cmt"># Create YOUR account, full group, strong password...</span>
+<span class="pc">&gt;</span> <span class="out">/user add name=noctis group=full password="use-a-real-passphrase"</span>
+<span class="cmt"># ...log back in as it, THEN disable/remove the stock admin.</span>
+<span class="pc">&gt;</span> <span class="out">/user set admin disabled=yes</span>
+<span class="cmt"># (or /user remove admin once you've confirmed the new login works)</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Addressing &amp; Internet</h2>
+  <p class="section-thesis"><em>The default gets you online via DHCP on ether1. When you need static addressing — most business installs — here's the minimum: an address, a default route, and DNS.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — static WAN example (skip if DHCP-client is fine)</span>
+    <pre class="term"><span class="pc">&gt;</span> <span class="out">/ip address add address=203.0.113.10/29 interface=ether1</span>
+<span class="pc">&gt;</span> <span class="out">/ip route add dst-address=0.0.0.0/0 gateway=203.0.113.9</span>
+<span class="pc">&gt;</span> <span class="out">/ip dns set servers=1.1.1.1,9.9.9.9 allow-remote-requests=no</span>
+<span class="cmt"># LAN gateway already exists as bridge 192.168.88.1 — change it to
+# your scheme, e.g. 10.10.0.1/24, and update the DHCP server network.</span>
+<span class="pc">&gt;</span> <span class="out">/ip address set [find interface=bridge] address=10.10.0.1/24</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — <code>allow-remote-requests</code> Turns the Router Into an Open Resolver</span>
+    <p>Set <code>allow-remote-requests=yes</code> and forget a firewall rule, and your router answers DNS for the whole internet — a favourite reflection-DDoS amplifier and an instant abuse complaint. If the LAN needs the router as a resolver, enable it <strong>and</strong> block UDP/TCP 53 on the WAN input chain. We do exactly that in <a href="mikrotik-hardening.html">Securing RouterOS</a>.</p>
+  </div>
+
+  <p class="section-num">05</p>
+  <h2 class="section-title">The Way Back <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Everyone locks themselves out eventually. RouterOS gives you three escape hatches, in increasing severity — know them before you need them.</em></p>
+  <table class="cheat">
+    <thead><tr><th>Escape hatch</th><th>When to reach for it</th></tr></thead>
+    <tbody>
+      <tr><td>Safe Mode (Ctrl-X)</td><td>A change you're <em>about</em> to make might cut you off — auto-reverts on session loss.</td></tr>
+      <tr><td>WinBox MAC-connect</td><td>You broke IP/routing but Layer 2 is intact. Reach it by MAC, fix the address.</td></tr>
+      <tr><td>/system reset-configuration</td><td>Config is unrecoverable. <code>keep-users=yes no-defaults=yes</code> for a clean slate that keeps your login.</td></tr>
+      <tr><td>Netinstall (reset button + PXE)</td><td>Nuclear: reflash RouterOS entirely from a PC. Lost password, bad upgrade, suspected compromise.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>MikroTik ships configured, not blank.</strong> Bridge, DHCP, NAT, and a firewall are already there — your job is to read and adapt, not build from zero.</li>
+      <li><strong>WinBox MAC-connect needs no IP.</strong> Layer-2 discovery reaches a box you'd otherwise be locked out of — the reason WinBox stays in your kit.</li>
+      <li><strong>Turn on Safe Mode before changing anything.</strong> Ctrl-X makes RouterOS revert your changes if the session drops — the single best habit on this platform.</li>
+      <li><strong>Kill the default admin</strong> after creating your own full-group account, and set an identity so the box is recognisable.</li>
+      <li><strong><code>/export</code> is documentation and a text backup in one.</strong> Take one on day zero and before every change.</li>
+      <li><strong>Know all three ways back</strong> — Safe Mode, MAC-connect, reset/Netinstall — before you touch a remote site.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>New MikroTik gear and no time to learn RouterOS before the season starts?</h3>
+    <p>NOCTIS deploys and documents MikroTik and Cisco networks across Crete — configured to your addressing, secured from the first boot, and handed over with a config your staff can actually keep running.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

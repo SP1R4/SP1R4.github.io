@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik: Securing RouterOS — SP1R4 / NOCTIS</title>
+<meta name="description" content="Lock down a RouterOS box properly — disable the services you don't use, an input-chain firewall that protects the router itself, real user accounts, SSH strong crypto, neighbour-discovery and MAC-server exposure, and the Winbox port you must never leave on the internet.">
+<meta property="og:title" content="MikroTik: Securing RouterOS — NOCTIS">
+<meta property="og:description" content="Lock down a RouterOS box properly — disable the services you don't use, an input-chain firewall that protects the router itself, real user accounts, SSH strong crypto, neighbour-discovery and MAC-server exposure, and the Winbox port you must never leave on the internet.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-hardening.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-hardening.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-hardening.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-hardening.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Securing RouterOS",
+  "description": "Lock down a RouterOS box properly — disable the services you don't use, an input-chain firewall that protects the router itself, real user accounts, SSH strong crypto, neighbour-discovery and MAC-server exposure, and the Winbox port you must never leave on the internet.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-hardening.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-hardening.png",
+  "keywords": ["mikrotik", "security"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-hardening"
+  },
+  "timeRequired": "PT11M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Hardening</span> &nbsp;·&nbsp; Security &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik<br>Securing RouterOS</h1>
+  <p class="post-subtitle">RouterOS is powerful and, out of the box, chatty — half a dozen management services listening, MAC-Winbox answering on every port, neighbour discovery broadcasting the model to anyone on the wire. This is the management-plane hardening pass I run on every MikroTik before it goes live, the exact counterpart to the Cisco hardening post, and the fix list the offensive companion keeps pointing back to.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">Hardening</span>
+    <span class="tag">Firewall</span>
+    <span class="tag">Management Plane</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>Most MikroTik compromises aren't clever — they're a <strong>Winbox port left facing the internet</strong> and an old RouterOS version, or a management service nobody turned off. The device defends the network well by default but doesn't defend <em>itself</em> unless you tell it to. This post closes the management plane: prune listening services, build an <strong>input-chain firewall</strong> that protects the router (not just traffic passing through it), lock down users and SSH, and silence the discovery/MAC-server surfaces that hand an attacker a free map.</p>
+    <p>The organising idea is the same as <a href="cisco-hardening.html">Cisco IOS: Management-Plane Hardening</a>: the <em>control plane</em> — how you reach and manage the box — is a separate, higher-value target than the data plane, and it deserves its own deny-by-default posture. Every section here maps to a technique in <a href="attacking-mikrotik.html">Attacking MikroTik Gear</a>.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Console/WinBox access to the box — see <a href="mikrotik-first-contact.html">First Contact</a></li>
+      <li>The <a href="mikrotik-firewall.html">RouterOS firewall</a> basics (chains, connection-state)</li>
+      <li>A management network or trusted source address you'll allow in</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Prune the Listening Services</h2>
+  <p class="section-thesis"><em>RouterOS starts several management services by default — Telnet, FTP, the HTTP UI, the API — most of which you'll never use and each of which is attack surface. Turn off everything but SSH and WinBox, and move SSH off 22.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — disable unused services, restrict the rest to management</span>
+    <pre class="term"><span class="pc">&gt;</span> <span class="out">/ip service print</span>
+<span class="cmt"># Kill cleartext and unused management protocols outright:</span>
+<span class="pc">&gt;</span> <span class="out">/ip service disable telnet,ftp,www,www-ssl,api,api-ssl</span>
+<span class="cmt"># Keep SSH (moved off 22) and Winbox, and bind both to the mgmt subnet only:</span>
+<span class="pc">&gt;</span> <span class="out">/ip service set ssh port=2200 address=10.10.99.0/24</span>
+<span class="pc">&gt;</span> <span class="out">/ip service set winbox address=10.10.99.0/24</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — The API Is a Full Management Channel</span>
+    <p><code>api</code> and <code>api-ssl</code> look harmless but are complete config interfaces — anything you can do in the terminal, the API can do. If you don't run an automation tool or dashboard against this box, disable both. If you <em>do</em> (see <a href="mikrotik-fleet.html">Managing a Fleet</a>), use <code>api-ssl</code> only, bound to the automation host's address — never plain <code>api</code>, which sends credentials in a trivially-recovered form.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">The Input Firewall — Protect the Router Itself</h2>
+  <p class="section-thesis"><em>The <code>forward</code> chain filters traffic passing through; the <code>input</code> chain filters traffic destined for the router. This is the one that stops the internet from talking to your management ports. Build it deny-by-default.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">/ip firewall filter — a minimal, ordered input chain</span>
+    <pre class="term"><span class="cmt"># 1. Fast-path what's already allowed; drop obviously bad state.</span>
+<span class="pc">&gt;</span> <span class="out">/ip firewall filter</span>
+<span class="out">add chain=input connection-state=established,related action=accept
+add chain=input connection-state=invalid action=drop</span>
+
+<span class="cmt"># 2. Allow management ONLY from the trusted source list, and ICMP.</span>
+<span class="out">add chain=input src-address-list=MGMT action=accept comment="mgmt in"
+add chain=input protocol=icmp action=accept</span>
+
+<span class="cmt"># 3. Everything else to the router is dropped — including from the WAN.</span>
+<span class="out">add chain=input action=drop comment="default deny to router"</span>
+
+<span class="cmt"># Define who's trusted (your jump host / admin subnet):</span>
+<span class="pc">&gt;</span> <span class="out">/ip firewall address-list add list=MGMT address=10.10.99.0/24</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Point — This One Chain Is the Whole Game</span>
+    <p>With a default-drop <code>input</code> chain, it no longer matters that Winbox listens — the internet can't reach it. The service-level <code>address=</code> restrictions from §01 are defence-in-depth on top. If you do only one thing from this post, do this: a router with no unsolicited inbound to itself is dramatically harder to attack, full stop.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Users &amp; SSH Crypto</h2>
+  <p class="section-thesis"><em>Named accounts, least-privilege groups, key-based SSH, and strong ciphers. The default <code>admin</code> should already be gone from First Contact; here we finish the job.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — groups, keys, strong crypto</span>
+    <pre class="term"><span class="cmt"># A read-only group for monitoring/NOC logins:</span>
+<span class="pc">&gt;</span> <span class="out">/user group add name=readonly policy=read,winbox,test,!write,!policy</span>
+<span class="pc">&gt;</span> <span class="out">/user add name=noc group=readonly password="..."</span>
+
+<span class="cmt"># SSH keys instead of passwords for the admin, then require them:</span>
+<span class="pc">&gt;</span> <span class="out">/user ssh-keys import user=noctis public-key-file=id_ed25519.pub</span>
+<span class="pc">&gt;</span> <span class="out">/ip ssh set strong-crypto=yes always-allow-password-login=no</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Silence the Discovery &amp; MAC Surfaces</h2>
+  <p class="section-thesis"><em>Two RouterOS conveniences double as free recon and a backdoor path: neighbour discovery (MNDP/CDP/LLDP) advertises the box, and the MAC-server answers WinBox/telnet over Layer 2 on every interface — including untrusted ones.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — scope discovery and MAC-server to trusted interfaces only</span>
+    <pre class="term"><span class="cmt"># Only discover/advertise on an interface list you control:</span>
+<span class="pc">&gt;</span> <span class="out">/interface list add name=MGMT-IF</span>
+<span class="pc">&gt;</span> <span class="out">/interface list member add list=MGMT-IF interface=bridge</span>
+<span class="pc">&gt;</span> <span class="out">/ip neighbor discovery-settings set discover-interface-list=MGMT-IF</span>
+
+<span class="cmt"># MAC-telnet and MAC-Winbox: restrict to the mgmt interface list.</span>
+<span class="pc">&gt;</span> <span class="out">/tool mac-server set allowed-interface-list=MGMT-IF</span>
+<span class="pc">&gt;</span> <span class="out">/tool mac-server mac-winbox set allowed-interface-list=MGMT-IF</span>
+<span class="pc">&gt;</span> <span class="out">/tool mac-server ping set enabled=no</span>
+
+<span class="cmt"># Disable the bandwidth-test server (an abuse and DoS magnet):</span>
+<span class="pc">&gt;</span> <span class="out">/tool bandwidth-server set enabled=no</span>
+<span class="cmt"># And RoMON, unless you deliberately run it on a trusted segment:</span>
+<span class="pc">&gt;</span> <span class="out">/tool romon set enabled=no</span></pre>
+  </div>
+
+  <p class="section-num">05</p>
+  <h2 class="section-title">The Cardinal Rule — Winbox Off the Internet</h2>
+  <p class="section-thesis"><em>Every mass MikroTik compromise in the wild traces to a management port exposed to the internet on an unpatched box. Say it out loud: Winbox (8291), SSH, and the API never face the WAN.</em></p>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — CVE-2018-14847 and Why Patching Isn't Enough</span>
+    <p>The infamous Winbox directory-traversal bug (CVE-2018-14847) let attackers read credentials from an exposed port with <em>no</em> auth, and fuelled the VPNFilter and Meris botnets. It's long patched — but the lesson isn't "patch," it's <strong>"don't expose the management plane at all."</strong> New bugs will come; a Winbox port the internet can't reach is immune to the ones not written yet. Keep RouterOS current (<a href="mikrotik-upgrades.html">upgrades</a>) <em>and</em> keep 8291/2200/API off the WAN with the §02 input chain. Reach them over a VPN — <a href="mikrotik-wireguard.html">WireGuard</a> — instead.</p>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>The router defends the network by default, not itself.</strong> Hardening RouterOS is mostly about the management plane.</li>
+      <li><strong>Prune services to SSH + Winbox,</strong> move SSH off 22, and bind both to the management subnet. Kill Telnet/FTP/HTTP/API unless truly needed.</li>
+      <li><strong>A default-drop <code>input</code> chain is the whole game</strong> — it protects the router regardless of what's listening. Build it first.</li>
+      <li><strong>Named least-privilege accounts, SSH keys, strong crypto</strong> — and no default admin.</li>
+      <li><strong>Scope discovery and the MAC-server to trusted interfaces,</strong> and disable the bandwidth-test server and RoMON unless you run them deliberately.</li>
+      <li><strong>Never expose Winbox/SSH/API to the internet.</strong> Patch <em>and</em> don't expose — the second half survives the next unpublished bug. Manage over a VPN.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Not sure whether your MikroTik is exposed to the internet right now?</h3>
+    <p>NOCTIS hardens and audits RouterOS and Cisco estates across Crete — management-plane lockdown, firewall review, exposure checks — and shows you exactly what was reachable before, with a fix-first report.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

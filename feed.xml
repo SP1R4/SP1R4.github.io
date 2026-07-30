@@ -199,6 +199,114 @@
       <category>cisco</category>
     </item>
     <item>
+      <title>MikroTik: First Contact</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-first-contact</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-first-contact</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Securing RouterOS</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-hardening</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-hardening</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Lock down a RouterOS box properly — disable the services you don't use, an input-chain firewall that protects the router itself, real user accounts, SSH strong crypto, neighbour-discovery and MAC-server exposure, and the Winbox port you must never leave on the internet.</description>
+      <category>mikrotik</category>
+      <category>security</category>
+    </item>
+    <item>
+      <title>MikroTik: DHCP Server &amp; NAT</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-dhcp-nat</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-dhcp-nat</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Hand out addresses and share one public IP — an IP pool, a DHCP server with reservations, masquerade vs src-nat, and the connection-tracking model that makes RouterOS NAT behave the way it does.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Bridge &amp; Switch Port Security</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-port-security</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-port-security</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.</description>
+      <category>mikrotik</category>
+      <category>security</category>
+    </item>
+    <item>
+      <title>MikroTik: STP &amp; Bonding</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-stp-bonding</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-stp-bonding</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Loop prevention and link aggregation on RouterOS — RSTP/MSTP bridge modes, root-bridge and port cost, and 802.3ad LACP bonding to double a link between switches without a loop.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: VRRP First-Hop Redundancy</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-vrrp</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-vrrp</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Two RouterOS boxes, one virtual gateway — VRRP so the LAN keeps its default gateway when a router dies, with priorities, preemption, and the interface-tracking trick that fails over on a dead WAN, not just a dead router.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Logging, SNMP &amp; Traffic-Flow</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-observability</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-observability</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Make a RouterOS box tell you what it's doing — remote syslog, SNMPv3 monitoring, NTP so timestamps mean something, and Traffic-Flow (NetFlow/IPFIX) export to see what's actually on the wire.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Upgrading RouterOS Safely</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-upgrades</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-upgrades</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Update RouterOS without bricking a remote site — release channels, the two-part package-plus-RouterBOARD-firmware upgrade everyone forgets, backups before you touch it, and a clean rollback path.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: 802.1X Port Authentication</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-dot1x</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-dot1x</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Require identity before a port passes traffic — RouterOS 7 dot1x server against a RADIUS backend, supplicant basics, and the fallback VLAN for devices that can't authenticate.</description>
+      <category>mikrotik</category>
+      <category>security</category>
+    </item>
+    <item>
+      <title>MikroTik: Packet Sniffer &amp; Port Mirror</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-sniffer-mirror</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-sniffer-mirror</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>See the actual packets on RouterOS — the switch-chip port mirror for line-rate SPAN, the built-in /tool sniffer with quick-filters, and streaming capture straight into Wireshark over TZSP.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: IPv6 Fundamentals</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-ipv6</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-ipv6</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Turn on IPv6 the right way on RouterOS — enabling the package, addressing and SLAAC, DHCPv6-PD to hand your ISP's prefix to the LAN, router advertisements, and an IPv6 firewall so you don't accidentally expose everything.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Managing a Fleet</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-fleet</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-fleet</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Configure many RouterOS boxes without logging into each one — the RouterOS 7 REST API, the Ansible community.routeros collection, and a scripted config-push pattern that stays idempotent.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Attacking MikroTik Gear — A Pentester's Field Guide</title>
+      <link>https://sp1r4.github.io/blog.html#attacking-mikrotik</link>
+      <guid>https://sp1r4.github.io/blog.html#attacking-mikrotik</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.</description>
+      <category>mikrotik</category>
+      <category>security</category>
+    </item>
+    <item>
       <title>Field Notes: A Cisco Campus for a Cretan Hotel</title>
       <link>https://sp1r4.github.io/blog.html#cisco-field-hotel</link>
       <guid>https://sp1r4.github.io/blog.html#cisco-field-hotel</guid>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik: Bridge & Switch Port Security — SP1R4 / NOCTIS</title>
+<meta name="description" content="Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.">
+<meta property="og:title" content="MikroTik: Bridge & Switch Port Security — NOCTIS">
+<meta property="og:description" content="Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-port-security.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-port-security.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-port-security.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-port-security.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Bridge & Switch Port Security",
+  "description": "Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-port-security.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-port-security.png",
+  "keywords": ["mikrotik", "security"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-port-security"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Layer 2</span> &nbsp;·&nbsp; Security &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik<br>Bridge &amp; Switch Port Security</h1>
+  <p class="post-subtitle">A VLAN keeps guests off the servers; it does nothing to stop one guest attacking another on the same segment, or a rogue DHCP server handing out a poisoned gateway. This is the Layer-2 hardening pass on RouterOS — port isolation, DHCP snooping, ARP discipline — and the one caveat that decides whether any of it runs on the switch chip or the CPU.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">Bridge</span>
+    <span class="tag">DHCP Snooping</span>
+    <span class="tag">Isolation</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>The threats are the same ones the <a href="cisco-switch-security.html">Cisco Switch Security</a> post defends against: guest-to-guest attacks inside a shared segment, rogue DHCP servers, and ARP spoofing. RouterOS answers them through the <strong>bridge</strong> — <em>horizon</em> for port isolation, <em>dhcp-snooping</em> with trusted ports, and ARP <em>reply-only</em> for a static-ARP lockdown. The building blocks map cleanly to Cisco's protected ports, DHCP snooping, and Dynamic ARP Inspection.</p>
+    <p>The RouterOS-specific catch runs through everything: many of these features <strong>disable hardware offload</strong>, moving the bridge from the switch chip to the CPU. On a small hEX that's fine; on a router pushing gigabits it matters. Knowing which feature costs offload is the difference between a secure segment and an accidental bottleneck.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>A working <a href="mikrotik-vlans.html">bridge with VLANs</a> — segmentation is the layer above this</li>
+      <li>A single known DHCP server on the segment (its uplink port becomes "trusted")</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Port Isolation with Horizon</h2>
+  <p class="section-thesis"><em>Guest Wi-Fi's real security boundary isn't the password — it's stopping guests from seeing each other. On RouterOS, bridge <code>horizon</code> is the tool: ports sharing a horizon value can't forward to each other, only to the uplink.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — isolate guest ports, keep them talking only to the gateway</span>
+    <pre class="term"><span class="cmt"># Give every guest-facing port the same horizon. Same number = can't
+# talk to each other; they can still reach a DIFFERENT-horizon uplink.</span>
+<span class="pc">&gt;</span> <span class="out">/interface bridge port set [find interface=ether3] horizon=10</span>
+<span class="pc">&gt;</span> <span class="out">/interface bridge port set [find interface=ether4] horizon=10</span>
+<span class="cmt"># The uplink/gateway port keeps the default (no horizon), so guests
+# reach the internet but not one another. Same idea as Cisco protected-port.</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ For Wi-Fi, Isolate on the AP Too</span>
+    <p>Horizon covers wired ports and traffic crossing the bridge. Wireless clients on the <em>same</em> AP and SSID can still talk directly through the radio unless you enable client isolation there (CAPsMAN/wifiwave2: the datapath <code>client-isolation</code> option). Guest isolation is a wired <em>and</em> wireless setting — see <a href="mikrotik-capsman.html">CAPsMAN</a> and the plain-language <a href="guest-wifi-isolation.html">Why Guest Wi-Fi Needs Its Own Network</a>.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">DHCP Snooping &amp; Trusted Ports</h2>
+  <p class="section-thesis"><em>A rogue DHCP server — a guest's mis-set travel router, or an attacker — can hand the whole segment a malicious gateway and MITM everyone. Snooping drops DHCP offers from any port you haven't blessed.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — enable snooping on the bridge, trust only the real server's path</span>
+    <pre class="term"><span class="pc">&gt;</span> <span class="out">/interface bridge set bridge dhcp-snooping=yes add-dhcp-option82=yes</span>
+<span class="cmt"># Trust ONLY the port toward the legitimate DHCP server (here the uplink).
+# All other ports may REQUEST but their OFFERS/ACKs are dropped.</span>
+<span class="pc">&gt;</span> <span class="out">/interface bridge port set [find interface=ether1] trusted=yes</span>
+<span class="cmt"># A guest plugging in a DHCP-serving router now poisons nobody.</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Snooping Turns Off Hardware Offload</span>
+    <p>Enabling <code>dhcp-snooping</code> (and option-82) moves affected bridge processing to the CPU on most models — the switch chip can't do it. On a CRS switching at line rate this can be a real throughput hit. Decide per box: on an access switch for a guest VLAN it's usually worth it; on a core doing 10G it may not be. Check <code>/interface bridge port print</code> for the <code>H</code> (hardware-offloaded) flag before and after.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">ARP Discipline &amp; MAC Control</h2>
+  <p class="section-thesis"><em>ARP spoofing lets one host impersonate the gateway. RouterOS counters it by refusing to learn ARP dynamically on a locked-down interface and pairing that with static entries — the equivalent of Cisco's DAI plus IP Source Guard for the high-value segments.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Terminal — reply-only ARP + static bindings on a sensitive VLAN</span>
+    <pre class="term"><span class="cmt"># The interface answers ARP but won't LEARN it — so a spoofed
+# gratuitous ARP can't poison the table. Pair with static entries.</span>
+<span class="pc">&gt;</span> <span class="out">/interface vlan set [find name=vlan30-pms] arp=reply-only</span>
+<span class="pc">&gt;</span> <span class="out">/ip arp add address=10.10.30.10 mac-address=DC:2C:6E:00:11:22 interface=vlan30-pms</span>
+
+<span class="cmt"># Optional belt-and-braces: cap how many MACs a guest port may learn,
+# and stop unknown-unicast flooding leaking frames across the segment.</span>
+<span class="pc">&gt;</span> <span class="out">/interface bridge port set [find interface=ether3] unknown-unicast-flood=no</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>VLANs segment; port security protects within a segment.</strong> You need both — a VLAN alone doesn't stop guest-to-guest attacks.</li>
+      <li><strong>Horizon is RouterOS port isolation</strong> — same horizon value means ports can't talk to each other, only to the uplink. The wired half of guest isolation.</li>
+      <li><strong>Isolate wireless clients on the AP too</strong> — horizon doesn't cover same-radio traffic.</li>
+      <li><strong>DHCP snooping + one trusted port</strong> kills rogue DHCP servers and the MITM they enable.</li>
+      <li><strong>ARP reply-only plus static entries</strong> is the RouterOS answer to ARP spoofing on high-value VLANs.</li>
+      <li><strong>Mind hardware offload.</strong> Snooping and some filters push the bridge to the CPU — check the <code>H</code> flag and decide per device.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Guests on the same flat network as your booking system and cameras?</h3>
+    <p>NOCTIS builds isolated, snooped, ARP-disciplined Layer-2 designs on MikroTik and Cisco for hospitality and business in Crete — so one compromised guest laptop stays exactly that.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

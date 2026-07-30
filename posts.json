@@ -1,5 +1,152 @@
 [
   {
+    "slug": "mikrotik-first-contact",
+    "title": "MikroTik: First Contact",
+    "description": "Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-first-contact.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "mikrotik-hardening",
+    "title": "MikroTik: Securing RouterOS",
+    "description": "Lock down a RouterOS box properly — disable the services you don't use, an input-chain firewall that protects the router itself, real user accounts, SSH strong crypto, neighbour-discovery and MAC-server exposure, and the Winbox port you must never leave on the internet.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik",
+      "security"
+    ],
+    "html": "writeups/mikrotik-hardening.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "mikrotik-dhcp-nat",
+    "title": "MikroTik: DHCP Server & NAT",
+    "description": "Hand out addresses and share one public IP — an IP pool, a DHCP server with reservations, masquerade vs src-nat, and the connection-tracking model that makes RouterOS NAT behave the way it does.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-dhcp-nat.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-port-security",
+    "title": "MikroTik: Bridge & Switch Port Security",
+    "description": "Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik",
+      "security"
+    ],
+    "html": "writeups/mikrotik-port-security.html",
+    "reading_time": 4
+  },
+  {
+    "slug": "mikrotik-stp-bonding",
+    "title": "MikroTik: STP & Bonding",
+    "description": "Loop prevention and link aggregation on RouterOS — RSTP/MSTP bridge modes, root-bridge and port cost, and 802.3ad LACP bonding to double a link between switches without a loop.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-stp-bonding.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-vrrp",
+    "title": "MikroTik: VRRP First-Hop Redundancy",
+    "description": "Two RouterOS boxes, one virtual gateway — VRRP so the LAN keeps its default gateway when a router dies, with priorities, preemption, and the interface-tracking trick that fails over on a dead WAN, not just a dead router.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-vrrp.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-observability",
+    "title": "MikroTik: Logging, SNMP & Traffic-Flow",
+    "description": "Make a RouterOS box tell you what it's doing — remote syslog, SNMPv3 monitoring, NTP so timestamps mean something, and Traffic-Flow (NetFlow/IPFIX) export to see what's actually on the wire.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-observability.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-upgrades",
+    "title": "MikroTik: Upgrading RouterOS Safely",
+    "description": "Update RouterOS without bricking a remote site — release channels, the two-part package-plus-RouterBOARD-firmware upgrade everyone forgets, backups before you touch it, and a clean rollback path.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-upgrades.html",
+    "reading_time": 4
+  },
+  {
+    "slug": "mikrotik-dot1x",
+    "title": "MikroTik: 802.1X Port Authentication",
+    "description": "Require identity before a port passes traffic — RouterOS 7 dot1x server against a RADIUS backend, supplicant basics, and the fallback VLAN for devices that can't authenticate.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik",
+      "security"
+    ],
+    "html": "writeups/mikrotik-dot1x.html",
+    "reading_time": 4
+  },
+  {
+    "slug": "mikrotik-sniffer-mirror",
+    "title": "MikroTik: Packet Sniffer & Port Mirror",
+    "description": "See the actual packets on RouterOS — the switch-chip port mirror for line-rate SPAN, the built-in /tool sniffer with quick-filters, and streaming capture straight into Wireshark over TZSP.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-sniffer-mirror.html",
+    "reading_time": 4
+  },
+  {
+    "slug": "mikrotik-ipv6",
+    "title": "MikroTik: IPv6 Fundamentals",
+    "description": "Turn on IPv6 the right way on RouterOS — enabling the package, addressing and SLAAC, DHCPv6-PD to hand your ISP's prefix to the LAN, router advertisements, and an IPv6 firewall so you don't accidentally expose everything.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-ipv6.html",
+    "reading_time": 4
+  },
+  {
+    "slug": "mikrotik-fleet",
+    "title": "MikroTik: Managing a Fleet",
+    "description": "Configure many RouterOS boxes without logging into each one — the RouterOS 7 REST API, the Ansible community.routeros collection, and a scripted config-push pattern that stays idempotent.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-fleet.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "attacking-mikrotik",
+    "title": "Attacking MikroTik Gear — A Pentester's Field Guide",
+    "description": "The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik",
+      "security"
+    ],
+    "html": "writeups/attacking-mikrotik.html",
+    "reading_time": 9
+  },
+  {
     "slug": "cisco-field-hotel",
     "title": "Field Notes: A Cisco Campus for a Cretan Hotel",
     "description": "An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.",

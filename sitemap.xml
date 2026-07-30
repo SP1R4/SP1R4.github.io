@@ -46,6 +46,71 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-first-contact.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-hardening.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-dhcp-nat.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-port-security.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-stp-bonding.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-vrrp.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-observability.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-upgrades.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-dot1x.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-sniffer-mirror.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-ipv6.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-fleet.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/attacking-mikrotik.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://sp1r4.github.io/writeups/cisco-field-hotel.html</loc>
     <lastmod>2026-07-30</lastmod>
     <priority>0.6</priority>

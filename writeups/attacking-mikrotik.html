@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Attacking MikroTik Gear — A Pentester's Field Guide — SP1R4 / NOCTIS</title>
+<meta name="description" content="The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.">
+<meta property="og:title" content="Attacking MikroTik Gear — A Pentester's Field Guide — NOCTIS">
+<meta property="og:description" content="The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/attacking-mikrotik.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/attacking-mikrotik.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/attacking-mikrotik.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/attacking-mikrotik.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Attacking MikroTik Gear — A Pentester's Field Guide",
+  "description": "The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/attacking-mikrotik.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/attacking-mikrotik.png",
+  "keywords": ["mikrotik", "security"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#attacking-mikrotik"
+  },
+  "timeRequired": "PT11M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Offensive</span> &nbsp;·&nbsp; Security &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Attacking MikroTik Gear<br>A Pentester's Field Guide</h1>
+  <p class="post-subtitle">MikroTik runs an enormous share of the world's small-network and ISP edge — which is exactly why it's been botnet fuel twice over. This is the other side of the RouterOS series: what an attacker actually does to a MikroTik on an engagement, from finding an exposed Winbox port to owning the box and living in it, with the one-line fix for each. The companion to Securing RouterOS.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">Offensive</span>
+    <span class="tag">Pentest</span>
+    <span class="tag">Winbox</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">Post-Exploitation</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <rect x="24" y="78" width="120" height="46" rx="6" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="84" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Attacker</text>
+      <text x="84" y="114" style="font-family:ui-monospace,monospace;font-size:8px;fill:#c63d1f;text-anchor:middle;">internet / on-LAN</text>
+      <rect x="300" y="72" width="120" height="58" rx="6" fill="#d8e0ea" stroke="#293d54"/>
+      <text x="360" y="94" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">RouterOS</text>
+      <text x="360" y="110" style="font-family:ui-monospace,monospace;font-size:8px;fill:#293d54;text-anchor:middle;">Winbox 8291 · API 8728</text>
+      <path d="M144 101 L300 101" stroke="#8a8880" stroke-width="2"/>
+      <text x="222" y="58" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">8291 discovery · CVE-2018-14847</text>
+      <text x="222" y="150" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">default creds · btest · API</text>
+      <rect x="576" y="78" width="120" height="46" rx="6" fill="#d8e8d0" stroke="#558840"/>
+      <text x="636" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">Full control</text>
+      <text x="636" y="114" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">creds · sniff · pivot</text>
+      <path d="M420 101 L576 101" stroke="#8a8880" stroke-width="2" stroke-dasharray="4,3"/>
+      <text x="360" y="186" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Two global botnets (VPNFilter, Meris) were built on exposed, unpatched RouterOS. The pattern repeats.</text>
+    </svg>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ Scope &amp; Authorized Use</span>
+    <p>This is for <strong>authorized testing</strong> — your own lab, a CTF, or an engagement with written scope — and to show defenders precisely what they're up against. Attacking RouterOS you don't own or aren't contracted to test is illegal. Build a lab (CHR — Cloud Hosted Router — runs free in a VM) and point any testing at that. Every section closes with the fix, cross-linked to <a href="mikrotik-hardening.html">Securing RouterOS</a>. This post is written defender-first: the goal is that you find these on your own estate before anyone else does.</p>
+  </div>
+
+  <div class="thesis-card">
+    <p>MikroTik compromises follow the same shape as the Cisco ones: it's almost never a memory-corruption exploit, it's <strong>exposure plus a known bug or a weak credential</strong>. The device is cheap, capable, and everywhere — small ISPs, cafés, remote sites — and a huge number sit on the internet with Winbox (TCP 8291) or the API (8728) reachable and RouterOS from whenever they were unboxed. That combination built <strong>VPNFilter</strong> (2018) and the <strong>Meris</strong> botnet (2021, one of the largest DDoS sources ever recorded).</p>
+    <p>The kill-chain is predictable: <strong>find</strong> the management ports, <strong>get in</strong> via the classic Winbox flaw or weak/default creds, <strong>loot</strong> the config, then <strong>live in it</strong> — because a router is the perfect vantage point for sniffing and pivoting. Each stage ends with the RouterOS setting that removes it. The value here is the fix list, not a copy-paste exploit.</p>
+    <div class="prereqs-label">Pairs with</div>
+    <ul class="prereqs-list">
+      <li>The defensive original: <a href="mikrotik-hardening.html">Securing RouterOS</a>, and <a href="mikrotik-upgrades.html">Upgrading Safely</a></li>
+      <li>A CHR lab you own — never point any testing at production you aren't scoped for</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Recon — Find the Management Ports <span class="safe-badge">Passive-ish</span></h2>
+  <p class="section-thesis"><em>MikroTik has a giveaway fingerprint: Winbox on 8291 is almost unique to RouterOS, and the box often answers MNDP (the MikroTik discovery protocol) on the LAN, coughing up its identity and version.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Assessor — fingerprint by port and discovery protocol</span>
+    <pre class="term"><span class="cmt"># 8291 open is a near-certain RouterOS tell. Sweep your own range for it:</span>
+<span class="pc">$</span> <span class="out">nmap -Pn -p 8291,8728,8729,22,80 --open 203.0.113.0/24</span>
+<span class="out">203.0.113.10  8291/tcp open  winbox   8728/tcp open  mikrotik-api</span>
+
+<span class="cmt"># On-LAN: MNDP (UDP 5678) broadcasts identity, model and version.</span>
+<span class="pc">$</span> <span class="out">tcpdump -nn -i eth0 udp port 5678 -A -c 1</span>
+<span class="out">  Identity: CoreRTR  Version: 6.42.11  Board: RB750  Platform: MikroTik</span>
+<span class="cmt"># Version tells you instantly whether known CVEs apply. Note it.</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Get Off the Internet</span>
+    <p>8291/8728 should never be internet-facing. A default-drop <a href="mikrotik-hardening.html">input firewall</a> makes the recon above return nothing from the WAN, and scoping MNDP/discovery to trusted interfaces removes the on-LAN freebie. Microsoft's free <code>routeros-scanner</code> is a good way to audit your own fleet for exposure and indicators. You cannot be exploited on a port an attacker can't reach.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">CVE-2018-14847 — Why an Exposed Winbox Is Game Over <span class="danger-badge">Unauthenticated</span></h2>
+  <p class="section-thesis"><em>The bug that made MikroTik infamous. A flaw in the Winbox service on RouterOS before 6.42.12 let an unauthenticated attacker read files off the device — including the admin credential store. No password needed; reach the port, and the box gives up its own login.</em></p>
+  <p>You don't need the exploit code to understand the lesson. The class of bug is <strong>pre-authentication information disclosure on a management service</strong>: once an attacker can read arbitrary files from an unauthenticated position, recovering the stored admin credentials is a formality, and from there they have full RouterOS access. Public tooling for it has existed for years; it was mass-exploited at internet scale and folded into VPNFilter. The credentials it yields are then reused directly, or the box is simply reconfigured by the now-authenticated attacker.</p>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Patching Alone Isn't the Lesson</span>
+    <p>CVE-2018-14847 is long fixed, so "just patch" sounds sufficient — but it misses the point. The <em>same failure mode</em> (an unauthenticated bug in a management service exposed to the internet) will recur with the next CVE that isn't written yet. The durable fix is <strong>don't expose the management plane at all</strong>: a Winbox/API port the internet can't reach is immune to the bugs not yet public. Patch <em>and</em> firewall it off the WAN (<a href="mikrotik-hardening.html">Securing RouterOS §02</a>), and reach it over a <a href="mikrotik-wireguard.html">WireGuard</a> tunnel instead. If you find a box that was exposed and unpatched, treat it as compromised and rebuild — don't just upgrade over the top.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Default &amp; Weak Credentials, and the API</h2>
+  <p class="section-thesis"><em>Not every win needs a CVE. Old RouterOS shipped <code>admin</code> with a blank password; plenty of boxes still have it, or a weak password chosen once and never rotated. And the binary API on 8728 is a full credentialed config channel that's easy to brute where it's exposed.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Assessor — check your own estate for the obvious</span>
+    <pre class="term"><span class="cmt"># The blank-admin check: does the box still accept the factory login?
+# (Do this against YOUR devices to prove they were changed.)</span>
+<span class="pc">$</span> <span class="out">ssh admin@203.0.113.10</span>       <span class="cmt"># blank password should be rejected</span>
+
+<span class="cmt"># Exposed plaintext API on 8728 is a credentialed control channel and a
+# brute-force target. It should not be reachable from untrusted networks.</span>
+<span class="pc">$</span> <span class="out">nmap -p 8728,8729 --open 203.0.113.0/24</span>   <span class="cmt"># 8728 open = plaintext API exposed</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Named Accounts, Strong Passwords, No Exposed API</span>
+    <p>Remove the default <code>admin</code>, use per-person accounts in least-privilege groups, and enforce strong passwords (First Contact and Securing RouterOS cover both). Disable plain <code>api</code> outright; if automation needs it, use <code>api-ssl</code> bound to the automation host only. Rate-limiting repeated auth failures on the input chain turns a brute-force into a non-event.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Bandwidth-Test &amp; Other Free Services</h2>
+  <p class="section-thesis"><em>RouterOS ships several services that are handy in a lab and a liability in production. The bandwidth-test server is the standout: reachable, it's both a credential-brute target and a way to saturate the box or the link on demand.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Assessor — the leftover-services checklist</span>
+    <pre class="term"><span class="cmt"># Things to confirm are OFF / restricted on your own boxes:</span>
+<span class="out">  bandwidth-test server (btest)  -> DoS + brute target
+  www / ftp                      -> cleartext mgmt, extra surface
+  romon                          -> L2 management mesh, if unscoped
+  mac-server / mac-winbox        -> L2 mgmt on untrusted ports
+  socks proxy                    -> an attacker's favourite pivot (see §05)</span>
+<span class="pc">$</span> <span class="out">nmap -p 2000,21,80,1080 --open 203.0.113.10</span>   <span class="cmt"># btest/ftp/www/socks</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Turn Off What You Don't Run</span>
+    <p><code>/tool bandwidth-server set enabled=no</code>, disable <code>www</code>/<code>ftp</code>, scope <code>mac-server</code> and discovery to trusted interfaces, and leave <code>romon</code> and the SOCKS proxy off unless you deliberately deploy them on a trusted segment. Every disabled service is one fewer thing an attacker can reach — the whole of <a href="mikrotik-hardening.html">Securing RouterOS §01/§04</a>.</p>
+  </div>
+
+  <p class="section-num">05</p>
+  <h2 class="section-title">Living In It — Why a Router Is the Prize</h2>
+  <p class="section-thesis"><em>Compromising a router isn't the goal; it's the position. A router sees all the traffic, sits inside the perimeter, and reboots rarely — the ideal place to persist, watch, and pivot. Knowing what an attacker does from here tells you what to look for.</em></p>
+  <table class="cheat">
+    <thead><tr><th>What they do from the box</th><th>Why it matters to you</th></tr></thead>
+    <tbody>
+      <tr><td>Enable the SOCKS proxy</td><td>Turns your router into a pivot into the internal network — check <code>/ip socks</code> is off.</td></tr>
+      <tr><td>Stream the packet sniffer</td><td>Passive interception of everything crossing the box — check <code>/tool sniffer</code> isn't running/streaming.</td></tr>
+      <tr><td>Add a scheduler + script</td><td>Persistence and beaconing that survive reboots — audit <code>/system scheduler</code> and <code>/system script</code>.</td></tr>
+      <tr><td>Inject a web proxy / DNS static</td><td>Redirect or inject into user traffic (Meris-style) — check <code>/ip proxy</code>, <code>/ip dns static</code>.</td></tr>
+      <tr><td>Add a hidden user / SSH key</td><td>Backdoor access — reconcile <code>/user</code> and <code>/user ssh-keys</code> against your records.</td></tr>
+      <tr><td>Export the config</td><td>Every PSK, VPN key and credential leaves with them — rotate secrets after any suspected compromise.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Off-Box Logging &amp; a Known-Good Baseline</span>
+    <p>An attacker who owns the router owns its local logs, so the <a href="mikrotik-observability.html">remote syslog</a> copy is the one you investigate with — and the <code>account</code> topic shows unexpected logins. Keep a version-controlled <code>/export</code> baseline (<a href="mikrotik-backup.html">Backup and Recovery</a>) so a diff surfaces an injected scheduler, user, or proxy immediately. After any confirmed compromise, rebuild from clean and rotate every secret the box held — a config export means they all leaked.</p>
+  </div>
+
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Assessor's Checklist</h2>
+  <p class="section-thesis"><em>When I review a MikroTik on an engagement, this is the pass. Run it against your own boxes first — each line is a finding waiting to happen.</em></p>
+  <table class="cheat">
+    <thead><tr><th>Check</th><th>Why it's a finding</th></tr></thead>
+    <tbody>
+      <tr><td>8291 / 8728 reachable from WAN</td><td>Management plane exposed — the root cause of nearly every compromise (§01/§02)</td></tr>
+      <tr><td>RouterOS below current stable</td><td>Known CVEs apply; unpatched + exposed = owned (§02)</td></tr>
+      <tr><td>Default admin / weak password</td><td>No exploit required (§03)</td></tr>
+      <tr><td>Plain <code>api</code>, <code>www</code>, <code>ftp</code>, <code>telnet</code> enabled</td><td>Cleartext or brute-able management channels (§03/§04)</td></tr>
+      <tr><td>btest / romon / socks enabled</td><td>DoS, L2 management, and pivot surface (§04/§05)</td></tr>
+      <tr><td>No off-box logging</td><td>Compromise is invisible and local logs are untrustworthy (§05)</td></tr>
+      <tr><td>Unexpected scheduler/script/user</td><td>Persistence or backdoor — compare to baseline (§05)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>It's exposure plus a known bug or weak credential</strong> — the same story as Cisco. RouterOS is targeted because it's everywhere and often internet-facing.</li>
+      <li><strong>An exposed Winbox/API port is the whole ballgame.</strong> CVE-2018-14847 proved a pre-auth bug on a reachable management service is game over.</li>
+      <li><strong>Patch <em>and</em> don't expose.</strong> Firewalling the management plane off the WAN survives the next unpublished bug; patching alone doesn't.</li>
+      <li><strong>Half the wins need no CVE</strong> — default admin, weak passwords, and exposed plaintext API. Named accounts and no exposed API close them.</li>
+      <li><strong>Turn off leftover services</strong> — btest, www/ftp, romon, socks, unscoped MAC-server — every one is reachable surface.</li>
+      <li><strong>A router is a vantage point, not a trophy.</strong> Off-box logging and a known-good baseline are how you detect someone living in it; rebuild and rotate secrets after any compromise.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Want to know what your MikroTik hands out before someone else finds out?</h3>
+    <p>NOCTIS runs authorized network penetration tests and RouterOS configuration audits across Crete — exposure, patch level, weak creds, leftover services, and signs of a box already lived-in — with a prioritized, fix-first report, not a scanner dump.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>
