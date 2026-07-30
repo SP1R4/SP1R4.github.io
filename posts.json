@@ -1,5 +1,82 @@
 [
   {
+    "slug": "cisco-bgp-dual-isp",
+    "title": "Cisco IOS: BGP & Dual-ISP Multihoming",
+    "description": "Run a real multihomed BGP edge on Cisco IOS — two eBGP upstreams, outbound path control with local-preference, inbound with AS-path prepend, mandatory anti-transit filtering, and automatic failover.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-bgp-dual-isp.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "mikrotik-bgp-dual-isp",
+    "title": "MikroTik: BGP & Dual-ISP Multihoming",
+    "description": "RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-bgp-dual-isp.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "cisco-pbr",
+    "title": "Cisco IOS: Policy-Based Routing",
+    "description": "Route by who sent the packet, not just where it's going — PBR route-maps that steer a subnet or application out a different next-hop, the set-clause differences, and pairing with IP SLA so a dead path never blackholes.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-pbr.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-routing-rules",
+    "title": "MikroTik: Policy Routing with Rules & Mangle",
+    "description": "RouterOS's two policy-routing tools — lightweight routing rules and connection-aware mangle routing-marks — when to use which, the connection-mark-then-routing-mark pattern that keeps a flow pinned to one WAN, and per-WAN NAT.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-routing-rules.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "cisco-netconf",
+    "title": "Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF)",
+    "description": "Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-netconf.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-containers",
+    "title": "MikroTik: RouterOS 7 Containers",
+    "description": "Run OCI/Docker images on the router itself — the device-mode security gate, veth networking on an isolated bridge, pulling and running a container (Pi-hole), persistence with mounts, and the architecture/storage constraints.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-containers.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "mikrotik-prometheus",
+    "title": "MikroTik: Metrics with Prometheus & Grafana",
+    "description": "Time-series metrics and dashboards for RouterOS — a read-only API user, the mktxp exporter (optionally in a container on the router), a Prometheus scrape job, and Grafana dashboards with alerts on BGP/WAN/CPU/queues.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-prometheus.html",
+    "reading_time": 5
+  },
+  {
     "slug": "field-audit-hotel-group",
     "title": "Field Notes: Auditing a Small Hotel Group",
     "description": "An anonymised security audit across three small family hotels — a flat network with guests on the same wire as the booking PC and cameras, an exposed router management plane, and the guest-to-card-data finding that got remediation approved the same afternoon.",
@@ -380,7 +457,7 @@
       "mikrotik"
     ],
     "html": "writeups/mikrotik-index.html",
-    "reading_time": 5
+    "reading_time": 6
   },
   {
     "slug": "cisco-index",

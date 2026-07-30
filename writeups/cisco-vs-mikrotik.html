@@ -189,13 +189,15 @@
 
   <p class="section-num">03</p>
   <h2 class="section-title">Routing &amp; Redundancy</h2>
-  <p class="section-thesis"><em>Twin posts: <a href="cisco-routing-ospf.html">Cisco: OSPF</a> / <a href="cisco-hsrp.html">HSRP·VRRP</a> · <a href="mikrotik-ospf.html">MikroTik: OSPF</a> / <a href="mikrotik-vrrp.html">VRRP</a></em></p>
+  <p class="section-thesis"><em>Twin posts: <a href="cisco-routing-ospf.html">Cisco: OSPF</a> / <a href="cisco-bgp-dual-isp.html">BGP</a> / <a href="cisco-pbr.html">PBR</a> / <a href="cisco-hsrp.html">HSRP·VRRP</a> · <a href="mikrotik-ospf.html">MikroTik: OSPF</a> / <a href="mikrotik-bgp-dual-isp.html">BGP</a> / <a href="mikrotik-routing-rules.html">Policy Routing</a> / <a href="mikrotik-vrrp.html">VRRP</a></em></p>
   <table class="cheat">
     <thead><tr><th>Task</th><th>Cisco IOS</th><th>RouterOS</th></tr></thead>
     <tbody>
       <tr><td>Enable OSPF</td><td>router ospf 1 + network …</td><td>/routing ospf instance + area + interface-template</td></tr>
-      <tr><td>See routes</td><td>show ip route</td><td>/ip route print</td></tr>
-      <tr><td>See neighbours</td><td>show ip ospf neighbor</td><td>/routing ospf neighbor print</td></tr>
+      <tr><td>Multihoming (BGP)</td><td>router bgp + neighbor …</td><td>/routing bgp connection + /routing filter</td></tr>
+      <tr><td>Prefer an upstream</td><td>local-preference (route-map in)</td><td>set bgp-local-pref (filter chain)</td></tr>
+      <tr><td>Policy routing</td><td>route-map + ip policy (PBR)</td><td>/routing rule, or mangle routing-marks</td></tr>
+      <tr><td>See routes / neighbours</td><td>show ip route / show ip bgp sum</td><td>/ip route print / /routing bgp session print</td></tr>
       <tr><td>Virtual gateway</td><td>standby / vrrp on the SVI</td><td>/interface vrrp + VIP on it</td></tr>
       <tr><td>Track the uplink</td><td>track + object on the HSRP group</td><td>netwatch → adjust vrrp priority</td></tr>
       <tr><td>Dual-WAN failover</td><td>ip sla + track + floating static</td><td>recursive route / netwatch (check-gateway)</td></tr>

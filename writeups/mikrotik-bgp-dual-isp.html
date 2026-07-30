@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik: BGP & Dual-ISP Multihoming — SP1R4 / NOCTIS</title>
+<meta name="description" content="RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.">
+<meta property="og:title" content="MikroTik: BGP & Dual-ISP Multihoming — NOCTIS">
+<meta property="og:description" content="RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-bgp-dual-isp.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-bgp-dual-isp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-bgp-dual-isp.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-bgp-dual-isp.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: BGP & Dual-ISP Multihoming",
+  "description": "RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-bgp-dual-isp.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-bgp-dual-isp.png",
+  "keywords": ["mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-bgp-dual-isp"
+  },
+  "timeRequired": "PT11M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / RouterOS</span> &nbsp;·&nbsp; Routing &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik<br>BGP &amp; Dual-ISP Multihoming</h1>
+  <p class="post-subtitle">MikroTik is everywhere on the WISP and small-ISP edge, and that edge speaks BGP. RouterOS 7 rewrote BGP from the ground up — new menu, new filter model — so even if you knew v6 BGP, this is worth relearning. Same dual-ISP build as the Cisco twin: two upstreams, path control both directions, automatic failover.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">BGP</span>
+    <span class="tag">Multihoming</span>
+    <span class="tag">Dual-ISP</span>
+    <span class="tag">WISP</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>BGP is the internet's routing protocol — policy-driven, path-vector, built for peering between networks that don't trust each other. You run it on a MikroTik edge for the same reason as anywhere: <strong>two ISPs, your own prefix and ASN</strong>, and the need to survive an upstream dying automatically. What's MikroTik-specific is that <strong>RouterOS 7 completely replaced the v6 BGP implementation</strong>: it's now a single <code>/routing bgp connection</code> object per peer, and all policy lives in <code>/routing filter</code> rule chains rather than the old per-instance settings. Configs and tutorials written for v6 will not paste in.</p>
+    <p>The jobs are identical to the <a href="cisco-bgp-dual-isp.html">Cisco twin</a>: bring up both eBGP sessions, filter so you never become accidental transit, steer <strong>outbound</strong> with local-preference and <strong>inbound</strong> with AS-path prepend. Only the syntax changes — and this is where a mixed estate benefits from one engineer who reads both.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>RouterOS 7 (the v7 BGP menu; v6 syntax does not apply)</li>
+      <li>Your ASN + a provider-independent prefix, and two ISP uplinks with their AS numbers</li>
+      <li>The <a href="mikrotik-firewall.html">firewall</a>/filter mindset — BGP policy is filter chains</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Two eBGP Connections, Filtered</h2>
+  <p class="section-thesis"><em>One <code>/routing bgp connection</code> per ISP, our aggregate advertised via a network entry, and an output filter chain that permits only our own prefix — the same anti-transit rule as Cisco, expressed as a filter chain.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — peers + the "advertise only ours" output filter</span>
+    <pre class="term"><span class="cmt"># The prefix we own and will advertise:</span>
+<span class="pc">/ip address</span> <span class="out">add address=192.0.2.1/24 interface=lo-aggregate</span>
+<span class="pc">/routing bgp template</span> <span class="out">set default as=65001 router-id=203.0.113.1</span>
+
+<span class="cmt"># Output filter: accept ONLY our aggregate, drop everything else
+# (so we never re-advertise one ISP's routes to the other).</span>
+<span class="pc">/routing filter rule</span>
+<span class="out">add chain=BGP-OUT rule="if (dst==192.0.2.0/24) { accept }"
+add chain=BGP-OUT rule="reject"</span>
+
+<span class="cmt"># The two eBGP sessions. local.role=ebgp, remote .as per ISP.</span>
+<span class="pc">/routing bgp connection</span>
+<span class="out">add name=ISP-A remote.address=198.51.100.1 remote.as=64500 \
+    local.role=ebgp as=65001 output.filter-chain=BGP-OUT \
+    output.network=192.0.2.0/24
+add name=ISP-B remote.address=203.0.113.9 remote.as=64501 \
+    local.role=ebgp as=65001 output.filter-chain=BGP-OUT \
+    output.network=192.0.2.0/24</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — v7 Is Not v6, and Filters Are Mandatory</span>
+    <p>Two traps in one. First, if you learned BGP on RouterOS 6 (<code>/routing bgp instance</code>, <code>/routing bgp peer</code>), <strong>none of it exists in v7</strong> — it's <code>/routing bgp connection</code> and <code>/routing filter rule</code> now, and the filter syntax is a small scripting language, not a row of columns. Second, exactly like Cisco: with no output filter you re-advertise learned routes and become transit between your ISPs. The <code>BGP-OUT</code> chain permitting only your aggregate is not optional. Add an input <code>max-prefix-limit</code> on each connection as a circuit-breaker.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Outbound — Local-Preference on Input</h2>
+  <p class="section-thesis"><em>Higher local-pref wins for egress, set on the routes coming <strong>in</strong> from the preferred ISP. In v7 that's a rule in the connection's input filter chain.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — prefer ISP-A outbound</span>
+    <pre class="term"><span class="pc">/routing filter rule</span>
+<span class="out">add chain=ISP-A-IN rule="set bgp-local-pref 200; accept"</span>
+<span class="pc">/routing bgp connection</span>
+<span class="out">set ISP-A input.filter=ISP-A-IN</span>
+<span class="cmt"># Egress now prefers ISP-A (local-pref 200 &gt; default 100). Drop the
+# ISP-A session and its routes withdraw; ISP-B takes over automatically.</span></pre>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Inbound — Prepend Toward the Backup</h2>
+  <p class="section-thesis"><em>Make the path via ISP-B look longer so the internet prefers coming in via ISP-A. Prepend our own AS on the output toward ISP-B.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — AS-path prepend on the ISP-B output</span>
+    <pre class="term"><span class="cmt"># Reuse a dedicated output chain for ISP-B that prepends before accepting
+# our aggregate. (Keep the anti-transit reject at the end.)</span>
+<span class="pc">/routing filter rule</span>
+<span class="out">add chain=ISP-B-OUT rule="if (dst==192.0.2.0/24) \
+    { set bgp-path-prepend 3; accept }"
+add chain=ISP-B-OUT rule="reject"</span>
+<span class="pc">/routing bgp connection</span>
+<span class="out">set ISP-B output.filter-chain=ISP-B-OUT</span>
+<span class="cmt"># Our prefix now looks 3 hops longer via ISP-B -> inbound favours ISP-A.</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 Same Asymmetry Lesson as Cisco</span>
+    <p>Local-preference steers only <em>your</em> egress and never leaves your AS; AS-path prepend rides the advertisement and influences <em>ingress</em> — but it's a hint the rest of the internet may ignore if a remote network sits closer to ISP-B. For real inbound control you set <strong>BGP communities</strong> your ISP publishes (in v7, <code>set bgp-communities</code> in the output chain). Prepending is the portable default; communities are the scalpel. This is identical across both platforms — see the <a href="cisco-bgp-dual-isp.html">Cisco twin</a> and the <a href="cisco-vs-mikrotik.html">translation guide</a>.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Default-Only In, and Verify <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>A small edge rarely needs the full table. Filter inbound to a default from each ISP, then confirm sessions, best path, and failover.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — default-only input + the health walk</span>
+    <pre class="term"><span class="cmt"># Accept only 0.0.0.0/0 inbound to keep the RIB tiny (add to each IN chain):</span>
+<span class="pc">/routing filter rule</span>
+<span class="out">add chain=ISP-A-IN rule="if (dst==0.0.0.0/0) { set bgp-local-pref 200; accept }"
+add chain=ISP-A-IN rule="reject"</span>
+
+<span class="cmt"># --- Verify ---</span>
+<span class="pc">/routing bgp session print</span>        <span class="cmt"># both established, uptime climbing</span>
+<span class="pc">/ip route print where bgp</span>          <span class="cmt"># the chosen default (via ISP-A)</span>
+<span class="pc">/routing bgp advertisements print</span>  <span class="cmt"># what we're sending each peer</span>
+<span class="cmt"># Failover: /interface disable ISP-A-link, watch the default flip to ISP-B.</span></pre>
+  </div>
+  <table class="cheat">
+    <thead><tr><th>Symptom</th><th>Where to look</th></tr></thead>
+    <tbody>
+      <tr><td>Session not established</td><td>TCP 179 reachability / AS mismatch / role — <code>/routing bgp session print detail</code>.</td></tr>
+      <tr><td>Pasting v6 config fails</td><td>You're on v7 — use <code>connection</code> + <code>/routing filter rule</code>, not <code>instance</code>/<code>peer</code>.</td></tr>
+      <tr><td>Egress via wrong ISP</td><td>local-pref rule not in the preferred peer's input chain.</td></tr>
+      <tr><td>Re-advertising ISP routes</td><td>Output filter chain missing or its final <code>reject</code> absent.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>RouterOS 7 BGP is a clean rewrite</strong> — <code>/routing bgp connection</code> + <code>/routing filter rule</code> chains. v6 configs don't apply; relearn it.</li>
+      <li><strong>Filter output to your own aggregate</strong> or you become accidental transit between your ISPs — same rule as Cisco, expressed as a chain ending in <code>reject</code>.</li>
+      <li><strong>Outbound = <code>set bgp-local-pref</code></strong> in the preferred peer's input chain (higher wins, stays inside your AS).</li>
+      <li><strong>Inbound = <code>set bgp-path-prepend</code></strong> toward the backup — a hint; use <code>bgp-communities</code> for real control.</li>
+      <li><strong>Default-only input</strong> keeps the RIB small; failover is automatic when a session drops.</li>
+      <li><strong>The policy model is identical to Cisco</strong> — only the syntax differs, which is the whole argument for one engineer across a mixed estate.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Running a WISP or multihomed site on RouterOS and unsure your BGP is safe?</h3>
+    <p>NOCTIS builds and audits BGP edges on MikroTik and Cisco across Crete — v7-correct filters, real path control, and no accidental-transit surprises — for WISPs, multi-site businesses, and anyone with two upstreams.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

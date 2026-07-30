@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF) — SP1R4 / NOCTIS</title>
+<meta name="description" content="Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.">
+<meta property="og:title" content="Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF) — NOCTIS">
+<meta property="og:description" content="Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-netconf.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-netconf.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-netconf.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-netconf.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF)",
+  "description": "Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-netconf.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-netconf.png",
+  "keywords": ["cisco"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-netconf"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / IOS-XE</span> &nbsp;·&nbsp; Modern &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS-XE<br>Model-Driven Config (NETCONF/RESTCONF)</h1>
+  <p class="post-subtitle">The Ansible post pushed config as code, but it was still screen-scraping the CLI underneath. Model-driven programmability is the grown-up version: structured data validated against a schema, changed transactionally, over NETCONF or RESTCONF. This is how you talk to modern IOS-XE like an API instead of pretending to be a human at a terminal.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS-XE</span>
+    <span class="tag">NETCONF</span>
+    <span class="tag">RESTCONF</span>
+    <span class="tag">YANG</span>
+    <span class="tag">Automation</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>CLI automation — even good CLI automation — has a ceiling: you're parsing human-readable output that was never meant to be parsed, and pushing lines that either apply cleanly or leave the box half-configured. <strong>Model-driven programmability</strong> removes the guesswork. Config and state are described by <strong>YANG</strong> models (a schema); you read and write that structured data over <strong>NETCONF</strong> (XML over SSH, port 830) or <strong>RESTCONF</strong> (JSON/XML over HTTPS). Because it's schema-validated, an invalid change is rejected as a whole rather than half-applied, and reading state gives you clean JSON instead of <code>show</code> output to regex.</p>
+    <p>The trade-off versus the <a href="cisco-ansible.html">Ansible/CLI</a> approach: model-driven is more rigid and has a learning curve (you must learn the models), but it's <strong>transactional, idempotent by nature, and truly programmable</strong>. For a fleet you drive from software — a NetBox-to-network pipeline, a self-service portal — this is the interface you want. Requires modern IOS-XE; classic IOS doesn't have it.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>IOS-XE (16.x+) — NETCONF/RESTCONF aren't on classic IOS</li>
+      <li>AAA with a real user; HTTPS for RESTCONF</li>
+      <li>A workstation with <code>ncclient</code> (Python) and/or <code>curl</code></li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Turn It On</h2>
+  <p class="section-thesis"><em>Two features, one AAA user. NETCONF listens on SSH 830; RESTCONF rides the HTTPS server. Enable what you'll use.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS-XE — enable NETCONF-YANG and RESTCONF</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">aaa new-model</span>
+<span class="pc">R1(config)#</span> <span class="out">username auto privilege 15 secret &lt;strong&gt;</span>
+
+<span class="cmt"># NETCONF over SSH (tcp/830):</span>
+<span class="pc">R1(config)#</span> <span class="out">netconf-yang</span>
+
+<span class="cmt"># RESTCONF over the secure HTTP server (tcp/443):</span>
+<span class="pc">R1(config)#</span> <span class="out">ip http secure-server</span>
+<span class="pc">R1(config)#</span> <span class="out">restconf</span>
+<span class="cmt"># Give both a few seconds to initialise (the YANG stack starts lazily).</span>
+<span class="pc">R1#</span> <span class="out">show netconf-yang datastores</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ Lock the API Down Like Any Management Plane</span>
+    <p>NETCONF (830) and RESTCONF (443) are full configuration channels — everything the management-plane <a href="cisco-hardening.html">hardening</a> post says applies here. Restrict them to your automation host with a control-plane/VTY ACL, use real AAA (ideally TACACS+), and never expose them to anything untrusted. A model-driven API is more powerful than the CLI, which cuts both ways.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">RESTCONF — the Quick Win</h2>
+  <p class="section-thesis"><em>If you can <code>curl</code>, you can drive RESTCONF. Read structured state as JSON, and PATCH a change with a small body — no SSH session, no expect scripts.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Workstation — read and change interfaces over RESTCONF</span>
+    <pre class="term"><span class="cmt"># READ: every interface as clean JSON (ietf-interfaces model).</span>
+<span class="pc">$</span> <span class="out">curl -sk -u auto:secret https://203.0.113.1/restconf/data/ietf-interfaces:interfaces \
+    -H 'Accept: application/yang-data+json' | jq .</span>
+
+<span class="cmt"># CHANGE: set a description on Gi2 with a PATCH (merge, idempotent).</span>
+<span class="pc">$</span> <span class="out">curl -sk -u auto:secret -X PATCH \
+    https://203.0.113.1/restconf/data/ietf-interfaces:interfaces/interface=GigabitEthernet2 \
+    -H 'Content-Type: application/yang-data+json' \
+    -d '{"ietf-interfaces:interface":{"name":"GigabitEthernet2","description":"uplink-to-core"}}'</span>
+<span class="cmt"># Re-running the same PATCH is a no-op — idempotent by construction.</span></pre>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">NETCONF — Transactional, With a Candidate Datastore</h2>
+  <p class="section-thesis"><em>NETCONF's edge is the datastore model: on platforms that support a candidate config, you stage changes and <code>commit</code> them atomically — all or nothing — which is exactly what you want for multi-part changes.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Python (ncclient) — get-config, then an atomic edit</span>
+    <pre class="term"><span class="out">from ncclient import manager
+m = manager.connect(host="203.0.113.1", port=830, username="auto",
+                    password="secret", hostkey_verify=False)
+
+<span class="cmt"># READ running config for one model subtree:</span>
+filt = "&lt;interfaces xmlns='urn:ietf:params:xml:ns:yang:ietf-interfaces'/&gt;"
+print(m.get_config(source="running", filter=("subtree", filt)))
+
+<span class="cmt"># WRITE: edit-config, then commit (candidate-capable platforms):</span>
+cfg = """&lt;config&gt;&lt;interfaces xmlns='urn:ietf:params:xml:ns:yang:ietf-interfaces'&gt;
+  &lt;interface&gt;&lt;name&gt;GigabitEthernet2&lt;/name&gt;
+    &lt;description&gt;managed-by-netconf&lt;/description&gt;&lt;/interface&gt;
+&lt;/interfaces&gt;&lt;/config&gt;"""
+m.edit_config(target="candidate", config=cfg)
+m.commit()   </span><span class="cmt"># atomic — rejected as a whole if any part is invalid</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Native vs Standard Models, and Capabilities Vary</span>
+    <p>There are three model families and you'll meet all of them: <strong>IETF</strong> (<code>ietf-interfaces</code> — portable, lowest common denominator), <strong>OpenConfig</strong> (vendor-neutral, richer), and <strong>Cisco-IOS-XE-native</strong> (everything the CLI can do, but Cisco-specific). Portable code targets IETF/OpenConfig; anything the standard models don't cover forces you into the native model. Also, not every platform/version advertises a writable <code>candidate</code> datastore — check the capabilities the device returns on connect and fall back to <code>running</code> if needed. Don't assume; the device tells you what it supports.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Why Bother vs the Ansible Post <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Both configure the box; they're different tools for different jobs. Here's the honest comparison so you pick right.</em></p>
+  <table class="cheat">
+    <thead><tr><th>Dimension</th><th>CLI / Ansible ios_config</th></tr></thead>
+    <tbody>
+      <tr><td>Data</td><td>Unstructured text you parse/generate</td></tr>
+      <tr><td>Validation</td><td>Applied line by line; can half-apply</td></tr>
+      <tr><td>Reads</td><td><code>show</code> output → regex</td></tr>
+      <tr><td>Idempotency</td><td>You engineer it</td></tr>
+      <tr><td>Best for</td><td>Quick wins, brownfield, any IOS</td></tr>
+    </tbody>
+  </table>
+  <table class="cheat">
+    <thead><tr><th>Dimension</th><th>NETCONF / RESTCONF</th></tr></thead>
+    <tbody>
+      <tr><td>Data</td><td>Structured, schema-validated (YANG)</td></tr>
+      <tr><td>Validation</td><td>Transactional — all or nothing</td></tr>
+      <tr><td>Reads</td><td>Clean JSON/XML</td></tr>
+      <tr><td>Idempotency</td><td>Inherent (merge to desired state)</td></tr>
+      <tr><td>Best for</td><td>Software-driven pipelines, modern IOS-XE</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Model-driven beats screen-scraping</strong> — YANG-described data over NETCONF (SSH/830) or RESTCONF (HTTPS), validated against a schema.</li>
+      <li><strong>RESTCONF is the quick win</strong> — if you can <code>curl</code>, you can read clean JSON and PATCH idempotent changes.</li>
+      <li><strong>NETCONF adds a candidate datastore</strong> on capable platforms — stage and <code>commit</code> atomically, so multi-part changes never half-apply.</li>
+      <li><strong>Three model families:</strong> IETF (portable), OpenConfig (vendor-neutral), IOS-XE-native (everything, but Cisco-specific). Portable code prefers the first two.</li>
+      <li><strong>Check capabilities on connect</strong> — not every version has a writable candidate; the device advertises what it supports.</li>
+      <li><strong>It's a management channel</strong> — lock 830/443 to your automation host and use real AAA, exactly like the CLI.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Automating a Cisco fleet and tired of parsing <code>show</code> output?</h3>
+    <p>NOCTIS builds model-driven automation for Cisco and MikroTik estates across Crete — NETCONF/RESTCONF pipelines, structured state, and transactional changes that don't half-apply — not brittle screen-scraping.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

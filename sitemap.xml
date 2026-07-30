@@ -56,6 +56,41 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://sp1r4.github.io/writeups/cisco-bgp-dual-isp.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-bgp-dual-isp.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/cisco-pbr.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-routing-rules.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/cisco-netconf.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-containers.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/mikrotik-prometheus.html</loc>
+    <lastmod>2026-07-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://sp1r4.github.io/writeups/field-audit-hotel-group.html</loc>
     <lastmod>2026-07-30</lastmod>
     <priority>0.6</priority>

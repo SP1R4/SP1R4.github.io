@@ -199,6 +199,62 @@
       <category>cisco</category>
     </item>
     <item>
+      <title>Cisco IOS: BGP &amp; Dual-ISP Multihoming</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-bgp-dual-isp</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-bgp-dual-isp</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Run a real multihomed BGP edge on Cisco IOS — two eBGP upstreams, outbound path control with local-preference, inbound with AS-path prepend, mandatory anti-transit filtering, and automatic failover.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: BGP &amp; Dual-ISP Multihoming</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-bgp-dual-isp</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-bgp-dual-isp</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Policy-Based Routing</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-pbr</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-pbr</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Route by who sent the packet, not just where it's going — PBR route-maps that steer a subnet or application out a different next-hop, the set-clause differences, and pairing with IP SLA so a dead path never blackholes.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: Policy Routing with Rules &amp; Mangle</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-routing-rules</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-routing-rules</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>RouterOS's two policy-routing tools — lightweight routing rules and connection-aware mangle routing-marks — when to use which, the connection-mark-then-routing-mark pattern that keeps a flow pinned to one WAN, and per-WAN NAT.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF)</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-netconf</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-netconf</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: RouterOS 7 Containers</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-containers</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-containers</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Run OCI/Docker images on the router itself — the device-mode security gate, veth networking on an isolated bridge, pulling and running a container (Pi-hole), persistence with mounts, and the architecture/storage constraints.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik: Metrics with Prometheus &amp; Grafana</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-prometheus</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-prometheus</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Time-series metrics and dashboards for RouterOS — a read-only API user, the mktxp exporter (optionally in a container on the router), a Prometheus scrape job, and Grafana dashboards with alerts on BGP/WAN/CPU/queues.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
       <title>Field Notes: Auditing a Small Hotel Group</title>
       <link>https://sp1r4.github.io/blog.html#field-audit-hotel-group</link>
       <guid>https://sp1r4.github.io/blog.html#field-audit-hotel-group</guid>
