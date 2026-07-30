@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Γιατί το Wi-Fi Επισκεπτών Χρειάζεται Δικό του Δίκτυο — SP1R4 / NOCTIS</title>
+<meta name="description" content="Οδηγός σε απλά λόγια για ξενοδόχους και επιχειρηματίες: τι σημαίνει ο διαχωρισμός δικτύου, γιατί ένας κωδικός Wi-Fi από μόνος του δεν προστατεύει τίποτα, και τα πέντε πράγματα που πρέπει να ζητήσετε από τον τεχνικό σας — με απόδειξη.">
+<meta property="og:title" content="Γιατί το Wi-Fi Επισκεπτών Χρειάζεται Δικό του Δίκτυο — NOCTIS">
+<meta property="og:description" content="Οδηγός σε απλά λόγια για ξενοδόχους και επιχειρηματίες: τι σημαίνει ο διαχωρισμός δικτύου, γιατί ένας κωδικός Wi-Fi δεν αρκεί, και τι να ζητήσετε από τον τεχνικό σας.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/guest-wifi-isolation-el.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png">
+<meta property="og:locale" content="el_GR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/guest-wifi-isolation-el.html">
+<link rel="alternate" hreflang="en" href="https://sp1r4.github.io/writeups/guest-wifi-isolation.html">
+<link rel="alternate" hreflang="el" href="https://sp1r4.github.io/writeups/guest-wifi-isolation-el.html">
+<link rel="alternate" hreflang="x-default" href="https://sp1r4.github.io/writeups/guest-wifi-isolation.html">
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .lang-switch{font-size:.8rem;letter-spacing:.04em;color:var(--body);margin-bottom:1.4rem;}
+  .lang-switch a{color:var(--accent);font-weight:600;}
+  .lang-switch strong{color:var(--mid);}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  ul.plain{padding-left:1.4rem;margin-bottom:1.2rem;}
+  ul.plain li{font-size:.96rem;color:var(--body);margin-bottom:.5rem;line-height:1.6;}
+  ol.plain{padding-left:1.4rem;margin-bottom:1.2rem;}
+  ol.plain li{font-size:.96rem;color:var(--body);margin-bottom:.5rem;line-height:1.6;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Γιατί το Wi-Fi Επισκεπτών Χρειάζεται Δικό του Δίκτυο",
+  "description": "Οδηγός σε απλά λόγια για ξενοδόχους και επιχειρηματίες: τι σημαίνει ο διαχωρισμός δικτύου, γιατί ένας κωδικός Wi-Fi από μόνος του δεν προστατεύει τίποτα, και τα πέντε πράγματα που πρέπει να ζητήσετε από τον τεχνικό σας — με απόδειξη.",
+  "inLanguage": "el",
+  "datePublished": "2026-09-07",
+  "dateModified": "2026-09-07",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/guest-wifi-isolation-el.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/guest-wifi-isolation.png",
+  "keywords": [
+    "security"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#guest-wifi-isolation-el"
+  },
+  "timeRequired": "PT4M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Πίσω στο blog</a>
+
+<div class="wrap">
+
+  <p class="lang-switch"><a href="guest-wifi-isolation.html">English</a> &nbsp;·&nbsp; <strong>Ελληνικά</strong></p>
+  <p class="post-meta"><span>Ασφάλεια</span> &nbsp;·&nbsp; Οδηγός &nbsp;·&nbsp; Σεπτέμβριος 2026</p>
+  <h1 class="post-title">Γιατί το Wi-Fi Επισκεπτών<br>Χρειάζεται Δικό του Δίκτυο</h1>
+  <p class="post-subtitle">Ένας οδηγός σε απλά λόγια για ξενοδόχους και επιχειρηματίες: τι σημαίνει πραγματικά ο διαχωρισμός δικτύου, γιατί ένας κωδικός Wi-Fi από μόνος του δεν προστατεύει τίποτα, και τα πέντε πράγματα που πρέπει να ζητήσετε από τον τεχνικό σας.</p>
+  <div class="tags">
+    <span class="tag">Wi-Fi</span>
+    <span class="tag">Διαχωρισμός Δικτύου</span>
+    <span class="tag">Φιλοξενία</span>
+    <span class="tag">GDPR</span>
+    <span class="tag">Χωρίς τεχνικούς όρους</span>
+  </div>
+  <hr class="title-rule">
+
+  <p>Το βλέπουμε στη μία στις δύο επιχειρήσεις που αναλαμβάνουμε: ένα router, ένας κωδικός Wi-Fi, και τα πάντα στο ίδιο δίκτυο — τα κινητά των επισκεπτών δίπλα στο POS της ρεσεψιόν, οι κάμερες, το σύστημα κρατήσεων. Δουλεύει — μέχρι τη μέρα που δεν δουλεύει. Αυτό το άρθρο εξηγεί, χωρίς τεχνικούς όρους, γιατί το Wi-Fi των επισκεπτών πρέπει να ζει σε δικό του, ξεχωριστό δίκτυο — και τι ακριβώς να ζητήσετε από τον τεχνικό σας.</p>
+  <h2 class="section-title">Το σενάριο που πρέπει να σας ανησυχεί</h2>
+  <p>Ένας επισκέπτης κάθεται στο lobby με ένα laptop που κουβαλά κακόβουλο λογισμικό — μπορεί να μην το ξέρει ούτε ο ίδιος. Συνδέεται στο Wi-Fi σας. Αν τα πάντα βρίσκονται στο ίδιο δίκτυο, αυτό το laptop μπορεί να «δει» το ταμείο σας, τις κάμερες, τον υπολογιστή της ρεσεψιόν με τα στοιχεία των πελατών σας. Δεν χρειάζεται χάκερ με κουκούλα — ένα μολυσμένο μηχάνημα και ένα «επίπεδο» δίκτυο αρκούν.</p>
+  <p>Ισχύει και το αντίστροφο: μια φθηνή κάμερα με παλιό firmware ή ένας «έξυπνος» θερμοσίφωνας μπορεί να γίνει η πόρτα από την οποία κάποιος φτάνει στα πραγματικά ευαίσθητα συστήματά σας.</p>
+  <h2 class="section-title">Τι σημαίνει διαχωρισμός — με απλά λόγια</h2>
+  <p>Διαχωρισμός σημαίνει ότι το δίκτυο κόβεται σε στεγανά διαμερίσματα. Στις επιχειρήσεις που στήνουμε, ο κανόνας είναι τέσσερα:</p>
+  <ul class="plain">
+    <li><strong>Επισκέπτες</strong> — βλέπουν το internet και τίποτα άλλο. Ούτε ο ένας τον άλλον, ούτε τίποτα δικό σας.</li>
+    <li><strong>Προσωπικό</strong> — ρεσεψιόν, POS, σύστημα κρατήσεων. Internet και, όπου χρειάζεται, προβολή καμερών.</li>
+    <li><strong>Κάμερες</strong> — κλειστό κύκλωμα με <strong>καμία απολύτως πρόσβαση στο internet</strong>. Η απομακρυσμένη προβολή γίνεται μέσω ασφαλούς VPN, όχι ανοίγοντας πόρτες.</li>
+    <li><strong>Διαχείριση</strong> — το router, τα switch και τα access point. Προσβάσιμα μόνο από εξουσιοδοτημένες συσκευές.</li>
+  </ul>
+  <p>Ένα μολυσμένο laptop στο δίκτυο επισκεπτών μένει εκεί: βλέπει το internet και τίποτα άλλο. Το πρόβλημα ενός επισκέπτη παύει να είναι πρόβλημα της επιχείρησής σας.</p>
+  <h2 class="section-title">«Μα το Wi-Fi μας έχει κωδικό»</h2>
+  <p>Ο κωδικός ελέγχει <strong>ποιος μπαίνει</strong> στο δίκτυο — όχι <strong>τι μπορεί να δει</strong> μόλις μπει. Από τη στιγμή που δίνετε τον κωδικό σε κάθε επισκέπτη (και τον τυπώνετε στην κάρτα του δωματίου), δεν προστατεύει τίποτα ανάμεσα στους συνδεδεμένους. Ένας κωδικός χωρίς διαχωρισμό είναι μια κλειδωμένη εξώπορτα σε ένα σπίτι χωρίς εσωτερικές πόρτες.</p>
+  <h2 class="section-title">Δεν είναι μόνο ασφάλεια — είναι και ποιότητα</h2>
+  <p>Σε ένα επίπεδο δίκτυο, ένας επισκέπτης που κατεβάζει ταινίες μπορεί να «πνίξει» το POS στη μέση μιας συναλλαγής. Ο σωστός διαχωρισμός φέρνει και <strong>κανόνες δικαιοσύνης</strong>: κάθε δωμάτιο παίρνει το μερίδιό του, το τηλέφωνο και το ταμείο έχουν προτεραιότητα, και το Wi-Fi αντέχει τον Αύγουστο. Τα παράπονα για «αργό internet» συνήθως δεν χρειάζονται ακριβότερη γραμμή — χρειάζονται σωστό στήσιμο.</p>
+  <h2 class="section-title">Τι να ζητήσετε από τον τεχνικό σας</h2>
+  <p>Δεν χρειάζεται να ξέρετε πώς γίνεται — χρειάζεται να ξέρετε τι να ζητήσετε:</p>
+  <ol class="plain">
+    <li>Ξεχωριστά δίκτυα για επισκέπτες, προσωπικό, κάμερες και διαχείριση.</li>
+    <li>Κάμερες <strong>χωρίς πρόσβαση στο internet</strong> — απομακρυσμένη προβολή μόνο μέσω VPN.</li>
+    <li>Δίκαιο μοίρασμα ταχύτητας ανά δωμάτιο/χρήστη στο δίκτυο επισκεπτών.</li>
+    <li><strong>Απόδειξη, όχι καθησυχασμό</strong>: ζητήστε να σας δείξουν, μπροστά σας, ότι από το Wi-Fi επισκεπτών δεν φαίνεται ούτε το ταμείο, ούτε οι κάμερες, ούτε το router.</li>
+    <li>Τεκμηρίωση: ένα διάγραμμα και μία σελίδα που εξηγεί τι υπάρχει και γιατί.</li>
+  </ol>
+  <p>Αυτό το τελευταίο μετράει περισσότερο. Ένα δίκτυο που «μάλλον είναι εντάξει» δεν είναι εντάξει — αν δεν έχει δοκιμαστεί, είναι μια υπόθεση.</p>
+  <h2 class="section-title">Και η νομική πλευρά</h2>
+  <p>Στοιχεία πελατών στη ρεσεψιόν, πλάνα καμερών με πρόσωπα, πληρωμές με κάρτα — όλα αυτά είναι δεδομένα που είστε υποχρεωμένοι να προστατεύετε (GDPR). Ένα περιστατικό που ξεκίνησε από ανοιχτό Wi-Fi επισκεπτών δύσκολα υπερασπίζεται με ένα «δεν το ξέραμε». Ο διαχωρισμός είναι ένα από τα φθηνότερα μέτρα με την υψηλότερη απόδοση — από μισή έως μία ημέρα εργασίας στις περισσότερες επιχειρήσεις, με τον εξοπλισμό που ήδη έχετε.</p>
+  <div class="thesis-card"><p>Για τεχνικούς αναγνώστες: το πλήρες στήσιμο, εντολή προς εντολή, βρίσκεται στο <a href="mikrotik-lab-hotel.html">εργαστήριο ξενοδοχειακού δικτύου MikroTik</a> και στο αντίστοιχο <a href="cisco-lab-campus.html">Cisco campus lab</a> (στα Αγγλικά).</p></div>
+  <p>Θέλετε να μάθετε πώς είναι στημένο το δικό σας; <a href="https://sp1r4.github.io/services.html">Μιλήστε μαζί μας</a> — μια σύντομη αξιολόγηση συνήθως λέει όλη την ιστορία.</p>
+
+  <div class="cta-card">
+    <h3>Δεν είστε σίγουροι πώς είναι διαχωρισμένο το δίκτυό σας;</h3>
+    <p>Η NOCTIS σχεδιάζει και τεκμηριώνει τον διαχωρισμό δικτύου για ξενοδοχεία, κλινικές και μικρές επιχειρήσεις στην Κρήτη — επισκέπτες, προσωπικό, κάμερες και διαχείριση, ξεχωριστά και σωστά, με απόδειξη ότι λειτουργεί.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Κλείστε μια Γνωριμία →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← Όλα τα άρθρα</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

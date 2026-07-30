@@ -1,5 +1,29 @@
 [
   {
+    "slug": "field-audit-hotel-group",
+    "title": "Field Notes: Auditing a Small Hotel Group",
+    "description": "An anonymised security audit across three small family hotels — a flat network with guests on the same wire as the booking PC and cameras, an exposed router management plane, and the guest-to-card-data finding that got remediation approved the same afternoon.",
+    "date": "2026-07-30",
+    "tags": [
+      "security",
+      "mikrotik"
+    ],
+    "html": "writeups/field-audit-hotel-group.html",
+    "reading_time": 7
+  },
+  {
+    "slug": "cisco-vs-mikrotik",
+    "title": "Cisco ↔ MikroTik: The Translation Guide",
+    "description": "The same network task in Cisco IOS and MikroTik RouterOS side by side, grouped by topic, each row linking the full twin post on both platforms — a jump table for a mixed estate.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco",
+      "mikrotik"
+    ],
+    "html": "writeups/cisco-vs-mikrotik.html",
+    "reading_time": 6
+  },
+  {
     "slug": "mikrotik-first-contact",
     "title": "MikroTik: First Contact",
     "description": "Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.",
@@ -356,7 +380,7 @@
       "mikrotik"
     ],
     "html": "writeups/mikrotik-index.html",
-    "reading_time": 3
+    "reading_time": 5
   },
   {
     "slug": "cisco-index",
@@ -367,7 +391,7 @@
       "cisco"
     ],
     "html": "writeups/cisco-index.html",
-    "reading_time": 5
+    "reading_time": 6
   },
   {
     "slug": "cisco-first-contact",

@@ -199,6 +199,24 @@
       <category>cisco</category>
     </item>
     <item>
+      <title>Field Notes: Auditing a Small Hotel Group</title>
+      <link>https://sp1r4.github.io/blog.html#field-audit-hotel-group</link>
+      <guid>https://sp1r4.github.io/blog.html#field-audit-hotel-group</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>An anonymised security audit across three small family hotels — a flat network with guests on the same wire as the booking PC and cameras, an exposed router management plane, and the guest-to-card-data finding that got remediation approved the same afternoon.</description>
+      <category>security</category>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco ↔ MikroTik: The Translation Guide</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-vs-mikrotik</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-vs-mikrotik</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>The same network task in Cisco IOS and MikroTik RouterOS side by side, grouped by topic, each row linking the full twin post on both platforms — a jump table for a mixed estate.</description>
+      <category>cisco</category>
+      <category>mikrotik</category>
+    </item>
+    <item>
       <title>MikroTik: First Contact</title>
       <link>https://sp1r4.github.io/blog.html#mikrotik-first-contact</link>
       <guid>https://sp1r4.github.io/blog.html#mikrotik-first-contact</guid>

@@ -20,6 +20,8 @@ static = [
     ('/services.html', '0.8'),
     ('/starlink.html', '0.9'),
     ('/starlink-el.html', '0.9'),
+    ('/writeups/guest-wifi-isolation-el.html', '0.7'),
+    ('/writeups/what-is-a-pentest-el.html', '0.7'),
     ('/pentest.html', '0.9'),
     ('/consulting.html', '0.9'),
     ('/projects.html', '0.8'),
