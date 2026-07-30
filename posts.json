@@ -1,5 +1,41 @@
 [
   {
+    "slug": "cisco-field-hotel",
+    "title": "Field Notes: A Cisco Campus for a Cretan Hotel",
+    "description": "An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco",
+      "starlink"
+    ],
+    "html": "writeups/cisco-field-hotel.html",
+    "reading_time": 9
+  },
+  {
+    "slug": "cisco-mikrotik-ipsec",
+    "title": "MikroTik ↔ Cisco — One IPsec Tunnel, Two Vendors",
+    "description": "Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — the exact proposal matching, the route-based-vs-policy-based mismatch that breaks it, and NAT exemption on both ends.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco",
+      "mikrotik"
+    ],
+    "html": "writeups/cisco-mikrotik-ipsec.html",
+    "reading_time": 9
+  },
+  {
+    "slug": "cisco-attacking-ios",
+    "title": "Attacking Cisco Gear — A Pentester's Field Guide",
+    "description": "The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, type-7/5/8/9 password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco",
+      "security"
+    ],
+    "html": "writeups/cisco-attacking-ios.html",
+    "reading_time": 10
+  },
+  {
     "slug": "mikrotik-vlans",
     "title": "MikroTik: VLANs",
     "description": "Configuring VLANs on MikroTik RouterOS — bridge VLAN filtering, tagging, and inter-VLAN routing.",
@@ -268,7 +304,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 6,
-    "reading_time": 10
+    "reading_time": 9
   },
   {
     "slug": "cisco-routing-ospf",
@@ -296,7 +332,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 8,
-    "reading_time": 10
+    "reading_time": 9
   },
   {
     "slug": "cisco-hsrp",
@@ -338,7 +374,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 11,
-    "reading_time": 10
+    "reading_time": 9
   },
   {
     "slug": "cisco-qos-voip",
@@ -352,7 +388,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 12,
-    "reading_time": 9
+    "reading_time": 8
   },
   {
     "slug": "cisco-site-to-site-vpn",
@@ -422,7 +458,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 17,
-    "reading_time": 10
+    "reading_time": 9
   },
   {
     "slug": "cisco-hardening",
@@ -492,7 +528,7 @@
     "series": "cisco-ios",
     "series_name": "Cisco IOS Fundamentals",
     "series_order": 22,
-    "reading_time": 8
+    "reading_time": 7
   },
   {
     "slug": "cisco-buying-used",
@@ -604,7 +640,7 @@
     "series": "mikrotik-routeros",
     "series_name": "MikroTik RouterOS Fundamentals",
     "series_order": 10,
-    "reading_time": 10
+    "reading_time": 9
   },
   {
     "slug": "mikrotik-lab-hotel",

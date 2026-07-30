@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik ↔ Cisco — One IPsec Tunnel, Two Vendors — SP1R4 / NOCTIS</title>
+<meta name="description" content="Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — the exact proposal matching, the route-based-vs-policy-based mismatch that breaks it, and NAT exemption on both ends.">
+<meta property="og:title" content="MikroTik ↔ Cisco — One IPsec Tunnel, Two Vendors — NOCTIS">
+<meta property="og:description" content="Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — proposal matching, the route-based-vs-policy-based mismatch, and NAT exemption on both ends.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-mikrotik-ipsec.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-mikrotik-ipsec.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-mikrotik-ipsec.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-mikrotik-ipsec.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik ↔ Cisco — One IPsec Tunnel, Two Vendors",
+  "description": "Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — the exact proposal matching, the route-based-vs-policy-based mismatch that breaks it, and NAT exemption on both ends.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-mikrotik-ipsec.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-mikrotik-ipsec.png",
+  "keywords": [
+    "cisco",
+    "mikrotik"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-mikrotik-ipsec"
+  },
+  "timeRequired": "PT12M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco + MikroTik</span> &nbsp;·&nbsp; Interop &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik ↔ Cisco<br>One Tunnel, Two Vendors</h1>
+  <p class="post-subtitle">Real networks are mixed. The HQ has a Cisco ISR the last integrator left; the new branch got a MikroTik hEX because it costs a tenth as much. They still need one encrypted IPsec tunnel between them. This is the exact build — IKEv2 on both, the proposal values that must line up to the letter, and the one conceptual mismatch (route-based vs policy-based) that wastes everyone's first afternoon.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">IPsec</span>
+    <span class="tag">IKEv2</span>
+    <span class="tag">Interop</span>
+  </div>
+  <hr class="title-rule">
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <!-- cisco -->
+      <rect x="26" y="74" width="140" height="52" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="96" y="95" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">HQ · Cisco ISR</text>
+      <text x="96" y="111" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a5a78;text-anchor:middle;">203.0.113.1 · 10.1.0.0/16</text>
+      <!-- mikrotik -->
+      <rect x="554" y="74" width="140" height="52" rx="6" fill="#d8e0ea" stroke="#293d54"/>
+      <text x="624" y="95" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">Branch · MikroTik</text>
+      <text x="624" y="111" style="font-family:ui-monospace,monospace;font-size:8px;fill:#293d54;text-anchor:middle;">198.51.100.2 · 10.2.0.0/16</text>
+      <!-- cloud -->
+      <ellipse cx="360" cy="100" rx="86" ry="42" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="360" y="96" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Internet</text>
+      <text x="360" y="110" style="font-family:'Inter',sans-serif;font-size:8px;fill:#c63d1f;text-anchor:middle;">IKEv2 · UDP 500/4500</text>
+      <path d="M166 100 Q 360 40 554 100" fill="none" stroke="#558840" stroke-width="3"/>
+      <text x="360" y="52" style="font-family:ui-monospace,monospace;font-size:9px;fill:#3a6a28;text-anchor:middle;font-weight:600;">ESP-AES-256 / SHA-256 / DH14 · PFS14</text>
+      <text x="360" y="176" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Different menus, identical IPsec. The tunnel only cares that the numbers match.</text>
+    </svg>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>IPsec is a standard, so a Cisco router and a MikroTik <em>will</em> build a tunnel — the protocol doesn't care who made the boxes. What trips people is that the two vendors expose the <strong>same two-phase negotiation through completely different words</strong>, and default to different <em>styles</em> of tunnel. Cisco's modern default is <strong>route-based</strong> (a VTI you route over); MikroTik's default is <strong>policy-based</strong> (a policy that says "traffic matching src/dst gets encrypted"). Mix the two carelessly and Phase&nbsp;1 comes up while traffic goes nowhere.</p>
+    <p>This build keeps it <strong>policy-based on both ends</strong> — the lowest common denominator that any firewall or router speaks, and the least surprising when the far side is a MikroTik. We use IKEv2, AES-256/SHA-256/DH-14 with PFS, a matched pair of traffic selectors (10.1.0.0/16 ↔ 10.2.0.0/16), and the NAT-exemption fix on both routers. Every value that must be identical is called out explicitly, because IPsec fails silently and unhelpfully when one of them isn't.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>The Cisco-native version: <a href="cisco-site-to-site-vpn.html">Site-to-Site IPsec VPN</a> (VTI/route-based)</li>
+      <li>Both routers reachable on public IPs (or UDP 500 + 4500 forwarded to them)</li>
+      <li>Non-overlapping LANs — 10.1.0.0/16 at HQ, 10.2.0.0/16 at the branch</li>
+    </ul>
+  </div>
+
+  <!-- 00 the mapping -->
+  <p class="section-num">00</p>
+  <h2 class="section-title">The Rosetta Stone</h2>
+  <p class="section-thesis"><em>Before typing anything, hold the two vocabularies side by side. Everything after this is just filling these rows in with matching values.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Concept</th><th>Cisco IOS</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1 crypto (IKE)</td><td>crypto ikev2 proposal + policy</td></tr>
+      <tr><td>Peer + PSK</td><td>crypto ikev2 keyring + profile</td></tr>
+      <tr><td>Phase 2 crypto (ESP)</td><td>crypto ipsec transform-set</td></tr>
+      <tr><td>What to encrypt</td><td>crypto map ACL (policy) / route (VTI)</td></tr>
+      <tr><td>NAT exemption</td><td>deny line above permit in NAT ACL</td></tr>
+      <tr><td>See active tunnel</td><td>show crypto ikev2 sa</td></tr>
+    </tbody>
+  </table>
+
+  <table class="cheat">
+    <thead><tr><th>Concept</th><th>MikroTik RouterOS v7</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1 crypto (IKE)</td><td>/ip ipsec profile</td></tr>
+      <tr><td>Peer + PSK</td><td>/ip ipsec peer + /ip ipsec identity</td></tr>
+      <tr><td>Phase 2 crypto (ESP)</td><td>/ip ipsec proposal</td></tr>
+      <tr><td>What to encrypt</td><td>/ip ipsec policy (src/dst address)</td></tr>
+      <tr><td>NAT exemption</td><td>/ip firewall nat accept rule above masquerade</td></tr>
+      <tr><td>See active tunnel</td><td>/ip ipsec active-peers print</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 01 cisco side -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Cisco Side (HQ) — Policy-Based</h2>
+  <p class="section-thesis"><em>We deliberately use a crypto map here rather than a VTI, because a policy-based peer is the least-surprising thing to hand a MikroTik. Same four crypto objects as the VTI post, terminated with a crypto map on the WAN interface.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Cisco IOS (HQ · 203.0.113.1) — IKEv2 + crypto map</span>
+    <pre class="term"><span class="cmt"># --- Phase 1: IKEv2 proposal / policy (must match MikroTik profile) ---</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto ikev2 proposal PROP-MT</span>
+<span class="pc">R1(config-ikev2-proposal)#</span> <span class="out">encryption aes-cbc-256</span>
+<span class="pc">R1(config-ikev2-proposal)#</span> <span class="out">integrity sha256</span>
+<span class="pc">R1(config-ikev2-proposal)#</span> <span class="out">group 14</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto ikev2 policy POL-MT</span>
+<span class="pc">R1(config-ikev2-policy)#</span> <span class="out">proposal PROP-MT</span>
+
+<span class="cmt"># --- Peer + pre-shared key (identity = branch public IP) ---</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto ikev2 keyring KR-MT</span>
+<span class="pc">R1(config-ikev2-keyring)#</span> <span class="out">peer BRANCH</span>
+<span class="pc">R1(config-ikev2-keyring-peer)#</span> <span class="out">address 198.51.100.2</span>
+<span class="pc">R1(config-ikev2-keyring-peer)#</span> <span class="out">pre-shared-key S3cr3t-Cross-Vendor!</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto ikev2 profile PROF-MT</span>
+<span class="pc">R1(config-ikev2-profile)#</span> <span class="out">match identity remote address 198.51.100.2 255.255.255.255</span>
+<span class="pc">R1(config-ikev2-profile)#</span> <span class="out">authentication local pre-share</span>
+<span class="pc">R1(config-ikev2-profile)#</span> <span class="out">authentication remote pre-share</span>
+<span class="pc">R1(config-ikev2-profile)#</span> <span class="out">keyring local KR-MT</span>
+
+<span class="cmt"># --- Phase 2: transform set + PFS (match MikroTik proposal) ---</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto ipsec transform-set TS-MT esp-aes 256 esp-sha256-hmac</span>
+<span class="pc">R1(cfg-crypto-trans)#</span> <span class="out">mode tunnel</span>
+
+<span class="cmt"># --- Interesting-traffic ACL: HQ LAN -> Branch LAN ---</span>
+<span class="pc">R1(config)#</span> <span class="out">ip access-list extended VPN-TRAFFIC</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit ip 10.1.0.0 0.0.255.255 10.2.0.0 0.0.255.255</span>
+
+<span class="cmt"># --- Crypto map: tie peer + transform + PFS + ACL, apply to WAN ---</span>
+<span class="pc">R1(config)#</span> <span class="out">crypto map CMAP-MT 10 ipsec-isakmp</span>
+<span class="pc">R1(config-crypto-map)#</span> <span class="out">set peer 198.51.100.2</span>
+<span class="pc">R1(config-crypto-map)#</span> <span class="out">set ikev2-profile PROF-MT</span>
+<span class="pc">R1(config-crypto-map)#</span> <span class="out">set transform-set TS-MT</span>
+<span class="pc">R1(config-crypto-map)#</span> <span class="out">set pfs group14</span>
+<span class="pc">R1(config-crypto-map)#</span> <span class="out">match address VPN-TRAFFIC</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">crypto map CMAP-MT</span></pre>
+  </div>
+
+  <!-- 02 mikrotik side -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">The MikroTik Side (Branch) — Policy-Based</h2>
+  <p class="section-thesis"><em>Same negotiation, RouterOS words. The profile is Phase&nbsp;1, the proposal is Phase&nbsp;2, the peer+identity carry the PSK, and the policy is the mirror of Cisco's interesting-traffic ACL. The values are copy-paste identical to HQ.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">MikroTik RouterOS v7 (Branch · 198.51.100.2)</span>
+    <pre class="term"><span class="cmt"># --- Phase 1 profile: MUST match Cisco PROP-MT exactly ---</span>
+<span class="pc">/ip ipsec profile</span>
+<span class="out">add name=PROF-CISCO enc-algorithm=aes-256 hash-algorithm=sha256 \
+    dh-group=modp2048 lifetime=8h</span>          <span class="cmt"># modp2048 == Cisco group 14</span>
+
+<span class="cmt"># --- Peer: the HQ public IP, IKEv2, using that profile ---</span>
+<span class="pc">/ip ipsec peer</span>
+<span class="out">add name=HQ address=203.0.113.1/32 profile=PROF-CISCO exchange-mode=ike2</span>
+
+<span class="cmt"># --- Identity: the pre-shared key, char-for-char identical to Cisco ---</span>
+<span class="pc">/ip ipsec identity</span>
+<span class="out">add peer=HQ auth-method=pre-shared-key secret="S3cr3t-Cross-Vendor!"</span>
+
+<span class="cmt"># --- Phase 2 proposal: MUST match Cisco TS-MT + PFS group14 ---</span>
+<span class="pc">/ip ipsec proposal</span>
+<span class="out">add name=PROP-CISCO enc-algorithms=aes-256-cbc auth-algorithms=sha256 \
+    pfs-group=modp2048 lifetime=1h</span>
+
+<span class="cmt"># --- Policy: mirror of Cisco's ACL (Branch LAN -> HQ LAN) ---</span>
+<span class="pc">/ip ipsec policy</span>
+<span class="out">add peer=HQ tunnel=yes proposal=PROP-CISCO \
+    src-address=10.2.0.0/16 dst-address=10.1.0.0/16</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — <code>modp2048</code> = DH Group 14, and Say It Twice</span>
+    <p>MikroTik names Diffie-Hellman groups by bit-length (<code>modp2048</code>), Cisco by number (<code>group 14</code>) — they're the same group, but you have to translate. And there are <strong>two</strong> DH settings: the profile's <code>dh-group</code> (Phase 1) and the proposal's <code>pfs-group</code> (Phase 2 PFS). Cisco's <code>set pfs group14</code> in the crypto map only sets the Phase-2 one — if you set PFS on one vendor and not the other, Phase 2 fails <em>after</em> Phase 1 succeeds, which looks baffling. Match both, or disable PFS on both.</p>
+  </div>
+
+  <!-- 03 the big mismatch -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">The Mismatch That Wastes the Afternoon</h2>
+  <p class="section-thesis"><em>Phase 1 is READY, both sides show the peer as connected, and not a single packet crosses. Nine times out of ten it's one of these three — and none of them show up as an obvious error.</em></p>
+
+  <h3 class="sub">A · Route-based vs policy-based</h3>
+  <p>If you built the Cisco end as a <strong>VTI</strong> (from the <a href="cisco-site-to-site-vpn.html">site-to-site post</a>) but the MikroTik as a policy, the two disagree about <em>how</em> traffic enters the tunnel. Cisco's VTI wants to route; MikroTik's policy wants src/dst selectors. Keep both policy-based (as above), <em>or</em> both route-based (MikroTik: an IPIP/GRE interface with an IPsec policy in tunnel-mode bound to it). Don't cross them.</p>
+
+  <h3 class="sub">B · Traffic selectors must be exact mirrors</h3>
+  <p>Cisco's ACL says <code>10.1.0.0/16 → 10.2.0.0/16</code>; MikroTik's policy must say <code>src 10.2.0.0/16 → dst 10.1.0.0/16</code> — the exact mirror, same masks. A <code>/24</code> on one side and <code>/16</code> on the other is a proposal mismatch and Phase 2 refuses. Cisco is stricter than most about selectors matching to the bit.</p>
+
+  <h3 class="sub">C · NAT eats the tunnel on both ends</h3>
+  <p>Each router already masquerades its LAN to the internet, and will happily NAT the VPN-bound traffic too — mangling it before encryption. You must exempt site-to-site traffic on <strong>both</strong> boxes.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">NAT exemption — both ends</span>
+    <pre class="term"><span class="cmt"># CISCO: deny (exempt) VPN traffic ABOVE the permit, in the NAT ACL</span>
+<span class="pc">R1(config)#</span> <span class="out">ip access-list extended NAT-LIST</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">deny   ip 10.1.0.0 0.0.255.255 10.2.0.0 0.0.255.255</span>
+<span class="pc">R1(config-ext-nacl)#</span> <span class="out">permit ip 10.1.0.0 0.0.255.255 any</span>
+
+<span class="cmt"># MIKROTIK: an accept rule ABOVE masquerade for the same pair</span>
+<span class="pc">/ip firewall nat</span>
+<span class="out">add chain=srcnat action=accept place-before=0 \
+    src-address=10.2.0.0/16 dst-address=10.1.0.0/16
+add chain=srcnat action=masquerade out-interface=ether1</span>   <span class="cmt"># WAN</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Order &amp; Stale Translations, Same as the Native Build</span>
+    <p>On both vendors the exemption must sit <strong>above</strong> the masquerade/permit — first match wins. And if the tunnel was up and NATing before you fixed it, clear the stale state or you'll swear it's still broken: Cisco <code>clear ip nat translation *</code>, MikroTik the src-nat connections in <code>/ip firewall connection</code>. This is the same trap as the <a href="cisco-site-to-site-vpn.html">Cisco-to-Cisco build</a> — it just has to be solved twice here.</p>
+  </div>
+
+  <!-- 04 verify -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Verify From Both Chairs <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Confirm Phase 1, then Phase 2 with climbing counters, from each vendor's perspective. The failure is always at one identifiable layer — check them in order.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Cisco (HQ) — the health walk</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show crypto ikev2 sa</span>            <span class="cmt"># Phase 1 -> Status READY</span>
+<span class="pc">R1#</span> <span class="out">show crypto ipsec sa | inc pkts|ident</span>  <span class="cmt"># encaps/decaps both climb</span>
+<span class="pc">R1#</span> <span class="out">ping 10.2.0.1 source 10.1.0.1</span>   <span class="cmt"># LAN-sourced, not the WAN IP</span></pre>
+  </div>
+
+  <div class="term-wrap">
+    <span class="term-label">MikroTik (Branch) — the same, RouterOS words</span>
+    <pre class="term"><span class="pc">/ip ipsec active-peers print</span>       <span class="cmt"># state=established, uptime climbing</span>
+<span class="pc">/ip ipsec policy print stats</span>       <span class="cmt"># ph2-state=established, in/out bytes &gt; 0</span>
+<span class="pc">/ping 10.1.0.1 src-address=10.2.0.1</span>
+<span class="cmt"># installed-sa shows the actual keys/SPIs if you need to go deeper:</span>
+<span class="pc">/ip ipsec installed-sa print</span></pre>
+  </div>
+
+  <table class="cheat">
+    <thead><tr><th>Symptom</th><th>Where to look</th></tr></thead>
+    <tbody>
+      <tr><td>No Phase 1 / not established</td><td>Profile mismatch (enc/hash/DH) or PSK typo. MikroTik: <code>/log print where topics~"ipsec"</code>.</td></tr>
+      <tr><td>Phase 1 up, no Phase 2</td><td>Proposal/PFS mismatch, or selectors not exact mirrors (§03A/B).</td></tr>
+      <tr><td>Phase 2 up, encaps climbs, decaps 0</td><td>Far side's return NAT/route — the other router is mangling or dropping.</td></tr>
+      <tr><td>SAs up, zero packets</td><td>NAT eating traffic (§03C) or no route/policy sending LAN traffic in.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Pro Tip — When You Control Both Ends, Standardise</span>
+    <p>Cross-vendor tunnels are perfectly stable once matched, but every parameter is a place for the two configs to drift apart over time. Pick <strong>one</strong> crypto profile — AES-256 / SHA-256 / DH-14 / PFS-14 / IKEv2 — and reuse it on every tunnel in the estate regardless of vendor. Document the pairs. When a branch tunnel drops at 2am, "they all use the same numbers" is the difference between a five-minute fix and an afternoon of diffing two dialects.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>IPsec is a standard — the tunnel builds regardless of vendor.</strong> The work is translating one dialect to the other and matching every number.</li>
+      <li><strong>Keep it policy-based on both ends</strong> when a MikroTik is involved — it's the least-surprising style and avoids the route-based-vs-policy-based mismatch entirely.</li>
+      <li><strong>Learn the three translations:</strong> profile=Phase 1, proposal=Phase 2, <code>modp2048</code>=<code>group 14</code>. Get those and the rest is filling in a table.</li>
+      <li><strong>PFS is two settings, not one.</strong> Phase-1 DH and Phase-2 PFS must both match — mismatched PFS fails Phase 2 after Phase 1 succeeds, which reads as a ghost.</li>
+      <li><strong>Selectors must be exact mirrors</strong> — same subnets, same masks, reversed. Cisco enforces this to the bit.</li>
+      <li><strong>Exempt VPN traffic from NAT on both routers</strong>, above the masquerade, and clear stale translations after the fix — the single most common "up but no traffic" cause, now doubled.</li>
+      <li><strong>Standardise one crypto profile across the whole estate.</strong> Mixed-vendor is fine; mixed-parameters is a 2am debugging session waiting to happen.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Mixed Cisco and MikroTik sites that need to talk securely?</h3>
+    <p>NOCTIS designs and documents cross-vendor VPN estates across Crete — Cisco HQ, MikroTik branches, Starlink backhaul — with one standard crypto profile, clean failover, and tunnels that survive the 2am phone call.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

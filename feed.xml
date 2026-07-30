@@ -199,6 +199,33 @@
       <category>cisco</category>
     </item>
     <item>
+      <title>Field Notes: A Cisco Campus for a Cretan Hotel</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-field-hotel</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-field-hotel</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.</description>
+      <category>cisco</category>
+      <category>starlink</category>
+    </item>
+    <item>
+      <title>MikroTik ↔ Cisco — One IPsec Tunnel, Two Vendors</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-mikrotik-ipsec</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-mikrotik-ipsec</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — the exact proposal matching, the route-based-vs-policy-based mismatch that breaks it, and NAT exemption on both ends.</description>
+      <category>cisco</category>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Attacking Cisco Gear — A Pentester's Field Guide</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-attacking-ios</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-attacking-ios</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, type-7/5/8/9 password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.</description>
+      <category>cisco</category>
+      <category>security</category>
+    </item>
+    <item>
       <title>Cisco IOS: Site-to-Site IPsec VPN</title>
       <link>https://sp1r4.github.io/blog.html#cisco-site-to-site-vpn</link>
       <guid>https://sp1r4.github.io/blog.html#cisco-site-to-site-vpn</guid>

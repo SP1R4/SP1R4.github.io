@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Field Notes: A Cisco Campus for a Cretan Hotel — SP1R4 / NOCTIS</title>
+<meta name="description" content="An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.">
+<meta property="og:title" content="Field Notes: A Cisco Campus for a Cretan Hotel — NOCTIS">
+<meta property="og:description" content="An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation, dual-WAN fibre+Starlink failover, guest isolation, and the three things that actually broke.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-field-hotel.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-field-hotel.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-field-hotel.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-field-hotel.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Field Notes: A Cisco Campus for a Cretan Hotel",
+  "description": "An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-field-hotel.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-field-hotel.png",
+  "keywords": [
+    "cisco",
+    "starlink"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-field-hotel"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+
+  <p class="post-meta"><span>Cisco / Field Notes</span> &nbsp;·&nbsp; Case Study &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Field Notes<br>A Campus for a Cretan Hotel</h1>
+  <p class="post-subtitle">The rest of this series is how each piece works. This is what happens when you put them together for money, on a deadline, in a building with 30cm stone walls and one fibre drop that goes down every time it rains. An anonymised write-up of a real collapsed-core Cisco build for a seaside hotel — the design, the dual-WAN failover onto Starlink, and the three things that broke in the first week.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Case Study</span>
+    <span class="tag">Network Design</span>
+    <span class="tag">Starlink</span>
+    <span class="tag">Segmentation</span>
+    <span class="tag">Hospitality</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="callout defender">
+    <span class="callout-label">◆ Anonymised</span>
+    <p>Client details, addresses, SSIDs and public IPs are changed or generalised; topology and numbers are representative of the real build, not a copy of the live config. Shared with permission. The point is the <em>decisions</em>, not the client.</p>
+  </div>
+
+  <!-- Hero diagram -->
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="300" fill="#e1ded7"/>
+      <!-- WANs -->
+      <rect x="40" y="24" width="150" height="40" rx="6" fill="#d8e8d0" stroke="#558840"/>
+      <text x="115" y="42" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#3a6a28;text-anchor:middle;">Fibre (primary)</text>
+      <text x="115" y="56" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">Gi0/0 · IP SLA track</text>
+      <rect x="530" y="24" width="150" height="40" rx="6" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="605" y="42" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#c63d1f;text-anchor:middle;">Starlink (backup)</text>
+      <text x="605" y="56" style="font-family:ui-monospace,monospace;font-size:8px;fill:#c63d1f;text-anchor:middle;">Gi0/1 · CGNAT</text>
+      <!-- core -->
+      <rect x="270" y="108" width="180" height="52" rx="6" fill="#cfe0ee" stroke="#3a5a78"/>
+      <text x="360" y="130" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#3a5a78;text-anchor:middle;">Collapsed Core</text>
+      <text x="360" y="146" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a5a78;text-anchor:middle;">L3 switch · inter-VLAN + edge router</text>
+      <path d="M115 64 L330 108" stroke="#558840" stroke-width="2.5"/>
+      <path d="M605 64 L400 108" stroke="#c63d1f" stroke-width="2.5" stroke-dasharray="5,3"/>
+      <!-- VLANs -->
+      <g style="font-family:'Inter',sans-serif;font-weight:600;font-size:9px;">
+        <rect x="34"  y="212" width="118" height="52" rx="5" fill="#fff" stroke="#3a5a78"/>
+        <text x="93"  y="232" style="fill:#3a5a78;text-anchor:middle;">VLAN 10 · Staff</text>
+        <text x="93"  y="248" style="font-family:ui-monospace,monospace;font-size:7.5px;fill:#8a8880;text-anchor:middle;">10.10.10.0/24</text>
+        <rect x="164" y="212" width="118" height="52" rx="5" fill="#fff" stroke="#c63d1f"/>
+        <text x="223" y="232" style="fill:#c63d1f;text-anchor:middle;">VLAN 20 · Guest</text>
+        <text x="223" y="248" style="font-family:ui-monospace,monospace;font-size:7.5px;fill:#8a8880;text-anchor:middle;">10.10.20.0/23</text>
+        <rect x="294" y="212" width="118" height="52" rx="5" fill="#fff" stroke="#558840"/>
+        <text x="353" y="232" style="fill:#3a6a28;text-anchor:middle;">VLAN 30 · PMS</text>
+        <text x="353" y="248" style="font-family:ui-monospace,monospace;font-size:7.5px;fill:#8a8880;text-anchor:middle;">10.10.30.0/24</text>
+        <rect x="424" y="212" width="118" height="52" rx="5" fill="#fff" stroke="#3a5a78"/>
+        <text x="483" y="232" style="fill:#3a5a78;text-anchor:middle;">VLAN 40 · CCTV</text>
+        <text x="483" y="248" style="font-family:ui-monospace,monospace;font-size:7.5px;fill:#8a8880;text-anchor:middle;">10.10.40.0/24</text>
+        <rect x="554" y="212" width="118" height="52" rx="5" fill="#fff" stroke="#c08020"/>
+        <text x="613" y="232" style="fill:#b07018;text-anchor:middle;">VLAN 50 · VoIP</text>
+        <text x="613" y="248" style="font-family:ui-monospace,monospace;font-size:7.5px;fill:#8a8880;text-anchor:middle;">10.10.50.0/24</text>
+      </g>
+      <path d="M360 160 L93 212"  stroke="#8a8880" stroke-width="1"/>
+      <path d="M360 160 L223 212" stroke="#8a8880" stroke-width="1"/>
+      <path d="M360 160 L353 212" stroke="#8a8880" stroke-width="1"/>
+      <path d="M360 160 L483 212" stroke="#8a8880" stroke-width="1"/>
+      <path d="M360 160 L613 212" stroke="#8a8880" stroke-width="1"/>
+      <text x="360" y="288" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Five worlds that must not see each other, one box routing between them, two ways out to the sea.</text>
+    </svg>
+  </div>
+
+  <!-- 01 brief -->
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Brief &amp; The Constraints</h2>
+  <p class="section-thesis"><em>A 40-room seaside hotel, family-run, that had grown its network by accretion: one flat /24, a consumer router, and a Wi-Fi password shared with every guest since 2019. They wanted "faster Wi-Fi." What they needed was a network.</em></p>
+
+  <p>The real requirements, once we talked through them: guests must never reach the <strong>property-management system</strong> (the PMS holds card and passport data), the <strong>CCTV</strong> must be isolated and recorded reliably, the <strong>VoIP</strong> phones at reception can't crackle when the lobby fills with guests streaming, and the whole thing must stay online when the single fibre drop dies — which, in this village, it does. Budget was real but not infinite: one managed Layer-3 switch acting as collapsed core, existing cabling, and Starlink as the second WAN because there's no second wired provider for 20km.</p>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ The Constraint That Shaped Everything — CGNAT on Starlink</span>
+    <p>Standard Starlink hands you a <strong>CGNAT</strong> address, not a public one. That's fine for a <em>backup</em> path where the hotel only makes outbound connections, but it means Starlink can't terminate an inbound VPN or host anything. It forced the design decision early: fibre is primary and carries anything inbound; Starlink is outbound-only survival. Knowing this on day one saved a doomed afternoon trying to port-forward the CCTV over the backup link. (Details in <a href="starlink-mikrotik-failover.html">Starlink + MikroTik Failover</a> — same CGNAT reality, different edge.)</p>
+  </div>
+
+  <!-- 02 design -->
+  <p class="section-num">02</p>
+  <h2 class="section-title">Why Collapsed-Core, and the VLAN Plan</h2>
+  <p class="section-thesis"><em>A 40-room hotel does not need a three-tier campus. It needs one intelligent box that both switches and routes, with clean segmentation on top. Collapsed-core is the honest answer at this scale.</em></p>
+
+  <p>One Layer-3 switch is the core <em>and</em> the distribution layer; access switches hang off it for the room floors. Inter-VLAN routing happens on the core with SVIs, and the same box handles the two WAN uplinks. Simpler to run, cheaper, and for a single building with no redundancy requirement between floors, entirely appropriate — the pattern from <a href="cisco-lab-campus.html">the collapsed-core lab</a> put into a real cabinet.</p>
+
+  <table class="cheat">
+    <thead><tr><th>VLAN</th><th>Purpose &amp; policy</th></tr></thead>
+    <tbody>
+      <tr><td>10 · Staff</td><td>Back-office PCs; reaches internet + PMS (print/booking), nothing else.</td></tr>
+      <tr><td>20 · Guest</td><td>Room + lobby Wi-Fi. Internet only. /23 for DHCP headroom. Client isolation on.</td></tr>
+      <tr><td>30 · PMS</td><td>Booking/POS terminals + server. No inbound from guest/CCTV; card-data zone.</td></tr>
+      <tr><td>40 · CCTV</td><td>Cameras + NVR. No internet at all — recorded on-prem, reachable only by staff.</td></tr>
+      <tr><td>50 · VoIP</td><td>Reception phones. Priority-queued; own subnet for clean QoS marking.</td></tr>
+      <tr><td>99 · Mgmt</td><td>Switch/AP management. Locked to a single admin host + SSH only.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The segmentation isn't paranoia — it's the difference between "a guest laptop got malware" and "a guest laptop got malware and it reached the machine with everyone's passport scans." The inter-VLAN policy is enforced with ACLs on the SVIs, exactly the pattern from the <a href="cisco-acls.html">ACL post</a>: default-deny between segments, explicit allows for the few flows that must cross (staff→PMS, staff→CCTV).</p>
+
+  <div class="term-wrap">
+    <span class="term-label">Core — the load-bearing isolation rule (guest can't reach anything private)</span>
+    <pre class="term"><span class="cmt"># Applied inbound on the Guest SVI: internet yes, internal no.</span>
+<span class="pc">Core(config)#</span> <span class="out">ip access-list extended GUEST-IN</span>
+<span class="pc">Core(config-ext-nacl)#</span> <span class="out">deny   ip 10.10.20.0 0.0.1.255 10.10.0.0 0.0.255.255</span>  <span class="cmt"># no internal RFC1918</span>
+<span class="pc">Core(config-ext-nacl)#</span> <span class="out">permit ip 10.10.20.0 0.0.1.255 any</span>                    <span class="cmt"># everything else (internet)</span>
+<span class="pc">Core(config)#</span> <span class="out">interface Vlan20</span>
+<span class="pc">Core(config-if)#</span> <span class="out">ip access-group GUEST-IN in</span></pre>
+  </div>
+
+  <div class="callout defender">
+    <span class="callout-label">💡 Guest Isolation Is Two Layers, Not One</span>
+    <p>The ACL stops a guest <em>routing</em> to the PMS. It does <strong>not</strong> stop guest-to-guest traffic inside VLAN 20 — that's the same broadcast domain, so one infected laptop can still scan and attack the phone in the next room. The second layer is <strong>protected-port / client isolation</strong> at the access layer (and on the APs) so guest devices can talk to the gateway and nothing else on their own VLAN. Owners think the Wi-Fi password is the security boundary; it isn't. This pairs with the plain-language <a href="guest-wifi-isolation.html">Why Guest Wi-Fi Needs Its Own Network</a> I hand to non-technical clients.</p>
+  </div>
+
+  <!-- 03 dual-wan -->
+  <p class="section-num">03</p>
+  <h2 class="section-title">Dual-WAN — Fibre Primary, Starlink Survival</h2>
+  <p class="section-thesis"><em>The whole reason the owner called. When the fibre drops mid-season, reception still needs to take bookings and the card terminal still needs to clear. Failover has to be automatic and quiet — no one at the desk should have to do anything.</em></p>
+
+  <p>Two default routes with different administrative distances, and an <a href="cisco-ipsla-failover.html">IP SLA</a> probe tracking real reachability out the fibre — not just "is the interface up," because the fibre link stays up while the provider's upstream is dead. When the probe fails, the tracked primary route withdraws and the higher-AD Starlink route takes over. When the probe recovers, it fails back.</p>
+
+  <div class="term-wrap">
+    <span class="term-label">Edge — IP SLA tracked failover onto Starlink</span>
+    <pre class="term"><span class="cmt"># Probe a reliable off-net target THROUGH the fibre next-hop.</span>
+<span class="pc">Edge(config)#</span> <span class="out">ip sla 1</span>
+<span class="pc">Edge(config-ip-sla)#</span> <span class="out">icmp-echo 1.1.1.1 source-interface GigabitEthernet0/0</span>
+<span class="pc">Edge(config-ip-sla)#</span> <span class="out">frequency 5</span>
+<span class="pc">Edge(config)#</span> <span class="out">ip sla schedule 1 life forever start-time now</span>
+<span class="pc">Edge(config)#</span> <span class="out">track 1 ip sla 1 reachability</span>
+
+<span class="cmt"># Primary via fibre, only while track 1 is up (AD 1).</span>
+<span class="pc">Edge(config)#</span> <span class="out">ip route 0.0.0.0 0.0.0.0 &lt;fibre-gw&gt; 1 track 1</span>
+<span class="cmt"># Backup via Starlink, worse AD so it only installs when primary is gone.</span>
+<span class="pc">Edge(config)#</span> <span class="out">ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/1 10</span>   <span class="cmt"># Starlink (DHCP/CGNAT)</span></pre>
+  </div>
+
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Break #1 — NAT and the Second WAN</span>
+    <p>First failover test: fibre pulled, route flipped to Starlink correctly, and <em>nothing</em> reached the internet. The PAT overload was configured to translate only out the fibre interface. When traffic started leaving via Starlink it was unNATed — a CGNAT-inside-a-private-address that Starlink silently dropped. The fix: a second <code>ip nat inside source</code> rule (route-map matched to each egress interface) so translations follow whichever WAN is live. It's the classic dual-WAN NAT gotcha, and it only shows up the moment the backup path is actually used — which is why you <strong>test failover before you leave site</strong>, not when the owner calls in August.</p>
+  </div>
+
+  <!-- 04 what broke -->
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Other Two Things That Broke</h2>
+  <p class="section-thesis"><em>Every honest field write-up has this section. The design was right; reality still had opinions. Two more from the first week.</em></p>
+
+  <h3 class="sub">Break #2 · VoIP crackle when the lobby filled</h3>
+  <p>Phones were on their own VLAN but QoS hadn't been carried onto the WAN uplink. Under load, the fibre's tiny upload buffer bloated and voice packets queued behind guest uploads. The <a href="cisco-qos-voip.html">QoS post</a> is exactly this: mark voice EF at the access edge, then a priority queue with a policing ceiling on the WAN egress so guest traffic can never starve the phones. Silence fixed in one policy-map. Lesson: QoS marking without an egress policy on the bottleneck link is decoration.</p>
+
+  <h3 class="sub">Break #3 · CCTV NVR "randomly" losing cameras</h3>
+  <p>The NVR dropped a camera or two every few hours. Not the network — <strong>PoE budget</strong>. The access switch's total PoE draw was over its budget with all cameras plus the two lobby APs, so it was shedding the lowest-priority ports under peak. Re-homed the APs to a second switch and set PoE priority on the camera ports. A reminder that "the network is dropping things" is sometimes a power-budget spreadsheet, and that <a href="cisco-observability.html">syslog</a> (the switch was logging <code>ILPOWER</code> events the whole time) tells you which.</p>
+
+  <div class="callout defender">
+    <span class="callout-label">◆ What Made It Maintainable</span>
+    <p>Before leaving: config archived and <a href="cisco-backup-restore.html">backed up</a> off-box, <a href="cisco-observability.html">syslog + NTP</a> pointed at a small collector so timestamps mean something, SSH-only management on VLAN 99, and a one-page runbook taped inside the cabinet — "fibre's down? here's how you know it failed over, here's who to call." The owner can't read a running-config, but they can read that page. Documentation is the deliverable that outlives the visit.</p>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Match the design to the scale.</strong> A 40-room hotel wants one collapsed-core L3 switch, not a three-tier campus. Right-sizing is a skill, not a compromise.</li>
+      <li><strong>Segmentation is the product.</strong> Guest / PMS / CCTV / VoIP / staff as separate VLANs with default-deny between them is what turns "an incident" into "a contained incident."</li>
+      <li><strong>Guest isolation is two layers:</strong> an ACL stops routing to private VLANs; client/protected-port isolation stops guest-to-guest attacks on the shared segment. You need both.</li>
+      <li><strong>Know your backup link's limits early.</strong> Starlink CGNAT means outbound-survival only — it shaped every inbound decision on day one.</li>
+      <li><strong>Dual-WAN failover must track reachability, not link state,</strong> and NAT must follow the live WAN — the failure only appears the moment the backup is used, so test it on site.</li>
+      <li><strong>QoS marking needs an egress policy on the bottleneck</strong> or it does nothing. VoIP crackle is almost always the WAN uplink queue.</li>
+      <li><strong>"The network is dropping things" is sometimes the PoE budget.</strong> Read the logs before you blame the switching. And leave a runbook the owner can actually read.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Running a hotel, villa complex, or business in Crete on a flat network and a shared Wi-Fi password?</h3>
+    <p>NOCTIS designs segmented, dual-WAN Cisco and MikroTik networks that keep guests off your card data and stay online when the fibre doesn't — with Starlink backup, clean QoS, and documentation your staff can actually use.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>
