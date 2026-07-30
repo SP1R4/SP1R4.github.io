@@ -19,15 +19,18 @@
 
   function buildNav(target) {
     const here = currentPage();
+    // Writeups live one level deep under /writeups/; root pages are at /.
+    // Prefix the shared nav links so they resolve from either location.
+    const base = location.pathname.includes('/writeups/') ? '../' : '';
     const links = NAV_LINKS.map(l => {
       const active = l.href === here ? ' active' : '';
-      return `<a href="${l.href}" class="nav-link${active}" data-i18n="${l.i18n}"></a>`;
+      return `<a href="${base}${l.href}" class="nav-link${active}" data-i18n="${l.i18n}"></a>`;
     }).join('');
 
     target.classList.add('site-nav');
     target.setAttribute('data-i18n-attr-aria-label', 'nav.main');
     target.innerHTML = `
-      <a href="index.html" class="nav-brand">NOCTIS</a>
+      <a href="${base}index.html" class="nav-brand">NOCTIS</a>
       <button class="nav-hamburger" data-i18n-attr-aria-label="nav.toggleMenu" type="button" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
