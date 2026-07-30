@@ -199,6 +199,102 @@
       <category>cisco</category>
     </item>
     <item>
+      <title>Cisco Wireless: The Lightweight AP Architecture</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-wireless-ap</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-wireless-ap</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: Standalone Wi-Fi (wifiwave2)</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-ap</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-ap</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik Lab: Multi-Area OSPF</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-lab-ospf-areas</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-lab-ospf-areas</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik Lab: HQ + Branches — GRE over IPsec WAN</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-lab-wan</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-lab-wan</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>MikroTik Lab: The Broken Network</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-lab-troubleshooting</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-lab-troubleshooting</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Seven realistic RouterOS faults dressed as support tickets — a missing bridge VLAN member, scoped masquerade, OSPF MTU mismatch, DHCP bound to the wrong interface, FastTrack bypassing a rule, per-packet routing-marks splitting flows, and offload killed by a bridge feature — each with the command that finds it.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco IOS: DMVPN</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-dmvpn</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-dmvpn</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: Scaling Site-to-Site (Hub-and-Spoke)</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-dmvpn</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-dmvpn</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>RouterOS has no DMVPN — build the scalable equivalent with a WireGuard hub-and-spoke: one peer per spoke on the hub, OSPF over the overlay, the allowed-address cryptokey-routing trap, and what you trade versus DMVPN's on-demand spoke-to-spoke.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Remote-Access VPN (IKEv2)</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-remote-access-vpn</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-remote-access-vpn</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Road-warrior access on IOS — IKEv2/FlexVPN with an authorization policy pushing the client's address, DNS and split-tunnel routes, a virtual-template per client, the server-certificate trust requirement, and an SSL fallback.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: Remote-Access VPN (IKEv2 &amp; SSTP)</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-remote-access-vpn</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-remote-access-vpn</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Get laptops and phones securely back to the office on RouterOS — SSTP over TLS/443 for hostile firewalls, IKEv2 with mode-config for native clients, generate-policy and server-cert gotchas, plus the firewall/NAT rules people forget.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
+      <title>Cisco IOS: EIGRP</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-eigrp</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-eigrp</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>Cisco IOS: Route Redistribution &amp; BFD</title>
+      <link>https://sp1r4.github.io/blog.html#cisco-redistribution-bfd</link>
+      <guid>https://sp1r4.github.io/blog.html#cisco-redistribution-bfd</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.</description>
+      <category>cisco</category>
+    </item>
+    <item>
+      <title>MikroTik: Route Redistribution &amp; BFD</title>
+      <link>https://sp1r4.github.io/blog.html#mikrotik-redistribution-bfd</link>
+      <guid>https://sp1r4.github.io/blog.html#mikrotik-redistribution-bfd</guid>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
+      <description>RouterOS 7 redistribution through the filter-chain model — per-protocol toggle plus a mandatory output chain, tag-and-reject loop prevention, administrative distance, and version-dependent BFD for fast, stable failover.</description>
+      <category>mikrotik</category>
+    </item>
+    <item>
       <title>Cisco IOS: BGP &amp; Dual-ISP Multihoming</title>
       <link>https://sp1r4.github.io/blog.html#cisco-bgp-dual-isp</link>
       <guid>https://sp1r4.github.io/blog.html#cisco-bgp-dual-isp</guid>

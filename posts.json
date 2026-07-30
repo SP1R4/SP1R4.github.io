@@ -1,5 +1,137 @@
 [
   {
+    "slug": "cisco-wireless-ap",
+    "title": "Cisco Wireless: The Lightweight AP Architecture",
+    "description": "Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-wireless-ap.html",
+    "reading_time": 7
+  },
+  {
+    "slug": "mikrotik-ap",
+    "title": "MikroTik: Standalone Wi-Fi (wifiwave2)",
+    "description": "A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-ap.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-lab-ospf-areas",
+    "title": "MikroTik Lab: Multi-Area OSPF",
+    "description": "Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-lab-ospf-areas.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-lab-wan",
+    "title": "MikroTik Lab: HQ + Branches — GRE over IPsec WAN",
+    "description": "An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-lab-wan.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-lab-troubleshooting",
+    "title": "MikroTik Lab: The Broken Network",
+    "description": "Seven realistic RouterOS faults dressed as support tickets — a missing bridge VLAN member, scoped masquerade, OSPF MTU mismatch, DHCP bound to the wrong interface, FastTrack bypassing a rule, per-packet routing-marks splitting flows, and offload killed by a bridge feature — each with the command that finds it.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-lab-troubleshooting.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "cisco-dmvpn",
+    "title": "Cisco IOS: DMVPN",
+    "description": "Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-dmvpn.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-dmvpn",
+    "title": "MikroTik: Scaling Site-to-Site (Hub-and-Spoke)",
+    "description": "RouterOS has no DMVPN — build the scalable equivalent with a WireGuard hub-and-spoke: one peer per spoke on the hub, OSPF over the overlay, the allowed-address cryptokey-routing trap, and what you trade versus DMVPN's on-demand spoke-to-spoke.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-dmvpn.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "cisco-remote-access-vpn",
+    "title": "Cisco IOS: Remote-Access VPN (IKEv2)",
+    "description": "Road-warrior access on IOS — IKEv2/FlexVPN with an authorization policy pushing the client's address, DNS and split-tunnel routes, a virtual-template per client, the server-certificate trust requirement, and an SSL fallback.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-remote-access-vpn.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-remote-access-vpn",
+    "title": "MikroTik: Remote-Access VPN (IKEv2 & SSTP)",
+    "description": "Get laptops and phones securely back to the office on RouterOS — SSTP over TLS/443 for hostile firewalls, IKEv2 with mode-config for native clients, generate-policy and server-cert gotchas, plus the firewall/NAT rules people forget.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-remote-access-vpn.html",
+    "reading_time": 6
+  },
+  {
+    "slug": "cisco-eigrp",
+    "title": "Cisco IOS: EIGRP",
+    "description": "Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-eigrp.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "cisco-redistribution-bfd",
+    "title": "Cisco IOS: Route Redistribution & BFD",
+    "description": "Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.",
+    "date": "2026-07-30",
+    "tags": [
+      "cisco"
+    ],
+    "html": "writeups/cisco-redistribution-bfd.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "mikrotik-redistribution-bfd",
+    "title": "MikroTik: Route Redistribution & BFD",
+    "description": "RouterOS 7 redistribution through the filter-chain model — per-protocol toggle plus a mandatory output chain, tag-and-reject loop prevention, administrative distance, and version-dependent BFD for fast, stable failover.",
+    "date": "2026-07-30",
+    "tags": [
+      "mikrotik"
+    ],
+    "html": "writeups/mikrotik-redistribution-bfd.html",
+    "reading_time": 5
+  },
+  {
     "slug": "cisco-bgp-dual-isp",
     "title": "Cisco IOS: BGP & Dual-ISP Multihoming",
     "description": "Run a real multihomed BGP edge on Cisco IOS — two eBGP upstreams, outbound path control with local-preference, inbound with AS-path prepend, mandatory anti-transit filtering, and automatic failover.",

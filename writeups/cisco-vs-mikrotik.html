@@ -200,6 +200,9 @@
       <tr><td>See routes / neighbours</td><td>show ip route / show ip bgp sum</td><td>/ip route print / /routing bgp session print</td></tr>
       <tr><td>Virtual gateway</td><td>standby / vrrp on the SVI</td><td>/interface vrrp + VIP on it</td></tr>
       <tr><td>Track the uplink</td><td>track + object on the HSRP group</td><td>netwatch → adjust vrrp priority</td></tr>
+      <tr><td>Fast IGP (Cisco-only)</td><td><a href="cisco-eigrp.html">EIGRP</a> (feasible successors)</td><td>— (use OSPF/BGP)</td></tr>
+      <tr><td>Redistribution</td><td>redistribute + route-map + tags</td><td>redistribute + /routing filter chain</td></tr>
+      <tr><td>Fast failure detect</td><td><a href="cisco-redistribution-bfd.html">BFD</a> + fall-over bfd</td><td><a href="mikrotik-redistribution-bfd.html">BFD</a> /routing bfd</td></tr>
       <tr><td>Dual-WAN failover</td><td>ip sla + track + floating static</td><td>recursive route / netwatch (check-gateway)</td></tr>
     </tbody>
   </table>
@@ -231,6 +234,9 @@
     <thead><tr><th>Task</th><th>Cisco IOS</th><th>RouterOS</th></tr></thead>
     <tbody>
       <tr><td>Site-to-site VPN</td><td>IKEv2 + VTI (crypto …)</td><td>/ip ipsec … or /interface wireguard</td></tr>
+      <tr><td>Scale many branches</td><td><a href="cisco-dmvpn.html">DMVPN</a> (mGRE + NHRP)</td><td><a href="mikrotik-dmvpn.html">WireGuard hub-and-spoke</a></td></tr>
+      <tr><td>Remote access (road-warrior)</td><td><a href="cisco-remote-access-vpn.html">IKEv2/FlexVPN</a>, SSL</td><td><a href="mikrotik-remote-access-vpn.html">IKEv2 + SSTP</a> (443)</td></tr>
+      <tr><td>Managed wireless</td><td><a href="cisco-wireless-ap.html">Lightweight AP + WLC</a> (CAPWAP)</td><td><a href="mikrotik-capsman.html">CAPsMAN</a> / <a href="mikrotik-ap.html">standalone wifi</a></td></tr>
       <tr><td>Prioritise VoIP</td><td>class-map + policy-map (LLQ)</td><td>/queue tree or PCQ, DSCP match</td></tr>
       <tr><td>Loop prevention</td><td>spanning-tree mode rapid-pvst</td><td>bridge protocol-mode=rstp</td></tr>
       <tr><td>Root bridge</td><td>spanning-tree vlan … priority</td><td>/interface bridge set priority</td></tr>

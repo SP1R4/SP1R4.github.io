@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Cisco IOS: Route Redistribution & BFD — SP1R4 / NOCTIS</title>
+<meta name="description" content="Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.">
+<meta property="og:title" content="Cisco IOS: Route Redistribution & BFD — NOCTIS">
+<meta property="og:description" content="Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-redistribution-bfd.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-redistribution-bfd.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-redistribution-bfd.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-redistribution-bfd.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: Route Redistribution & BFD",
+  "description": "Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-redistribution-bfd.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-redistribution-bfd.png",
+  "keywords": ["cisco"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-redistribution-bfd"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Routing &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>Route Redistribution &amp; BFD</h1>
+  <p class="post-subtitle">Real networks run more than one routing protocol — OSPF inside, BGP to the ISP, a few static routes, a legacy EIGRP corner. Redistribution is the glue that lets them share routes, and it's the classic footgun that causes routing loops. Pair it with BFD — failure detection in milliseconds instead of seconds — and you have a fast, stable multi-protocol core.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Redistribution</span>
+    <span class="tag">BFD</span>
+    <span class="tag">Route-Map</span>
+    <span class="tag">Routing</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>Two topics that belong together in any grown-up routing design. <strong>Redistribution</strong> injects routes from one protocol into another — <a href="cisco-routing-ospf.html">OSPF</a> into <a href="cisco-bgp-dual-isp.html">BGP</a>, static into OSPF, <a href="cisco-eigrp.html">EIGRP</a> into OSPF at a migration boundary. It's essential and dangerous: done carelessly, a route redistributed out and back in creates a <strong>routing loop</strong> or black hole, because the receiving protocol loses the original's loop-prevention context. The fix is disciplined <strong>tagging and filtering</strong>.</p>
+    <p><strong>BFD</strong> (Bidirectional Forwarding Detection) is the other half: a lightweight hello protocol that detects a dead neighbour in <em>milliseconds</em>, independent of any routing protocol's own (slow) timers. You bolt it onto OSPF/BGP/EIGRP/static so failover happens in a blink instead of the default dead-timer seconds. Together they make a multi-protocol network both correct and fast — and the concepts map cleanly to <a href="mikrotik-redistribution-bfd.html">RouterOS</a>.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Two or more routing sources meeting on one router (e.g. OSPF + BGP)</li>
+      <li>Comfort with route-maps and prefix-lists — redistribution control lives there</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Redistribute — With a Seed Metric</h2>
+  <p class="section-thesis"><em>Injecting routes needs a starting metric the target protocol understands, and control over route type. Never redistribute blindly — always through a route-map.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — OSPF into BGP, and static into OSPF, controlled</span>
+    <pre class="term"><span class="cmt"># Static routes into OSPF as external type-1 (metric increases along the path):</span>
+<span class="pc">R1(config)#</span> <span class="out">router ospf 1</span>
+<span class="pc">R1(config-router)#</span> <span class="out">redistribute static subnets metric 50 metric-type 1 route-map STATIC-IN</span>
+
+<span class="cmt"># OSPF into BGP (advertise internal networks to the ISP edge):</span>
+<span class="pc">R1(config)#</span> <span class="out">router bgp 65001</span>
+<span class="pc">R1(config-router-af)#</span> <span class="out">redistribute ospf 1 route-map OSPF-TO-BGP</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — <code>subnets</code>, and E2 Metrics Don't Add Up</span>
+    <p>Two traps. Redistributing into OSPF without the <code>subnets</code> keyword silently injects <strong>only classful networks</strong> — your /24s and /30s just don't appear, and you'll swear the command didn't work. Always add <code>subnets</code>. Second: OSPF external routes default to <strong>type-2 (E2)</strong>, whose metric is the seed cost only and does <em>not</em> increase as the route travels — so two exit points can look equal and you get suboptimal routing or flapping. Use <strong>type-1 (E1)</strong> when you want the internal cost added along the way, which is usually what you actually mean.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Tag to Prevent Loops — the Non-Negotiable Part</h2>
+  <p class="section-thesis"><em>With redistribution at two or more points between the same pair of protocols, a route can leak out one and back in another, looping. Tag on the way out, deny the tag on the way back.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — tag-and-deny to break mutual-redistribution loops</span>
+    <pre class="term"><span class="cmt"># On redistribution OSPF->BGP, stamp a tag identifying "this came from OSPF".</span>
+<span class="pc">R1(config)#</span> <span class="out">route-map OSPF-TO-BGP permit 10</span>
+<span class="pc">R1(config-route-map)#</span> <span class="out">set tag 111</span>
+
+<span class="cmt"># On the OTHER redistribution point (BGP->OSPF), REFUSE anything tagged 111
+# so an OSPF route can't loop back into OSPF via BGP.</span>
+<span class="pc">R1(config)#</span> <span class="out">route-map BGP-TO-OSPF deny 10</span>
+<span class="pc">R1(config-route-map)#</span> <span class="out">match tag 111</span>
+<span class="pc">R1(config)#</span> <span class="out">route-map BGP-TO-OSPF permit 20</span>   <span class="cmt"># everything else allowed</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 Watch Administrative Distance Too</span>
+    <p>When the same prefix is learned by two protocols, the router installs the one with the lower <strong>administrative distance</strong> (eBGP 20, EIGRP 90, OSPF 110, RIP 120…) regardless of the actual metric — which during redistribution can make it prefer a redistributed copy over the native route and create a sneaky loop or suboptimal path. In mutual redistribution, sanity-check with <code>show ip route &lt;prefix&gt;</code> at each boundary and, where needed, adjust AD (<code>distance</code>) so the native route always wins. Tagging plus an AD check is the belt-and-braces that keeps redistribution safe.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">BFD — Failure Detection in Milliseconds</h2>
+  <p class="section-thesis"><em>Routing protocols detect a dead neighbour on their own timers — OSPF's default dead interval is 40 seconds. BFD does it in a fraction of a second, then tells the protocol to reconverge immediately.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — BFD on the interface, then attach to OSPF &amp; BGP</span>
+    <pre class="term"><span class="cmt"># Sub-second timers on the link (300ms x3 = ~900ms detection).</span>
+<span class="pc">R1(config)#</span> <span class="out">interface GigabitEthernet0/0</span>
+<span class="pc">R1(config-if)#</span> <span class="out">bfd interval 300 min_rx 300 multiplier 3</span>
+
+<span class="cmt"># Tell OSPF to use BFD for neighbour liveness on all interfaces:</span>
+<span class="pc">R1(config)#</span> <span class="out">router ospf 1</span>
+<span class="pc">R1(config-router)#</span> <span class="out">bfd all-interfaces</span>
+
+<span class="cmt"># And BGP to drop the session the instant BFD reports the peer down:</span>
+<span class="pc">R1(config)#</span> <span class="out">router bgp 65001</span>
+<span class="pc">R1(config-router)#</span> <span class="out">neighbor 198.51.100.1 fall-over bfd</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — BFD Is Great Until You Run It on a Flaky Link</span>
+    <p>Aggressive BFD timers detect real failures fast — and also detect microbursts, brief CPU spikes, and lossy wireless links as "failures," flapping your routing. On a clean fibre link, 300ms×3 is fine; on a congested or wireless path, loosen the timers (or don't run BFD there) or you trade slow-but-stable for fast-but-flapping. Match the timers to the link quality, and remember BFD reconvergence is only as useful as your <a href="cisco-bgp-dual-isp.html">backup path</a> — fast detection with no alternative route just fails fast.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Verify <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Confirm what actually got redistributed (and with what tag/type), and that BFD sessions are up with the timers you intended.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — redistribution &amp; BFD checks</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show ip route ospf | inc E1|E2</span>       <span class="cmt"># external routes + their type</span>
+<span class="pc">R1#</span> <span class="out">show ip ospf database external</span>        <span class="cmt"># what we injected, with tags</span>
+<span class="pc">R1#</span> <span class="out">show ip bgp | inc &lt;prefix&gt;</span>            <span class="cmt"># redistributed routes reached BGP</span>
+<span class="pc">R1#</span> <span class="out">show bfd neighbors detail</span>            <span class="cmt"># session UP, negotiated timers</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Redistribution glues protocols together</strong> — essential in any multi-protocol network, and the classic source of routing loops.</li>
+      <li><strong>Always redistribute through a route-map with a seed metric,</strong> and use <code>subnets</code> into OSPF or your non-classful routes vanish.</li>
+      <li><strong>Prefer E1 over the default E2</strong> when you want the internal cost added along the path — E2 metrics don't increase and cause suboptimal routing.</li>
+      <li><strong>Tag on the way out, deny the tag on the way back</strong> — the non-negotiable defence against mutual-redistribution loops.</li>
+      <li><strong>Mind administrative distance</strong> — the lower-AD copy wins regardless of metric; adjust so the native route is preferred.</li>
+      <li><strong>BFD detects failure in milliseconds</strong> and tells OSPF/BGP to reconverge — but loosen timers on flaky/wireless links or it flaps.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>A multi-protocol core that reconverges too slowly — or loops?</h3>
+    <p>NOCTIS designs and audits multi-protocol routing on Cisco and MikroTik across Crete — safe redistribution with loop prevention, sane administrative distance, and BFD-fast failover matched to your link quality.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

@@ -227,6 +227,31 @@
     <a class="ci-row" href="mikrotik-prometheus.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Metrics with Prometheus &amp; Grafana</span><span class="ci-desc">Time-series metrics and dashboards — a read-only API user, the mktxp exporter (optionally containerised), a Prometheus scrape, and Grafana alerts.</span></span><span class="ci-time">9 min</span><span class="ci-arrow">→</span></a>
   </div>
 
+  <div class="chapter">
+    <p class="chapter-num">Beyond the Series</p>
+    <h2 class="chapter-title">More Routing &amp; VPN</h2>
+    <p class="chapter-desc">Multi-protocol glue and scaling access — RouterOS 7's filter-chain redistribution, a WireGuard branch fabric, and road-warrior VPN.</p>
+    <a class="ci-row" href="mikrotik-redistribution-bfd.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Route Redistribution &amp; BFD</span><span class="ci-desc">v7 redistribution through the filter-chain model — per-protocol toggle + output chain, tag-and-reject loop prevention, and version-dependent BFD.</span></span><span class="ci-time">5 min</span><span class="ci-arrow">→</span></a>
+    <a class="ci-row" href="mikrotik-dmvpn.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Scaling Site-to-Site (Hub-and-Spoke)</span><span class="ci-desc">RouterOS has no DMVPN — build a WireGuard hub-and-spoke, OSPF over the overlay, the allowed-address trap, and the spoke-to-spoke trade-off.</span></span><span class="ci-time">6 min</span><span class="ci-arrow">→</span></a>
+    <a class="ci-row" href="mikrotik-remote-access-vpn.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Remote-Access VPN (IKEv2 &amp; SSTP)</span><span class="ci-desc">SSTP over 443 for hostile firewalls, IKEv2 with mode-config for native clients, generate-policy and server-cert gotchas, plus the firewall/NAT people miss.</span></span><span class="ci-time">6 min</span><span class="ci-arrow">→</span></a>
+  </div>
+
+  <div class="chapter">
+    <p class="chapter-num">Beyond the Series</p>
+    <h2 class="chapter-title">Labs</h2>
+    <p class="chapter-desc">Full RouterOS 7 topologies built and broken — the twins of the Cisco labs.</p>
+    <a class="ci-row" href="mikrotik-lab-ospf-areas.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Lab: Multi-Area OSPF</span><span class="ci-desc">Five routers, three areas — ABRs via interface-templates, a stub area, the LSA types proven by inspection, and the backbone/MTU traps.</span></span><span class="ci-time">5 min</span><span class="ci-arrow">→</span></a>
+    <a class="ci-row" href="mikrotik-lab-wan.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Lab: HQ + Branches — GRE over IPsec WAN</span><span class="ci-desc">An encrypted, OSPF-routed branch WAN — GRE carrying OSPF, IPsec via the ipsec-secret one-liner, and the protocol-47/MTU gotchas.</span></span><span class="ci-time">5 min</span><span class="ci-arrow">→</span></a>
+    <a class="ci-row" href="mikrotik-lab-troubleshooting.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Lab: The Broken Network</span><span class="ci-desc">Seven realistic faults as support tickets — bridge VLAN, scoped masquerade, OSPF MTU, DHCP binding, FastTrack, split flows, lost offload — each with the command that finds it.</span></span><span class="ci-time">6 min</span><span class="ci-arrow">→</span></a>
+  </div>
+
+  <div class="chapter">
+    <p class="chapter-num">Beyond the Series</p>
+    <h2 class="chapter-title">Wireless</h2>
+    <p class="chapter-desc">A single AP done right, before you reach for CAPsMAN.</p>
+    <a class="ci-row" href="mikrotik-ap.html"><span class="ci-num">＋</span><span class="ci-main"><span class="ci-title">Standalone Wi-Fi (wifiwave2)</span><span class="ci-desc">WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision point.</span></span><span class="ci-time">5 min</span><span class="ci-arrow">→</span></a>
+  </div>
+
   <div class="cta-card">
     <h3>Want this network without reading all 13?</h3>
     <p>NOCTIS designs, secures, and operates MikroTik and Cisco networks for hotels, villas, and SMBs across Crete — segmentation with evidence, fair guest Wi-Fi, and failover we test by pulling cables. The whole series, applied to your building.</p>

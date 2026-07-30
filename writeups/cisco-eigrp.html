@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Cisco IOS: EIGRP — SP1R4 / NOCTIS</title>
+<meta name="description" content="Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.">
+<meta property="og:title" content="Cisco IOS: EIGRP — NOCTIS">
+<meta property="og:description" content="Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-eigrp.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-eigrp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-eigrp.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-eigrp.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: EIGRP",
+  "description": "Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-eigrp.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-eigrp.png",
+  "keywords": ["cisco"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-eigrp"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; Routing &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>EIGRP</h1>
+  <p class="post-subtitle">OSPF is the interoperable default, but on an all-Cisco network EIGRP is often the faster, simpler answer — a distance-vector protocol with link-state manners. This covers how it actually picks routes, the feasible-successor trick that gives sub-second failover, unequal-cost load balancing, and the honest note on why RouterOS can't join the party.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">EIGRP</span>
+    <span class="tag">Routing</span>
+    <span class="tag">DUAL</span>
+    <span class="tag">CCNP</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>EIGRP is Cisco's <strong>advanced distance-vector</strong> protocol — it shares the simplicity of distance-vector (neighbours tell you their best routes) but adds link-state-like features: incremental updates, sub-second convergence, and no periodic full-table floods. It computes a <strong>composite metric</strong> from bandwidth and delay (by default), and its killer feature is the <strong>DUAL</strong> algorithm, which pre-computes a loop-free backup path — the <em>feasible successor</em> — so a link failure fails over without any recomputation at all.</p>
+    <p>Historically it was Cisco-proprietary, which is exactly why it doesn't appear in the <a href="cisco-vs-mikrotik.html">translation guide</a>: RouterOS (and everyone else) never implemented it. Cisco published it as informational RFC&nbsp;7868, but in practice it's still Cisco-only — so EIGRP is the one routing choice that <em>locks you in</em>. Use it when the estate is all-Cisco and you want its convergence and easy load-balancing; use <a href="cisco-routing-ospf.html">OSPF</a> or <a href="cisco-bgp-dual-isp.html">BGP</a> when interop matters.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Static routing and the routing-table basics from <a href="cisco-routing-ospf.html">Routing &amp; OSPF</a></li>
+      <li>An all-Cisco routed topology (EIGRP won't peer with non-Cisco gear)</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Enable It — Named Mode</h2>
+  <p class="section-thesis"><em>Modern IOS prefers "named" EIGRP configuration — one hierarchical block instead of scattered classic commands. Advertise interfaces, and neighbours form automatically.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — named-mode EIGRP for AS "CORP"</span>
+    <pre class="term"><span class="pc">R1(config)#</span> <span class="out">router eigrp CORP</span>
+<span class="pc">R1(config-router)#</span> <span class="out">address-family ipv4 unicast autonomous-system 100</span>
+<span class="pc">R1(config-router-af)#</span> <span class="out">network 10.0.0.0 0.0.0.255</span>      <span class="cmt"># which interfaces run EIGRP</span>
+<span class="pc">R1(config-router-af)#</span> <span class="out">network 10.1.0.0 0.0.255.255</span>
+<span class="pc">R1(config-router-af-topology)#</span> <span class="out">exit-af-topology</span>
+<span class="cmt"># Neighbours on those interfaces adjacency up automatically (same AS + K-values).</span>
+<span class="pc">R1#</span> <span class="out">show ip eigrp neighbors</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Same AS and Matching K-Values, or No Adjacency</span>
+    <p>Two routers form an EIGRP neighbourship only if they share the same <strong>autonomous-system number</strong> and the same <strong>K-values</strong> (the metric weights). Mismatch either and the adjacency silently never forms — <code>show ip eigrp neighbors</code> is just empty, with no obvious error. Also passive-interface the LAN-facing ports you don't want to peer on (or an attacker on the LAN can inject routes) — the same discipline as OSPF. Don't touch the K-values unless you know exactly why; the defaults (bandwidth + delay) are almost always right.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Successors &amp; Feasible Successors — the Whole Point</h2>
+  <p class="section-thesis"><em>EIGRP's fast convergence comes from DUAL pre-computing a guaranteed loop-free backup. Understanding feasible distance vs reported distance is understanding EIGRP.</em></p>
+  <p>For each destination EIGRP tracks two numbers: your <strong>feasible distance (FD)</strong> — your best metric to it — and each neighbour's <strong>reported distance (RD)</strong> — <em>their</em> metric to it. The best path's next-hop is the <strong>successor</strong>. A backup neighbour qualifies as a <strong>feasible successor</strong> only if its RD is less than your current FD (the "feasibility condition") — which mathematically guarantees it isn't routing back through you, so it's loop-free and can be installed instantly on failure.</p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — see the successor and any feasible successor</span>
+    <pre class="term"><span class="pc">R1#</span> <span class="out">show ip eigrp topology</span>
+<span class="out">P 10.2.0.0/16, 1 successors, FD is 3072
+    via 10.0.0.2 (3072/2816), GigabitEthernet0/0      </span><span class="cmt"># successor</span>
+<span class="out">    via 10.0.0.6 (5120/2816), GigabitEthernet0/1      </span><span class="cmt"># feasible successor (RD 2816 &lt; FD 3072)</span>
+<span class="cmt"># Failure of the successor -> the feasible successor is promoted with
+# ZERO recomputation. That's the sub-second convergence.</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 No Feasible Successor? Then EIGRP "Goes Active"</span>
+    <p>If there's no feasible successor when the successor dies, EIGRP can't just promote a backup — it sends <strong>queries</strong> to its neighbours asking for a path, and the route goes <em>Active</em> until they answer. Usually fast, but in a large flat network a query can propagate far and you get "Stuck In Active" (SIA) events. The fix is the same one that helps OSPF: <strong>summarisation</strong> and <strong>stub</strong> routers to bound how far queries travel. Design so common failures always have a feasible successor.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Unequal-Cost Load Balancing — variance</h2>
+  <p class="section-thesis"><em>OSPF only load-balances across equal-cost paths. EIGRP can balance across <strong>unequal</strong>-cost paths — a genuinely useful trick for dual-WAN of different speeds — with one command.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — use a slower backup link proportionally</span>
+    <pre class="term"><span class="cmt"># variance N means: also install any feasible successor whose metric is
+# within N times the successor's FD. Traffic is shared in proportion.</span>
+<span class="pc">R1(config-router-af-topology)#</span> <span class="out">variance 2</span>
+<span class="cmt"># With variance 2, a path up to 2x the best metric also carries traffic,
+# roughly proportional to its cost. Only feasible successors qualify —
+# it can never load-balance onto a potentially-looping path.</span>
+<span class="pc">R1#</span> <span class="out">show ip route eigrp</span>   <span class="cmt"># both next-hops now installed</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Summarise &amp; Verify <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Unlike OSPF, EIGRP can summarise on <em>any</em> interface, not just area borders — which bounds query scope and shrinks tables. Then confirm neighbours, topology, and the installed routes.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — per-interface summary + the health walk</span>
+    <pre class="term"><span class="cmt"># Advertise one aggregate out an interface instead of many specifics:</span>
+<span class="pc">R1(config-router-af)#</span> <span class="out">af-interface GigabitEthernet0/1</span>
+<span class="pc">R1(config-router-af-interface)#</span> <span class="out">summary-address 10.1.0.0 255.255.0.0</span>
+
+<span class="cmt"># --- Verify ---</span>
+<span class="pc">R1#</span> <span class="out">show ip eigrp neighbors</span>      <span class="cmt"># adjacencies up, uptime climbing</span>
+<span class="pc">R1#</span> <span class="out">show ip eigrp topology</span>       <span class="cmt"># successors + feasible successors</span>
+<span class="pc">R1#</span> <span class="out">show ip protocols</span>            <span class="cmt"># AS, K-values, networks, passive ifaces</span>
+<span class="pc">R1#</span> <span class="out">show ip route eigrp</span>          <span class="cmt"># D routes in the table</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>EIGRP is advanced distance-vector</strong> — distance-vector simplicity with fast, incremental, loop-free behaviour via DUAL. Great on all-Cisco networks.</li>
+      <li><strong>It's effectively Cisco-only</strong> (RFC 7868 notwithstanding) — the one protocol that locks you in. Choose OSPF/BGP when interop matters.</li>
+      <li><strong>Adjacency needs matching AS + K-values;</strong> mismatches fail silently. Passive-interface the ports that shouldn't peer.</li>
+      <li><strong>Feasible successors are the magic</strong> — a pre-validated loop-free backup promoted with zero recomputation, giving sub-second failover.</li>
+      <li><strong>No feasible successor → the route goes Active</strong> and queries out; bound that with summarisation and stub routers to avoid SIA.</li>
+      <li><strong><code>variance</code> gives unequal-cost load balancing</strong> — use two different-speed links proportionally, something OSPF can't do.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>An all-Cisco network that could converge faster?</h3>
+    <p>NOCTIS designs and tunes Cisco routing — EIGRP, OSPF, and BGP — across Crete, with fast failover, bounded query scope, and load-balancing that actually uses every link you pay for.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

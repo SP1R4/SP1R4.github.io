@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Cisco Wireless: The Lightweight AP Architecture — SP1R4 / NOCTIS</title>
+<meta name="description" content="Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.">
+<meta property="og:title" content="Cisco Wireless: The Lightweight AP Architecture — NOCTIS">
+<meta property="og:description" content="Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-wireless-ap.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-wireless-ap.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-wireless-ap.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-wireless-ap.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco Wireless: The Lightweight AP Architecture",
+  "description": "Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-wireless-ap.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-wireless-ap.png",
+  "keywords": ["cisco"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-wireless-ap"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / Wireless</span> &nbsp;·&nbsp; AP Config &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco Wireless<br>The Lightweight AP Architecture</h1>
+  <p class="post-subtitle">Modern Cisco wireless is controller-based: the access points are deliberately dumb, and a Wireless LAN Controller is the brain they all tunnel back to. This is how that architecture actually works — how a lightweight AP finds and joins its controller over CAPWAP, the Catalyst 9800 tag model that configures the whole fleet at once, and FlexConnect for branches.</p>
+  <div class="tags">
+    <span class="tag">Cisco</span>
+    <span class="tag">Wireless</span>
+    <span class="tag">Lightweight AP</span>
+    <span class="tag">CAPWAP</span>
+    <span class="tag">Catalyst 9800</span>
+    <span class="tag">WLC</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="200" fill="#e1ded7"/>
+      <rect x="290" y="24" width="140" height="50" rx="6" fill="#cfe0ee" stroke="#293d54" stroke-width="2"/>
+      <text x="360" y="45" style="font-family:'Inter',sans-serif;font-weight:700;font-size:12px;fill:#293d54;text-anchor:middle;">WLC (9800)</text>
+      <text x="360" y="61" style="font-family:ui-monospace,monospace;font-size:8px;fill:#293d54;text-anchor:middle;">the brain · all config</text>
+      <g style="font-family:ui-monospace,monospace;font-size:8px;">
+        <rect x="60"  y="140" width="120" height="42" rx="5" fill="#fff" stroke="#3a5a78"/><text x="120" y="158" text-anchor="middle" style="font-weight:700;">Lightweight AP</text><text x="120" y="172" text-anchor="middle">no local config</text>
+        <rect x="300" y="140" width="120" height="42" rx="5" fill="#fff" stroke="#3a5a78"/><text x="360" y="158" text-anchor="middle" style="font-weight:700;">Lightweight AP</text><text x="360" y="172" text-anchor="middle">no local config</text>
+        <rect x="540" y="140" width="120" height="42" rx="5" fill="#fff" stroke="#3a5a78"/><text x="600" y="158" text-anchor="middle" style="font-weight:700;">Lightweight AP</text><text x="600" y="172" text-anchor="middle">no local config</text>
+      </g>
+      <g stroke="#c63d1f" stroke-width="2" stroke-dasharray="5,3" fill="none">
+        <path d="M330 74 Q 200 100 120 140"/>
+        <path d="M360 74 L360 140"/>
+        <path d="M390 74 Q 520 100 600 140"/>
+      </g>
+      <text x="230" y="104" style="font-family:ui-monospace,monospace;font-size:8.5px;fill:#c63d1f;">CAPWAP tunnel</text>
+      <text x="360" y="196" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Every AP builds a CAPWAP tunnel to the controller and downloads its config. Configure the WLC, not the APs.</text>
+    </svg>
+  </div>
+
+  <div class="thesis-card">
+    <p>The whole point of the lightweight architecture is <strong>configure the fleet, not the device</strong>. A lightweight AP holds no SSID, no key, no VLAN mapping of its own — it boots, finds a <strong>Wireless LAN Controller</strong>, builds a <strong>CAPWAP</strong> tunnel to it (a control channel plus, in the default mode, a data tunnel), and downloads everything. Swap a dead AP for a new one of the same model and it inherits the config automatically. One controller — a hardware Catalyst&nbsp;9800, the virtual <strong>9800-CL</strong>, or an embedded controller on a switch — drives dozens or hundreds of APs from one place.</p>
+    <p>Two things to internalise: <strong>how the AP discovers the WLC</strong> (it's not magic — DHCP option 43, DNS, or subnet broadcast), and the 9800's <strong>tag model</strong>, which is how you push config to groups of APs at once. Autonomous APs (IOS on the AP) still exist for one-off tiny sites, but they're the exception now — the lightweight model is what real Cisco wireless is. It's the direct analogue of MikroTik centralised <a href="mikrotik-capsman.html">CAPsMAN</a>, versus a lone <a href="mikrotik-ap.html">standalone AP</a>.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li><a href="cisco-vlans-trunking.html">VLANs</a> and <a href="cisco-dhcp-nat.html">DHCP</a> — the AP gets an address and each SSID maps to a VLAN</li>
+      <li>A WLC (9800 hardware, 9800-CL virtual, or embedded) and CAPWAP-capable lightweight APs</li>
+      <li>Config is representative — 9800 syntax is version-specific; verify on your train</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">How an AP Finds Its Controller — CAPWAP Join</h2>
+  <p class="section-thesis"><em>Before any wireless works, the AP has to <strong>discover</strong> and <strong>join</strong> the WLC. This is the step that fails silently on a fresh deployment, so understand the discovery order.</em></p>
+  <p>A factory lightweight AP boots, gets an IP via DHCP, then hunts for a controller in this order: a <strong>DHCP option 43</strong> value (the WLC's management IP, handed out by your DHCP server), a <strong>DNS</strong> lookup of <code>CISCO-CAPWAP-CONTROLLER.&lt;domain&gt;</code>, then a <strong>local subnet broadcast</strong>. Any one that resolves gives it the WLC address; it builds the CAPWAP tunnel, the WLC checks it's allowed to join, pushes an image if versions differ, then the config. Get discovery right and the AP "just appears" on the controller.</p>
+  <div class="term-wrap">
+    <span class="term-label">The most reliable path across subnets — DHCP option 43</span>
+    <pre class="term"><span class="cmt"># On the DHCP server for the AP's VLAN, hand out the WLC mgmt IP in option 43.
+# On IOS DHCP, sub-option f1 + hex of the controller address(es):</span>
+<span class="pc">R1(config)#</span> <span class="out">ip dhcp pool AP-VLAN</span>
+<span class="pc">R1(dhcp-config)#</span> <span class="out">option 43 hex f104.0a0a.0002</span>   <span class="cmt"># f1 04 = 1 WLC, 0a0a0002 = 10.10.0.2</span>
+<span class="cmt"># (MikroTik/other DHCP servers set the same option 43 payload.)
+# Then on the WLC, confirm the AP joined:</span>
+<span class="pc">WLC#</span> <span class="out">show ap summary</span>          <span class="cmt"># the AP appears here once CAPWAP is up</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — "The AP Won't Join" Is Almost Always Discovery or Time</span>
+    <p>Two failure modes dominate fresh joins. <strong>Discovery:</strong> the AP is on a different subnet from the WLC and there's no option 43 / DNS record, so it never learns the controller address — it just sits there. Fix the discovery path for the AP's VLAN. <strong>Time/certs:</strong> CAPWAP is authenticated with certificates, and if the AP's or WLC's clock is wildly wrong (or an AP's cert expired on very old gear), the join fails with a TLS error. Make sure <a href="cisco-observability.html">NTP</a> is right on the WLC. Check <code>show ap join stats</code> — it tells you exactly which phase failed.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Configure the Fleet — the 9800 Tag Model</h2>
+  <p class="section-thesis"><em>On the controller you define reusable building blocks and bind them with tags stamped onto APs. Three objects get you on the air: a WLAN, a policy profile, and a policy tag.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">C9800 — WLAN + policy profile + policy tag</span>
+    <pre class="term"><span class="cmt"># 1. WLAN: the SSID + security.</span>
+<span class="pc">WLC(config)#</span> <span class="out">wlan CORP-WLAN 1 CORP</span>
+<span class="pc">WLC(config-wlan)#</span> <span class="out">security wpa psk set-key ascii 0 S3cr3t-WiFi-Key</span>
+<span class="pc">WLC(config-wlan)#</span> <span class="out">security wpa wpa2 ; no shutdown</span>
+
+<span class="cmt"># 2. Policy profile: where clients land (VLAN) + behaviour.</span>
+<span class="pc">WLC(config)#</span> <span class="out">wireless profile policy CORP-POLICY</span>
+<span class="pc">WLC(config-wireless-policy)#</span> <span class="out">vlan 10 ; no shutdown</span>
+
+<span class="cmt"># 3. Policy tag binds WLAN -> policy; stamp it on APs (or a whole group).</span>
+<span class="pc">WLC(config)#</span> <span class="out">wireless tag policy CORP-TAG</span>
+<span class="pc">WLC(config-policy-tag)#</span> <span class="out">wlan CORP-WLAN policy CORP-POLICY</span>
+<span class="pc">WLC(config)#</span> <span class="out">ap 00aa.bbcc.ddee policy-tag CORP-TAG</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 Three Tags, and Why They Exist</span>
+    <p>The 9800 uses three tag types and together they're the fleet-management magic: the <strong>policy tag</strong> (which WLANs/policies an AP runs), the <strong>RF tag</strong> (radio/RF profile — power, channels), and the <strong>site tag</strong> (which controller/flex settings and AP-join profile). Define them once, stamp them on groups of APs, and a new AP that joins inherits everything the moment you apply its tags. It feels heavy for a single SSID but it's exactly why one engineer can run a 200-AP campus — the same "configure the fleet" idea as MikroTik <a href="mikrotik-capsman.html">CAPsMAN</a> provisioning rules.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Branches — FlexConnect &amp; Local Switching</h2>
+  <p class="section-thesis"><em>By default a lightweight AP tunnels <em>all</em> client data back to the WLC (central switching). For a branch with its WLC in a distant datacentre, that's a terrible path. FlexConnect lets the AP switch client traffic locally while still being centrally managed.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">C9800 — a FlexConnect branch profile (local switching)</span>
+    <pre class="term"><span class="cmt"># In central switching, a guest at the branch hairpins to HQ's WLC and back
+# just to reach the branch printer. FlexConnect switches it locally instead.</span>
+<span class="pc">WLC(config)#</span> <span class="out">wireless profile flex BRANCH-FLEX</span>
+<span class="pc">WLC(config-wireless-flex-profile)#</span> <span class="out">native-vlan-id 1</span>
+<span class="pc">WLC(config)#</span> <span class="out">wireless profile policy CORP-POLICY</span>
+<span class="pc">WLC(config-wireless-policy)#</span> <span class="out">no central switching</span>   <span class="cmt"># switch client data at the AP</span>
+<span class="pc">WLC(config-wireless-policy)#</span> <span class="out">no central dhcp</span>
+<span class="cmt"># Bind BRANCH-FLEX via the site tag on the branch APs. Bonus: FlexConnect
+# APs can keep serving known SSIDs even if the WAN to the WLC drops.</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">VLAN-per-SSID &amp; Verify <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Map each SSID to its own VLAN — guest/staff/IoT segmented, exactly like wired — then confirm APs joined, WLANs are up, and clients land where they should.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">C9800 — a guest WLAN + the health walk</span>
+    <pre class="term"><span class="pc">WLC(config)#</span> <span class="out">wlan GUEST-WLAN 2 GUEST</span>
+<span class="pc">WLC(config-wlan)#</span> <span class="out">security wpa psk set-key ascii 0 Guest-Pass ; security wpa wpa2 ; no shutdown</span>
+<span class="pc">WLC(config)#</span> <span class="out">wireless profile policy GUEST-POLICY</span>
+<span class="pc">WLC(config-wireless-policy)#</span> <span class="out">vlan 20 ; no shutdown</span>   <span class="cmt"># isolated guest VLAN</span>
+
+<span class="cmt"># --- Verify ---</span>
+<span class="pc">WLC#</span> <span class="out">show ap summary</span>              <span class="cmt"># APs joined (CAPWAP up), model, uptime</span>
+<span class="pc">WLC#</span> <span class="out">show ap join stats</span>           <span class="cmt"># first stop when an AP won't join</span>
+<span class="pc">WLC#</span> <span class="out">show wireless client summary</span>  <span class="cmt"># clients, their WLAN + assigned VLAN</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Lightweight = configure the fleet, not the device.</strong> APs hold no local config; they tunnel to a WLC over CAPWAP and download everything.</li>
+      <li><strong>Discovery is the step that silently fails</strong> — DHCP option 43, DNS, or subnet broadcast gives the AP the WLC address. Across subnets, use option 43.</li>
+      <li><strong>"Won't join" is almost always discovery or time/certs</strong> — check <code>show ap join stats</code> and the WLC's NTP.</li>
+      <li><strong>The 9800 is tag-driven:</strong> WLAN + policy profile bound by a policy tag, with RF and site tags — define once, stamp on groups of APs.</li>
+      <li><strong>FlexConnect switches client traffic locally</strong> at branch APs and keeps them serving if the WAN to the WLC drops — don't hairpin branch traffic to a remote controller.</li>
+      <li><strong>One SSID per VLAN</strong> for guest/staff/IoT segmentation, same as wired.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>A campus or hotel where the Wi-Fi is a pile of unmanaged APs?</h3>
+    <p>NOCTIS designs controller-based wireless on Cisco (Catalyst 9800) and MikroTik across Crete — clean CAPWAP joins, VLAN-segmented SSIDs, FlexConnect branches, and roaming that works — managed as one fleet.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

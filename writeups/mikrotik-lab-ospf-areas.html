@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik Lab: Multi-Area OSPF — SP1R4 / NOCTIS</title>
+<meta name="description" content="Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.">
+<meta property="og:title" content="MikroTik Lab: Multi-Area OSPF — NOCTIS">
+<meta property="og:description" content="Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-lab-ospf-areas.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-ospf-areas.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-ospf-areas.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-lab-ospf-areas.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik Lab: Multi-Area OSPF",
+  "description": "Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-lab-ospf-areas.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-ospf-areas.png",
+  "keywords": ["mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-lab-ospf-areas"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Lab</span> &nbsp;·&nbsp; RouterOS 7 &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik Lab<br>Multi-Area OSPF</h1>
+  <p class="post-subtitle">Single-area OSPF is a tutorial; multi-area is what real networks run. This lab builds five RouterOS 7 routers across three areas — a backbone, a stub, and a regular area — so you see ABRs, the LSA types that actually matter, and how RouterOS 7's instance/area/interface-template model expresses it. The twin of the Cisco multi-area OSPF lab.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">OSPF</span>
+    <span class="tag">Multi-Area</span>
+    <span class="tag">Lab</span>
+    <span class="tag">ABR</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="240" fill="#e1ded7"/>
+      <!-- area 1 stub -->
+      <rect x="20" y="20" width="200" height="200" rx="8" fill="#d8e8d0" fill-opacity="0.5" stroke="#558840" stroke-dasharray="4,3"/>
+      <text x="120" y="40" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">Area 1 (stub)</text>
+      <!-- backbone -->
+      <rect x="250" y="20" width="220" height="200" rx="8" fill="#cfe0ee" fill-opacity="0.5" stroke="#3a5a78" stroke-dasharray="4,3"/>
+      <text x="360" y="40" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a5a78;text-anchor:middle;">Area 0 (backbone)</text>
+      <!-- area 2 -->
+      <rect x="500" y="20" width="200" height="200" rx="8" fill="#e8c8c0" fill-opacity="0.5" stroke="#c63d1f" stroke-dasharray="4,3"/>
+      <text x="600" y="40" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Area 2</text>
+      <!-- routers -->
+      <g style="font-family:ui-monospace,monospace;font-size:9px;">
+        <circle cx="90" cy="130" r="22" fill="#fff" stroke="#558840"/><text x="90" y="134" text-anchor="middle">R5</text>
+        <circle cx="230" cy="130" r="24" fill="#fff" stroke="#293d54" stroke-width="2"/><text x="230" y="127" text-anchor="middle">R1</text><text x="230" y="140" text-anchor="middle" style="font-size:7px;">ABR</text>
+        <circle cx="360" cy="90" r="22" fill="#fff" stroke="#3a5a78"/><text x="360" y="94" text-anchor="middle">R2</text>
+        <circle cx="360" cy="180" r="22" fill="#fff" stroke="#3a5a78"/><text x="360" y="184" text-anchor="middle">R3</text>
+        <circle cx="490" cy="130" r="24" fill="#fff" stroke="#293d54" stroke-width="2"/><text x="490" y="127" text-anchor="middle">R4</text><text x="490" y="140" text-anchor="middle" style="font-size:7px;">ABR</text>
+        <circle cx="630" cy="130" r="22" fill="#fff" stroke="#c63d1f"/><text x="630" y="134" text-anchor="middle">R6</text>
+      </g>
+      <g stroke="#8a8880" stroke-width="1.5">
+        <line x1="112" y1="130" x2="206" y2="130"/>
+        <line x1="252" y1="120" x2="342" y2="96"/>
+        <line x1="252" y1="140" x2="342" y2="174"/>
+        <line x1="378" y1="96" x2="468" y2="122"/>
+        <line x1="378" y1="174" x2="468" y2="138"/>
+        <line x1="514" y1="130" x2="608" y2="130"/>
+      </g>
+      <text x="360" y="228" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">R1 and R4 are ABRs — they sit in two areas and translate between them. Everything transits Area 0.</text>
+    </svg>
+  </div>
+
+  <div class="thesis-card">
+    <p>Areas exist to <strong>bound flooding and shrink tables</strong>. In a single area, every topology change re-floods every router; split the network into areas joined by a backbone (Area&nbsp;0) and a change in one area barely ripples into the others. The routers straddling two areas are <strong>ABRs</strong> — they hold a full topology of each area they touch and advertise <em>summaries</em> (not full detail) between them. A <strong>stub</strong> area goes further: it refuses external routes and lives off a default from its ABR, shrinking its tables to almost nothing.</p>
+    <p>RouterOS 7 expresses all this with three objects: an <strong>instance</strong>, one or more <strong>areas</strong> bound to it, and <strong>interface-templates</strong> that place interfaces into areas. This lab wires R1 and R4 as ABRs, makes Area&nbsp;1 a stub, and proves the LSA types by inspection. It's the RouterOS twin of the <a href="cisco-lab-ospf-areas.html">Cisco multi-area lab</a>; the theory is shared, the config is v7.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>Single-area OSPF on RouterOS 7 — <a href="mikrotik-ospf.html">OSPF on RouterOS 7</a></li>
+      <li>Five CHR/hEX routers (GNS3/EVE-NG works) cabled as above</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">The ABR — Feet in Two Areas</h2>
+  <p class="section-thesis"><em>R1 is the border between Area&nbsp;1 and the backbone. One instance, two areas, and interface-templates that assign each interface to the right area — that assignment is what makes a router an ABR.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (R1 · ABR) — backbone + stub area 1</span>
+    <pre class="term"><span class="pc">/routing ospf instance</span> <span class="out">add name=v7 router-id=1.1.1.1</span>
+<span class="pc">/routing ospf area</span>
+<span class="out">add name=backbone area-id=0.0.0.0 instance=v7
+add name=area1 area-id=0.0.0.1 instance=v7 type=stub</span>   <span class="cmt"># stub!</span>
+
+<span class="cmt"># ether1 faces R5 (Area 1); ether2 faces the backbone (Area 0).</span>
+<span class="pc">/routing ospf interface-template</span>
+<span class="out">add interfaces=ether1 area=area1 cost=10
+add interfaces=ether2 area=backbone cost=10</span>
+<span class="cmt"># Holding interfaces in two different areas = this router is an ABR.</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — Every Area Must Touch the Backbone</span>
+    <p>OSPF's cardinal rule: non-backbone areas connect to each other <strong>only through Area&nbsp;0</strong>. If Area&nbsp;2 can't reach Area&nbsp;0 directly, its routes never propagate — and RouterOS won't warn you, you'll just see missing routes. Here R1 and R4 both border the backbone, so it holds together. If a physical layout can't give an area a direct backbone link, you need a <strong>virtual-link</strong> across a transit area (supported in v7, but a design smell — fix the topology if you can). Confirm Area 0 is contiguous before blaming anything else.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">The Stub Router — Small Tables by Design</h2>
+  <p class="section-thesis"><em>R5 lives entirely in the stub Area&nbsp;1. It gets a default route from its ABR instead of external detail, so its table stays tiny. The stub type must match on every router in the area.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (R5 · internal, Area 1 stub)</span>
+    <pre class="term"><span class="pc">/routing ospf instance</span> <span class="out">add name=v7 router-id=5.5.5.5</span>
+<span class="pc">/routing ospf area</span> <span class="out">add name=area1 area-id=0.0.0.1 instance=v7 type=stub</span>
+<span class="pc">/routing ospf interface-template</span> <span class="out">add interfaces=ether1 area=area1 cost=10</span>
+<span class="cmt"># R5 learns inter-area (type-3) summaries + a default from R1, but NO
+# external (type-5) routes — that's the whole point of a stub.</span>
+<span class="pc">[R5] &gt;</span> <span class="out">/ip route print where ospf</span>   <span class="cmt"># note the 0.0.0.0/0 default, few specifics</span></pre>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Read the LSAs — Prove the Design <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>The whole reason to learn areas is what the LSA database shows. Inspect it and you can see intra-area (type-1/2), inter-area summaries (type-3), and the absence of type-5 in the stub.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — the LSA walk</span>
+    <pre class="term"><span class="pc">[R1] &gt;</span> <span class="out">/routing ospf lsa print</span>
+<span class="out"> type=router  area=backbone   ...   </span><span class="cmt"># type-1: routers in the area</span>
+<span class="out"> type=network area=backbone   ...   </span><span class="cmt"># type-2: multi-access segments</span>
+<span class="out"> type=summary area=area1      ...   </span><span class="cmt"># type-3: inter-area, injected by the ABR</span>
+<span class="pc">[R1] &gt;</span> <span class="out">/routing ospf neighbor print</span>   <span class="cmt"># adjacencies Full in both areas</span>
+<span class="pc">[R5] &gt;</span> <span class="out">/routing ospf lsa print where type~"external"</span>  <span class="cmt"># EMPTY in a stub</span></pre>
+  </div>
+  <table class="cheat">
+    <thead><tr><th>Symptom</th><th>Where to look</th></tr></thead>
+    <tbody>
+      <tr><td>Neighbours stuck in Exchange/Loading</td><td>MTU mismatch on the link — a classic OSPF killer. Match MTU both ends.</td></tr>
+      <tr><td>Stub area won't form adjacency</td><td>Stub flag not set on <em>every</em> router in the area (must match).</td></tr>
+      <tr><td>Area 2 routes missing everywhere</td><td>Area 0 not contiguous / an ABR not actually in the backbone.</td></tr>
+      <tr><td>Suboptimal inter-area path</td><td>Costs — tune interface-template <code>cost</code> to steer.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Areas bound flooding and shrink tables</strong> — a change in one area barely touches the others. That's why real networks are multi-area.</li>
+      <li><strong>An ABR is just a router with interfaces in two areas</strong> — in v7, interface-templates placing interfaces into different areas make it one.</li>
+      <li><strong>Every area must touch Area 0</strong> — non-backbone areas connect only through the backbone, or routes vanish silently.</li>
+      <li><strong>Stub areas refuse externals and live off a default</strong> — the type must match on every router in the area or adjacencies fail.</li>
+      <li><strong>The LSA database proves the design</strong> — type-1/2 intra-area, type-3 inter-area summaries, no type-5 in a stub.</li>
+      <li><strong>MTU mismatch is the classic adjacency killer</strong> — Exchange/Loading limbo means check MTU first.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>An OSPF network that re-floods the world on every little change?</h3>
+    <p>NOCTIS designs scalable multi-area routing on MikroTik and Cisco across Crete — sane area boundaries, stub/summary design, and tables that stay small as the network grows.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

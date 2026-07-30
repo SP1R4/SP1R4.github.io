@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Cisco IOS: DMVPN — SP1R4 / NOCTIS</title>
+<meta name="description" content="Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.">
+<meta property="og:title" content="Cisco IOS: DMVPN — NOCTIS">
+<meta property="og:description" content="Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/cisco-dmvpn.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-dmvpn.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/cisco-dmvpn.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/cisco-dmvpn.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cisco IOS: DMVPN",
+  "description": "Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/cisco-dmvpn.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/cisco-dmvpn.png",
+  "keywords": ["cisco"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#cisco-dmvpn"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / IOS</span> &nbsp;·&nbsp; VPN &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Cisco IOS<br>DMVPN</h1>
+  <p class="post-subtitle">Site-to-site VPN works fine for two offices. Try it for thirty branches and you've hand-built a full mesh of tunnels that nobody can maintain. DMVPN is the answer: configure the hub once, add spokes without ever touching it, and let spokes build direct tunnels to each other on demand. This is the scalable WAN, explained without the mystique.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">DMVPN</span>
+    <span class="tag">mGRE</span>
+    <span class="tag">NHRP</span>
+    <span class="tag">IPsec</span>
+    <span class="tag">VPN</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>The problem DMVPN solves is combinatorial. Classic <a href="cisco-site-to-site-vpn.html">site-to-site tunnels</a> are one-per-pair; a full mesh of N sites needs N(N-1)/2 tunnels, and every new branch means editing every existing router. DMVPN collapses that into <strong>one multipoint tunnel interface</strong> per router. It stands on three legs: <strong>mGRE</strong> (a single GRE interface that reaches many endpoints), <strong>NHRP</strong> (a "next-hop resolution" registry where spokes register with the hub and look each other up), and <strong>IPsec</strong> (a tunnel-protection profile encrypting it all).</p>
+    <p>Add a spoke and it registers with the hub — the hub needs <em>zero</em> changes. And with Phase&nbsp;3, when two spokes talk, NHRP resolves a <strong>direct spoke-to-spoke</strong> tunnel so their traffic doesn't hairpin through the hub. It's the natural next step after the two-site VPN, and its RouterOS counterpart — RouterOS has no DMVPN — is covered in <a href="mikrotik-dmvpn.html">MikroTik hub-and-spoke</a>.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>The two-site build first — <a href="cisco-site-to-site-vpn.html">Site-to-Site IPsec VPN</a> (IKEv2 + tunnel protection)</li>
+      <li>A routing protocol to run over the tunnel — <a href="cisco-routing-ospf.html">OSPF</a> or EIGRP</li>
+      <li>A hub with a static public IP; spokes may be behind dynamic IP / NAT</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Hub — Configure Once, Forever</h2>
+  <p class="section-thesis"><em>A multipoint GRE tunnel, an NHRP network for spokes to register into, and tunnel protection. The hub accepts dynamic registrations, so you never edit it again as branches come and go.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS (HUB) — mGRE + NHRP + IPsec-protected Tunnel0</span>
+    <pre class="term"><span class="pc">HUB(config)#</span> <span class="out">interface Tunnel0</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">ip address 172.16.0.1 255.255.255.0</span>   <span class="cmt"># the DMVPN subnet</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">tunnel source GigabitEthernet0/0</span>       <span class="cmt"># its public interface</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">tunnel mode gre multipoint</span>            <span class="cmt"># mGRE — many endpoints</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">ip nhrp network-id 1</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">ip nhrp map multicast dynamic</span>         <span class="cmt"># let spokes register</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">ip nhrp redirect</span>                     <span class="cmt"># Phase 3: enable spoke-to-spoke</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">tunnel protection ipsec profile DMVPN-PROF</span>
+<span class="cmt"># Routing over the tunnel (OSPF here). On a hub, network type matters:</span>
+<span class="pc">HUB(config-if)#</span> <span class="out">ip ospf network broadcast</span></pre>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">A Spoke — Point at the Hub, Done</h2>
+  <p class="section-thesis"><em>Each spoke gets a nearly identical block, plus a static NHRP map to the hub (its "next-hop server"). Copy it to every branch, changing only the tunnel IP.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS (SPOKE) — register with the hub as NHS</span>
+    <pre class="term"><span class="pc">SPOKE(config)#</span> <span class="out">interface Tunnel0</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">ip address 172.16.0.11 255.255.255.0</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">tunnel source GigabitEthernet0/0</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">tunnel mode gre multipoint</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">ip nhrp network-id 1</span>
+<span class="cmt"># The hub's tunnel IP + real public IP, and register to it:</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">ip nhrp nhs 172.16.0.1 nbma 203.0.113.1 multicast</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">ip nhrp shortcut</span>                    <span class="cmt"># Phase 3: accept redirects</span>
+<span class="pc">SPOKE(config-if)#</span> <span class="out">tunnel protection ipsec profile DMVPN-PROF</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — NBMA vs Tunnel Address, and the Routing Trap</span>
+    <p>DMVPN has two address planes and confusing them is the classic mistake. The <strong>NBMA</strong> address is the real public IP the packet is sent to; the <strong>tunnel</strong> address (172.16.x) is the overlay the routing protocol runs on. NHRP's whole job is mapping tunnel→NBMA. The routing trap: on the hub, don't let OSPF summarise away the spoke routes or change next-hops — spokes need the <em>other spoke's</em> tunnel IP as next-hop for Phase-3 shortcuts to work. On point-to-multipoint designs, watch OSPF network types (broadcast on hub, and matching on spokes) or adjacencies flap.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Phase 3 — Spokes Talk Directly</h2>
+  <p class="section-thesis"><em>By default spoke-to-spoke traffic goes up to the hub and back down — a hairpin. Phase 3 (redirect on the hub, shortcut on spokes) makes NHRP resolve a temporary direct tunnel so branch A reaches branch B without the hub in the path.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — watch a spoke-to-spoke tunnel form on demand</span>
+    <pre class="term"><span class="cmt"># Before any traffic: only the hub tunnel exists.</span>
+<span class="pc">SPOKE-A#</span> <span class="out">show dmvpn</span>
+<span class="out"> 1 172.16.0.1  203.0.113.1  UP  static</span>          <span class="cmt"># hub only</span>
+
+<span class="cmt"># Ping spoke B's LAN once -> hub redirects -> NHRP resolves B directly:</span>
+<span class="pc">SPOKE-A#</span> <span class="out">ping 10.20.0.1 source 10.10.0.1</span>
+<span class="pc">SPOKE-A#</span> <span class="out">show dmvpn</span>
+<span class="out"> 1 172.16.0.1   203.0.113.1   UP  static
+ 1 172.16.0.12  198.51.100.2  UP  dynamic</span>       <span class="cmt"># direct to spoke B!</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Verify the Overlay <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Three layers to confirm, in order: NHRP registrations, the IPsec SAs protecting them, and the routing adjacencies over the tunnel.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — the DMVPN health walk</span>
+    <pre class="term"><span class="pc">HUB#</span> <span class="out">show ip nhrp</span>                 <span class="cmt"># every spoke registered? tunnel->NBMA maps</span>
+<span class="pc">HUB#</span> <span class="out">show dmvpn detail</span>            <span class="cmt"># peer states, crypto, uptime</span>
+<span class="pc">HUB#</span> <span class="out">show crypto ipsec sa | inc peer|pkts</span>  <span class="cmt"># SAs up, encaps climbing</span>
+<span class="pc">HUB#</span> <span class="out">show ip ospf neighbor</span>        <span class="cmt"># all spokes FULL on the tunnel</span></pre>
+  </div>
+  <table class="cheat">
+    <thead><tr><th>Symptom</th><th>Where to look</th></tr></thead>
+    <tbody>
+      <tr><td>Spoke never registers</td><td>NHS/NBMA wrong, or network-id mismatch. <code>debug nhrp</code>.</td></tr>
+      <tr><td>Registered but no encryption</td><td>IPsec profile/proposal mismatch — same as the two-site build.</td></tr>
+      <tr><td>Hub works, no spoke-to-spoke</td><td>Missing <code>redirect</code> (hub) / <code>shortcut</code> (spoke), or next-hop rewritten by routing.</td></tr>
+      <tr><td>OSPF adjacency flaps</td><td>Mismatched network types over the mGRE tunnel.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>DMVPN kills the full-mesh problem</strong> — one multipoint tunnel per router instead of N² site-to-site tunnels.</li>
+      <li><strong>Three legs:</strong> mGRE (many endpoints, one interface), NHRP (registration + resolution), IPsec (tunnel protection).</li>
+      <li><strong>The hub is configured once</strong> — spokes register dynamically, so adding a branch never touches the hub.</li>
+      <li><strong>Keep NBMA (real public IP) and tunnel (overlay) addresses straight</strong> — NHRP maps between them; confusing them is the top mistake.</li>
+      <li><strong>Phase 3 (redirect + shortcut) gives direct spoke-to-spoke tunnels</strong> on demand, so branch traffic doesn't hairpin through the hub.</li>
+      <li><strong>Don't let routing rewrite spoke next-hops</strong> or summarise them away, or Phase-3 shortcuts break.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>A growing branch network stitched together with one-off VPN tunnels?</h3>
+    <p>NOCTIS designs scalable WANs on Cisco and MikroTik across Crete — hub-and-spoke overlays where adding a site is a copy-paste, spokes talk directly, and the whole thing routes and fails over cleanly.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

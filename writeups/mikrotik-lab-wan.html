@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik Lab: HQ + Branches — GRE over IPsec WAN — SP1R4 / NOCTIS</title>
+<meta name="description" content="An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.">
+<meta property="og:title" content="MikroTik Lab: HQ + Branches — GRE over IPsec WAN — NOCTIS">
+<meta property="og:description" content="An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-lab-wan.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-wan.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-wan.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-lab-wan.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik Lab: HQ + Branches — GRE over IPsec WAN",
+  "description": "An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-lab-wan.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-lab-wan.png",
+  "keywords": ["mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-lab-wan"
+  },
+  "timeRequired": "PT10M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Lab</span> &nbsp;·&nbsp; RouterOS 7 &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik Lab<br>HQ + Branches — GRE over IPsec WAN</h1>
+  <p class="post-subtitle">A real branch WAN through an ISP that won't route your private LANs: GRE tunnels carry the traffic, IPsec encrypts them, and OSPF runs on top so every site learns the others automatically. This lab builds an HQ hub and two branches on RouterOS 7 — the twin of the Cisco GRE-over-IPsec lab, done the MikroTik way.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">GRE</span>
+    <span class="tag">IPsec</span>
+    <span class="tag">OSPF</span>
+    <span class="tag">Lab</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="220" fill="#e1ded7"/>
+      <rect x="290" y="30" width="140" height="52" rx="6" fill="#cfe0ee" stroke="#293d54" stroke-width="2"/>
+      <text x="360" y="52" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">HQ (hub)</text>
+      <text x="360" y="68" style="font-family:ui-monospace,monospace;font-size:8px;fill:#293d54;text-anchor:middle;">10.0.0.0/24</text>
+      <ellipse cx="360" cy="120" rx="70" ry="30" fill="#e8c8c0" stroke="#c63d1f"/>
+      <text x="360" y="124" style="font-family:'Inter',sans-serif;font-weight:700;font-size:10px;fill:#c63d1f;text-anchor:middle;">Internet</text>
+      <rect x="60" y="160" width="150" height="48" rx="6" fill="#d8e8d0" stroke="#558840"/>
+      <text x="135" y="180" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">Branch 1</text>
+      <text x="135" y="196" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">10.1.0.0/24</text>
+      <rect x="510" y="160" width="150" height="48" rx="6" fill="#d8e8d0" stroke="#558840"/>
+      <text x="585" y="180" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">Branch 2</text>
+      <text x="585" y="196" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">10.2.0.0/24</text>
+      <path d="M320 78 Q 200 110 150 160" fill="none" stroke="#558840" stroke-width="2.5" stroke-dasharray="1,0"/>
+      <path d="M400 78 Q 520 110 570 160" fill="none" stroke="#558840" stroke-width="2.5" stroke-dasharray="1,0"/>
+      <text x="205" y="118" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">GRE+IPsec · OSPF</text>
+      <text x="515" y="118" style="font-family:ui-monospace,monospace;font-size:8px;fill:#3a6a28;text-anchor:middle;">GRE+IPsec · OSPF</text>
+      <text x="360" y="214" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">GRE carries any protocol (incl. OSPF multicast); IPsec encrypts it; OSPF over the tunnels learns every LAN.</text>
+    </svg>
+  </div>
+
+  <div class="thesis-card">
+    <p>Why not just IPsec? Because policy-based IPsec alone can't easily carry a <strong>routing protocol</strong> — OSPF uses multicast, which plain IPsec tunnels won't transport. Wrap the traffic in <strong>GRE</strong> first and you get a real point-to-point interface that carries anything, including OSPF's multicast hellos; then <strong>IPsec encrypts the GRE</strong>. On RouterOS the encryption is almost free: the GRE interface takes an <code>ipsec-secret</code> and auto-builds the IPsec policies for you. Run OSPF over the GRE tunnels and each site learns every other site's LAN with no static-route bookkeeping.</p>
+    <p>This is the exact pattern of the <a href="cisco-lab-gre-ipsec.html">Cisco GRE-over-IPsec lab</a> — hub-and-spoke tunnels, encrypted, with a dynamic routing protocol on top. HQ is the hub with a tunnel to each branch; branches tunnel only to HQ. (For a many-branch version without per-tunnel config, see the <a href="mikrotik-dmvpn.html">WireGuard hub-and-spoke</a>.)</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>The VPN and routing basics — <a href="cisco-mikrotik-ipsec.html">IPsec</a> and <a href="mikrotik-ospf.html">OSPF</a></li>
+      <li>Three routers with public IPs (or NAT with UDP 500/4500 + protocol 47/GRE forwarded)</li>
+      <li>Non-overlapping LANs: HQ 10.0.0.0/24, branches 10.1/10.2.0.0/24</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">HQ — a GRE Tunnel per Branch</h2>
+  <p class="section-thesis"><em>The hub builds one encrypted GRE interface toward each branch, each with a small transit subnet. <code>ipsec-secret</code> turns on the encryption without a single manual IPsec policy.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (HQ) — encrypted GRE to Branch 1 and Branch 2</span>
+    <pre class="term"><span class="cmt"># One GRE per branch; ipsec-secret auto-creates the IPsec that protects it.</span>
+<span class="pc">/interface gre</span>
+<span class="out">add name=gre-b1 remote-address=198.51.100.2 local-address=203.0.113.1 ipsec-secret="Str0ng-B1!"
+add name=gre-b2 remote-address=198.51.100.3 local-address=203.0.113.1 ipsec-secret="Str0ng-B2!"</span>
+
+<span class="cmt"># A tiny transit /30 on each tunnel for OSPF to run over.</span>
+<span class="pc">/ip address</span>
+<span class="out">add address=172.31.1.1/30 interface=gre-b1
+add address=172.31.2.1/30 interface=gre-b2</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — GRE Needs Protocol 47, Not a Port; Mind the MTU</span>
+    <p>Two things bite here. GRE isn't TCP or UDP — it's <strong>IP protocol 47</strong> — so if either side is behind a firewall/NAT, you must permit protocol 47 <em>and</em> the IPsec transports (UDP 500/4500, ESP), not just "open a port." Second, GRE + IPsec adds significant header overhead; the tunnel's usable MTU drops well below 1500, and if you don't lower it, large packets fragment or black-hole (the dreaded "ping works, file transfers hang"). Set the GRE interface MTU sensibly (≈1400) and consider <code>mss-clamp</code> so TCP negotiates a size that fits. This overhead trap is identical on Cisco.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">A Branch — Tunnel Home to HQ</h2>
+  <p class="section-thesis"><em>Each branch is the mirror: one encrypted GRE back to HQ, the other end of the transit /30. Copy it per site, changing only the addresses and secret.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (Branch 1) — GRE + IPsec to HQ</span>
+    <pre class="term"><span class="pc">/interface gre</span> <span class="out">add name=gre-hq remote-address=203.0.113.1 local-address=198.51.100.2 ipsec-secret="Str0ng-B1!"</span>
+<span class="pc">/ip address</span> <span class="out">add address=172.31.1.2/30 interface=gre-hq</span>
+<span class="cmt"># Same secret as HQ's gre-b1, mirrored endpoints. Branch 2 mirrors gre-b2.</span></pre>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">OSPF Over the Tunnels</h2>
+  <p class="section-thesis"><em>Now the payoff. Run OSPF on the GRE interfaces and each site's LAN is learned everywhere — add a third branch later and its subnet just appears, no static routes to edit.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (HQ) — OSPF on the GRE tunnels + the LAN</span>
+    <pre class="term"><span class="pc">/routing ospf instance</span> <span class="out">add name=v7 router-id=10.0.0.1</span>
+<span class="pc">/routing ospf area</span> <span class="out">add name=backbone area-id=0.0.0.0 instance=v7</span>
+<span class="pc">/routing ospf interface-template</span>
+<span class="out">add interfaces=gre-b1,gre-b2 area=backbone cost=10 network-type=ptp
+add interfaces=bridge-lan area=backbone cost=10 passive</span>   <span class="cmt"># advertise the LAN, don't peer on it</span>
+<span class="cmt"># Branches run the mirror: OSPF on gre-hq + their own LAN (passive).</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">💡 passive on the LAN, ptp on the Tunnels</span>
+    <p>Two small settings that matter. Mark the LAN interface-template <strong>passive</strong> so OSPF advertises the LAN subnet but never tries to form an adjacency with a host down there (and can't be tricked into one by something on the LAN). Set the GRE tunnels to <strong>point-to-point</strong> (<code>ptp</code>) network type — they're literally point-to-point links, and ptp skips DR/BDR election for faster, simpler adjacencies. These are the same choices the <a href="cisco-lab-gre-ipsec.html">Cisco lab</a> makes; good hygiene on any tunnel-based WAN.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Verify End to End <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>Walk it in layers: GRE up, IPsec actually encrypting it, OSPF adjacent, LANs learned, and a LAN-sourced ping across.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (HQ) — the health walk</span>
+    <pre class="term"><span class="pc">/interface gre print</span>                    <span class="cmt"># tunnels running (R flag)</span>
+<span class="pc">/ip ipsec active-peers print</span>            <span class="cmt"># auto-built SAs established</span>
+<span class="pc">/routing ospf neighbor print</span>            <span class="cmt"># both branches Full</span>
+<span class="pc">/ip route print where ospf</span>              <span class="cmt"># 10.1.0.0/24 and 10.2.0.0/24 learned</span>
+<span class="pc">/ping 10.1.0.1 src-address=10.0.0.1</span>     <span class="cmt"># HQ LAN -> Branch 1 LAN</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>GRE carries what IPsec alone can't</strong> — a real interface for OSPF's multicast; IPsec then encrypts the GRE.</li>
+      <li><strong>On RouterOS, encryption is one field</strong> — <code>ipsec-secret</code> on the GRE auto-builds the IPsec policies.</li>
+      <li><strong>GRE is IP protocol 47</strong> — permit it plus the IPsec transports through any firewall/NAT, not just a port.</li>
+      <li><strong>Lower the tunnel MTU / clamp MSS</strong> — GRE+IPsec overhead black-holes big packets otherwise ("ping fine, transfers hang").</li>
+      <li><strong>OSPF over the tunnels means zero static bookkeeping</strong> — new branches' LANs appear automatically.</li>
+      <li><strong>passive the LAN, ptp the tunnels</strong> — advertise without peering on the LAN; skip DR election on point-to-point links.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Branches stitched to HQ with brittle static tunnels?</h3>
+    <p>NOCTIS builds encrypted, dynamically-routed branch WANs on MikroTik and Cisco across Crete — GRE/IPsec or WireGuard overlays where new sites drop in cleanly and OSPF handles the rest.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

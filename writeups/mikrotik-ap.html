@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>MikroTik: Standalone Wi-Fi (wifiwave2) — SP1R4 / NOCTIS</title>
+<meta name="description" content="A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.">
+<meta property="og:title" content="MikroTik: Standalone Wi-Fi (wifiwave2) — NOCTIS">
+<meta property="og:description" content="A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/mikrotik-ap.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-ap.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/mikrotik-ap.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/mikrotik-ap.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MikroTik: Standalone Wi-Fi (wifiwave2)",
+  "description": "A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/mikrotik-ap.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/mikrotik-ap.png",
+  "keywords": ["mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#mikrotik-ap"
+  },
+  "timeRequired": "PT9M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>MikroTik / Wireless</span> &nbsp;·&nbsp; AP Config &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">MikroTik<br>Standalone Wi-Fi (wifiwave2)</h1>
+  <p class="post-subtitle">Not every site needs centralised CAPsMAN — sometimes it's one AP in a shop or a villa, and you just want solid, modern Wi-Fi. This configures a standalone RouterOS AP with the wifiwave2 stack: WPA3, multiple SSIDs each on their own VLAN, guest isolation, and a clear line on when to graduate to a managed fleet. The counterpart to Cisco's autonomous-vs-lightweight split.</p>
+  <div class="tags">
+    <span class="tag">MikroTik</span>
+    <span class="tag">RouterOS</span>
+    <span class="tag">Wi-Fi</span>
+    <span class="tag">wifiwave2</span>
+    <span class="tag">WPA3</span>
+    <span class="tag">VLAN</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>RouterOS wireless has two lineages, and using the wrong one dates you: the legacy <code>/interface wireless</code> package, and the modern <strong>wifiwave2</strong> stack (on current 7.x, the menu is <code>/interface wifi</code>). Wifiwave2 is the one to use on any AC/AX hardware — it brings <strong>WPA3</strong>, 802.11ax, and a cleaner profile model. This post is the <em>standalone</em> case: a single AP configured on the box itself, the direct analogue of a Cisco <a href="cisco-wireless-ap.html">autonomous AP</a>. When you outgrow it, the fleet answer is <a href="mikrotik-capsman.html">CAPsMAN</a> — the RouterOS equivalent of a Cisco WLC.</p>
+    <p>The model is three reusable profiles — <strong>security</strong> (auth + passphrase), <strong>configuration</strong> (SSID + mode), and <strong>channel</strong> (band/width) — attached to a radio, plus <em>virtual</em> APs for extra SSIDs. The security payoff, exactly as on wired and on Cisco, is <strong>one SSID per VLAN</strong>. (Menu note: on 7.13+ it's <code>/interface wifi</code>; earlier 7.x used <code>/interface wifiwave2</code> — same concepts.)</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>AX/AC MikroTik hardware with the wifi/wifiwave2 package</li>
+      <li>A <a href="mikrotik-vlans.html">VLAN-filtering bridge</a> — SSIDs drop onto tagged VLANs</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">A Secure SSID — WPA3</h2>
+  <p class="section-thesis"><em>Start with the primary SSID: a security profile with WPA2/WPA3 mixed (so old and new clients both connect), a configuration profile with the SSID, and enable the radio.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (wifi) — security + config on the radio</span>
+    <pre class="term"><span class="cmt"># Security: WPA2+WPA3 transitional so legacy clients still join.</span>
+<span class="pc">/interface wifi security</span>
+<span class="out">add name=sec-corp authentication-types=wpa2-psk,wpa3-psk passphrase="S3cr3t-WiFi-Key"</span>
+
+<span class="cmt"># Apply SSID + security to the radio and bring it up.</span>
+<span class="pc">/interface wifi</span>
+<span class="out">set wifi1 configuration.ssid=CORP configuration.mode=ap \
+    security=sec-corp channel.band=5ghz-ax channel.width=20/40/80mhz disabled=no</span>
+<span class="pc">&gt;</span> <span class="out">/interface wifi print</span>   <span class="cmt"># running, clients can associate</span></pre>
+  </div>
+  <div class="callout gotcha">
+    <span class="callout-label">⚠ Gotcha — WPA3-Only Locks Out Old Devices</span>
+    <p>WPA3 is the right target, but set <code>authentication-types=wpa3-psk</code> <em>alone</em> and every pre-2019 phone, printer, and IoT gadget silently fails to connect — with users just saying "wrong password." Use the <strong>transitional</strong> mode (<code>wpa2-psk,wpa3-psk</code>) so modern clients get WPA3 and legacy ones fall back to WPA2 on the same SSID. Only go WPA3-only when you control every client (a locked-down corporate SSID). This is the wireless version of "don't break the estate to chase the newest standard."</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">More SSIDs, Each on Its Own VLAN</h2>
+  <p class="section-thesis"><em>A guest network and an IoT network are extra <strong>virtual</strong> APs on the same radio, each tagging its traffic into a different VLAN via the datapath — the wireless half of segmentation.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 (wifi) — a guest virtual AP tagged to VLAN 20</span>
+    <pre class="term"><span class="cmt"># Guest security profile with client isolation on (guests can't see guests).</span>
+<span class="pc">/interface wifi security</span>
+<span class="out">add name=sec-guest authentication-types=wpa2-psk,wpa3-psk passphrase="Guest-Pass"</span>
+
+<span class="cmt"># A virtual AP on wifi1: its own SSID, and datapath VLAN 20.</span>
+<span class="pc">/interface wifi</span>
+<span class="out">add name=wifi-guest master-interface=wifi1 configuration.ssid=GUEST \
+    security=sec-guest datapath.vlan-id=20 datapath.client-isolation=yes disabled=no</span>
+<span class="cmt"># The bridge must have VLAN 20 tagged toward this radio and the DHCP/gateway
+# for VLAN 20 in place — see the VLANs post. IoT SSID = same pattern, VLAN 30.</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ client-isolation Is the Setting Owners Assume the Password Provides</span>
+    <p>On a guest SSID, <code>datapath.client-isolation=yes</code> stops one guest device from reaching another on the same radio — the wireless complement to bridge <a href="mikrotik-port-security.html">horizon</a> on the wired side. Without it, a guest with malware can scan and attack every other guest, VLAN or no VLAN, because they share the radio's broadcast domain. Turn it on for any untrusted SSID. Guest isolation is a <em>per-radio and per-VLAN</em> setting, not something the Wi-Fi password does — the exact point the plain-language guest-Wi-Fi guide makes to owners.</p>
+  </div>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Trunk the VLANs Up, and Verify <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>The radio tags client traffic into VLANs; the bridge has to carry those VLANs. Then confirm the SSIDs are up and clients land on the right VLAN.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">RouterOS 7 — bridge VLANs for the SSIDs + health checks</span>
+    <pre class="term"><span class="cmt"># Ensure the AP's VLANs exist on the bridge and are tagged toward the uplink.</span>
+<span class="pc">/interface bridge vlan</span>
+<span class="out">add bridge=bridge vlan-ids=20 tagged=bridge,ether1
+add bridge=bridge vlan-ids=30 tagged=bridge,ether1</span>
+
+<span class="cmt"># --- Verify ---</span>
+<span class="pc">&gt;</span> <span class="out">/interface wifi print</span>                 <span class="cmt"># all SSIDs running</span>
+<span class="pc">&gt;</span> <span class="out">/interface wifi registration-table print</span>  <span class="cmt"># associated clients, signal, SSID</span>
+<span class="pc">&gt;</span> <span class="out">/interface wifi registration-table print stats</span>  <span class="cmt"># rates, retries</span></pre>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">When to Graduate to CAPsMAN</h2>
+  <p class="section-thesis"><em>Standalone is perfect for one AP. The moment you have two or more, per-device config becomes the same trap as Cisco autonomous — and the answer is centralisation.</em></p>
+  <p>One AP: configure it standalone as above and move on. <strong>Two or more</strong> APs, or any site where clients roam between them: stop copying config by hand and move to <a href="mikrotik-capsman.html">CAPsMAN</a>, which provisions every AP from one controller with one set of profiles — the RouterOS equivalent of the Cisco <a href="cisco-wireless-ap.html">lightweight/WLC model</a>. The decision point is exactly the same on both platforms: standalone for one, managed fleet for many. Don't build a five-AP hotel out of five hand-configured standalone radios.</p>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Use wifiwave2 (<code>/interface wifi</code>), not the legacy wireless package</strong>, on modern hardware — it's the one with WPA3 and 802.11ax.</li>
+      <li><strong>Three profiles — security, configuration, channel</strong> — attached to a radio; extra SSIDs are virtual APs on the same radio.</li>
+      <li><strong>Use WPA2+WPA3 transitional</strong>, not WPA3-only, unless you control every client — or old devices silently fail.</li>
+      <li><strong>Each SSID on its own VLAN via <code>datapath.vlan-id</code></strong>, and the bridge must carry those VLANs — segmentation is wireless too.</li>
+      <li><strong><code>client-isolation</code> on guest SSIDs</strong> stops guest-to-guest attacks on the shared radio — the password doesn't do this.</li>
+      <li><strong>One AP: standalone. Two or more: CAPsMAN.</strong> Same standalone-vs-fleet decision as Cisco autonomous-vs-lightweight.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>One AP that needs to be done right, or a fleet that's gone feral?</h3>
+    <p>NOCTIS designs Wi-Fi on MikroTik and Cisco across Crete — standalone done properly with WPA3 and VLAN-segmented SSIDs, or a centrally-managed fleet with seamless roaming when you outgrow one radio.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>
