@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Network Architecture: Collapsed-Core vs Three-Tier vs Spine-Leaf — SP1R4 / NOCTIS</title>
+<meta name="description" content="The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.">
+<meta property="og:title" content="Network Architecture: Collapsed-Core vs Three-Tier vs Spine-Leaf — NOCTIS">
+<meta property="og:description" content="The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/arch-campus-topologies.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/arch-campus-topologies.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/arch-campus-topologies.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/arch-campus-topologies.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Network Architecture: Collapsed-Core vs Three-Tier vs Spine-Leaf",
+  "description": "The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/arch-campus-topologies.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/arch-campus-topologies.png",
+  "keywords": ["architecture", "cisco", "mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#arch-campus-topologies"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Architecture</span> &nbsp;·&nbsp; Design &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Network Architecture<br>Collapsed-Core, Three-Tier &amp; Spine-Leaf</h1>
+  <p class="post-subtitle">Before you configure a single VLAN, you pick a shape. The three campus/DC topologies solve different problems at different scales — and choosing the wrong one means either over-building a two-switch office into a three-tier campus, or cramming a data centre into a collapsed core that melts under east-west traffic. This is the decision, made in plain terms.</p>
+  <div class="tags">
+    <span class="tag">Architecture</span>
+    <span class="tag">Campus Design</span>
+    <span class="tag">Spine-Leaf</span>
+    <span class="tag">Three-Tier</span>
+    <span class="tag">Topology</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="240" fill="#e1ded7"/>
+      <!-- collapsed core -->
+      <text x="120" y="26" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">Collapsed-Core</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <rect x="80" y="50" width="80" height="26" rx="4" fill="#cfe0ee" stroke="#3a5a78"/><text x="120" y="66" text-anchor="middle">core+dist</text>
+        <rect x="60" y="110" width="50" height="22" rx="4" fill="#fff" stroke="#3a5a78"/><text x="85" y="124" text-anchor="middle">access</text>
+        <rect x="130" y="110" width="50" height="22" rx="4" fill="#fff" stroke="#3a5a78"/><text x="155" y="124" text-anchor="middle">access</text>
+        <line x1="110" y1="76" x2="85" y2="110" stroke="#8a8880"/><line x1="130" y1="76" x2="155" y2="110" stroke="#8a8880"/>
+      </g>
+      <!-- three tier -->
+      <text x="360" y="26" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">Three-Tier</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <rect x="335" y="46" width="50" height="20" rx="4" fill="#cfe0ee" stroke="#3a5a78"/><text x="360" y="59" text-anchor="middle">core</text>
+        <rect x="300" y="90" width="50" height="20" rx="4" fill="#dfeaf3" stroke="#3a5a78"/><text x="325" y="103" text-anchor="middle">dist</text>
+        <rect x="370" y="90" width="50" height="20" rx="4" fill="#dfeaf3" stroke="#3a5a78"/><text x="395" y="103" text-anchor="middle">dist</text>
+        <rect x="290" y="134" width="44" height="20" rx="4" fill="#fff" stroke="#3a5a78"/><text x="312" y="147" text-anchor="middle">acc</text>
+        <rect x="386" y="134" width="44" height="20" rx="4" fill="#fff" stroke="#3a5a78"/><text x="408" y="147" text-anchor="middle">acc</text>
+        <g stroke="#8a8880"><line x1="352" y1="66" x2="325" y2="90"/><line x1="368" y1="66" x2="395" y2="90"/><line x1="320" y1="110" x2="312" y2="134"/><line x1="400" y1="110" x2="408" y2="134"/><line x1="325" y1="110" x2="386" y2="134"/><line x1="395" y1="110" x2="334" y2="134"/></g>
+      </g>
+      <!-- spine leaf -->
+      <text x="600" y="26" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Spine-Leaf</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <rect x="530" y="56" width="46" height="20" rx="4" fill="#e8c8c0" stroke="#c63d1f"/><text x="553" y="69" text-anchor="middle">spine</text>
+        <rect x="620" y="56" width="46" height="20" rx="4" fill="#e8c8c0" stroke="#c63d1f"/><text x="643" y="69" text-anchor="middle">spine</text>
+        <rect x="520" y="118" width="40" height="20" rx="4" fill="#fff" stroke="#c63d1f"/><text x="540" y="131" text-anchor="middle">leaf</text>
+        <rect x="580" y="118" width="40" height="20" rx="4" fill="#fff" stroke="#c63d1f"/><text x="600" y="131" text-anchor="middle">leaf</text>
+        <rect x="640" y="118" width="40" height="20" rx="4" fill="#fff" stroke="#c63d1f"/><text x="660" y="131" text-anchor="middle">leaf</text>
+        <g stroke="#c9a">
+          <line x1="553" y1="76" x2="540" y2="118"/><line x1="553" y1="76" x2="600" y2="118"/><line x1="553" y1="76" x2="660" y2="118"/>
+          <line x1="643" y1="76" x2="540" y2="118"/><line x1="643" y1="76" x2="600" y2="118"/><line x1="643" y1="76" x2="660" y2="118"/>
+        </g>
+      </g>
+      <text x="360" y="180" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Left to right: fewer boxes, bigger failure domain → more boxes, predictable any-to-any bandwidth.</text>
+      <text x="360" y="210" style="font-family:'Inter',sans-serif;font-weight:600;font-size:10px;fill:#3a5a78;text-anchor:middle;">One building &lt;--- scales ---&gt; a data centre</text>
+    </svg>
+  </div>
+
+  <div class="thesis-card">
+    <p>All three exist to move frames between hosts; they differ in <strong>how they trade device count, failure domain, and bandwidth predictability</strong>. <strong>Collapsed-core</strong> merges the core and distribution into one pair of boxes — cheapest, simplest, right for a single building. <strong>Three-tier</strong> (access → distribution → core) separates those roles so a large campus can grow modularly and contain faults per-building. <strong>Spine-leaf</strong> abandons the hierarchy entirely: every leaf connects to every spine, giving deterministic <em>any-to-any</em> bandwidth — the shape a data centre or a big virtualised campus needs when the traffic is east-west (server-to-server) rather than north-south (user-to-internet).</p>
+    <p>The mistake is treating this as a prestige ladder where "more tiers = better." It's a <em>fit</em> question. A 40-room hotel on a spine-leaf fabric is absurd; a 5,000-user hospital on a collapsed core is negligent. Get the shape right and everything downstream — <a href="cisco-stp-etherchannel.html">STP</a>, <a href="cisco-hsrp.html">redundancy</a>, <a href="arch-segmentation.html">segmentation</a> — falls into place. Get it wrong and you fight the topology forever.</p>
+    <div class="prereqs-label">Reads alongside</div>
+    <ul class="prereqs-list">
+      <li>The build of the simple case — <a href="cisco-lab-campus.html">Cisco</a> / <a href="mikrotik-lab-hotel.html">MikroTik</a> collapsed-core labs</li>
+      <li>The fabric case — <a href="arch-spine-leaf-vxlan.html">Spine-Leaf &amp; VXLAN/EVPN</a></li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Collapsed-Core — One Building, Two Boxes</h2>
+  <p class="section-thesis"><em>Core and distribution roles live on the same pair of Layer-3 switches. Access switches hang off them. It's the honest answer for the vast majority of businesses.</em></p>
+  <p>A single high-street office, a hotel, a clinic, a small factory — one wiring closet or two, a few hundred hosts at most. A pair of L3 switches does inter-VLAN routing, runs the <a href="cisco-hsrp.html">first-hop redundancy</a>, terminates the WAN, and aggregates the access switches. It's cheap, it's simple to reason about, and one competent engineer holds the whole thing in their head. The cost is a <strong>larger failure domain</strong> — the two core switches are a lot of eggs in one basket — which you mitigate with a redundant pair, aligned <a href="cisco-stp-etherchannel.html">STP roots</a>, and <a href="cisco-stp-etherchannel.html">LACP</a> uplinks, not with more tiers.</p>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Default You Should Justify Departing From</span>
+    <p>For an SMB, collapsed-core isn't the compromise — it's the correct answer, and anything more elaborate needs a reason. When a vendor proposes a three-tier design for a 60-person office, ask what specific problem the extra tier solves; usually it's a bigger invoice, not a real requirement. The times to graduate: multiple buildings/closets that need independent fault domains, or a host count and switch count large enough that one distribution pair can't aggregate it cleanly.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Three-Tier — Modular Scale for a Campus</h2>
+  <p class="section-thesis"><em>Access, distribution, and core become separate layers. Each building or zone gets its own distribution pair; the core just moves traffic between distribution blocks fast. This is how you scale a campus without one giant flat failure domain.</em></p>
+  <p>When you have several buildings, hundreds of switches, and thousands of users, the distribution layer becomes the modular unit: each building's access switches home to <em>that building's</em> distribution pair, which connects to a lean, fast core. A fault, a maintenance window, or a broadcast storm is <strong>contained to one distribution block</strong> instead of taking down the campus. The distribution layer is also the natural <a href="cisco-routing-ospf.html">routing</a> and <a href="arch-segmentation.html">policy</a> boundary — summarise routes there, enforce ACLs there, terminate VLANs there. The core stays deliberately dumb and fast: no policy, just forwarding.</p>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Spine-Leaf — When Traffic Goes Sideways</h2>
+  <p class="section-thesis"><em>Every leaf connects to every spine; hosts connect to leaves; spines connect only to leaves. Any host is exactly two hops from any other, with equal bandwidth on every path. The data-centre answer.</em></p>
+  <p>Hierarchical designs assume traffic is mostly <strong>north-south</strong> — users reaching the internet or a few central servers. Virtualisation and modern apps flipped that: the heavy traffic is <strong>east-west</strong>, server-to-server, and in a three-tier design that traffic hairpins up to the core and back down, oversubscribed and unpredictable. Spine-leaf (a Clos fabric) fixes it structurally — every leaf is one hop from every spine, so any-to-any bandwidth is deterministic and scales by <em>adding spines</em>. It runs an ECMP-routed <strong>underlay</strong> (OSPF/BGP) with a <strong>VXLAN/EVPN overlay</strong> carrying the tenant networks — the subject of its <a href="arch-spine-leaf-vxlan.html">own post</a>. You reach for it in the data centre, a large virtualised campus, or anywhere east-west bandwidth must be guaranteed — and almost nowhere else.</p>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Decision, in One Table <span class="safe-badge">Reference</span></h2>
+  <p class="section-thesis"><em>Match the shape to the situation, not to fashion. This is the whole post compressed.</em></p>
+  <table class="cheat">
+    <thead><tr><th>If…</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>One building, ≤ few hundred hosts, SMB</td><td><strong>Collapsed-core</strong> (redundant pair)</td></tr>
+      <tr><td>Multiple buildings/closets, independent fault domains</td><td><strong>Three-tier</strong></td></tr>
+      <tr><td>Thousands of users, modular growth, per-block policy</td><td><strong>Three-tier</strong></td></tr>
+      <tr><td>Data centre / heavy east-west / VM mobility</td><td><strong>Spine-leaf + VXLAN/EVPN</strong></td></tr>
+      <tr><td>Guaranteed any-to-any bandwidth at scale</td><td><strong>Spine-leaf</strong></td></tr>
+      <tr><td>"A vendor said we need three tiers" for a 60-person office</td><td>Ask what problem it solves — usually <strong>collapsed-core</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>It's a fit question, not a prestige ladder.</strong> More tiers isn't better — it's a trade of device count and failure domain against scale and containment.</li>
+      <li><strong>Collapsed-core is the right default for an SMB</strong> — one building, a redundant L3 pair. Justify anything more elaborate.</li>
+      <li><strong>Three-tier scales a campus modularly</strong> — the distribution block is the fault-domain and policy boundary; the core stays dumb and fast.</li>
+      <li><strong>Spine-leaf is for east-west traffic</strong> — deterministic any-to-any bandwidth, ECMP underlay + VXLAN/EVPN overlay. Data centres, not offices.</li>
+      <li><strong>The shape decides everything downstream</strong> — STP, redundancy, routing, and segmentation all follow from it. Choose it first.</li>
+      <li><strong>Right-sizing is the skill.</strong> Over-building wastes money; under-building creates a topology you fight forever.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Not sure your network is the right shape for where you're headed?</h3>
+    <p>NOCTIS designs right-sized network architectures across Crete — from a clean collapsed-core for a hotel to modular campus and fabric designs — matched to your actual scale and growth, not a vendor's invoice.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

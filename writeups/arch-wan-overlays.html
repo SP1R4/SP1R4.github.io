@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Network Architecture: Hub-Spoke vs Mesh vs SD-WAN — SP1R4 / NOCTIS</title>
+<meta name="description" content="Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.">
+<meta property="og:title" content="Network Architecture: Hub-Spoke vs Mesh vs SD-WAN — NOCTIS">
+<meta property="og:description" content="Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/arch-wan-overlays.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/arch-wan-overlays.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/arch-wan-overlays.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/arch-wan-overlays.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Network Architecture: Hub-Spoke vs Mesh vs SD-WAN",
+  "description": "Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/arch-wan-overlays.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/arch-wan-overlays.png",
+  "keywords": ["architecture", "cisco", "mikrotik"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#arch-wan-overlays"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Architecture</span> &nbsp;·&nbsp; Design &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Network Architecture<br>Hub-Spoke, Mesh &amp; SD-WAN</h1>
+  <p class="post-subtitle">Connecting sites is a topology decision before it's a VPN decision. Hub-and-spoke is simple and centralised; full mesh is fast but explodes with scale; SD-WAN buys you both at the cost of a subscription and a dependency. This is how to choose the WAN shape — then the tunnel tech follows.</p>
+  <div class="tags">
+    <span class="tag">Architecture</span>
+    <span class="tag">WAN</span>
+    <span class="tag">SD-WAN</span>
+    <span class="tag">Hub-and-Spoke</span>
+    <span class="tag">VPN</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="diagram-wrap" style="margin-bottom:2rem;">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="210" fill="#e1ded7"/>
+      <text x="120" y="24" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#293d54;text-anchor:middle;">Hub-and-Spoke</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <circle cx="120" cy="90" r="16" fill="#cfe0ee" stroke="#3a5a78"/><text x="120" y="93" text-anchor="middle">hub</text>
+        <circle cx="60" cy="150" r="12" fill="#fff" stroke="#3a5a78"/><circle cx="120" cy="160" r="12" fill="#fff" stroke="#3a5a78"/><circle cx="180" cy="150" r="12" fill="#fff" stroke="#3a5a78"/>
+        <g stroke="#8a8880"><line x1="110" y1="103" x2="66" y2="140"/><line x1="120" y1="106" x2="120" y2="148"/><line x1="130" y1="103" x2="174" y2="140"/></g>
+      </g>
+      <text x="360" y="24" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#c63d1f;text-anchor:middle;">Full Mesh</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <circle cx="360" cy="60" r="12" fill="#fff" stroke="#c63d1f"/><circle cx="310" cy="130" r="12" fill="#fff" stroke="#c63d1f"/><circle cx="410" cy="130" r="12" fill="#fff" stroke="#c63d1f"/><circle cx="340" cy="170" r="12" fill="#fff" stroke="#c63d1f"/><circle cx="380" cy="170" r="12" fill="#fff" stroke="#c63d1f"/>
+        <g stroke="#c9a"><line x1="360" y1="60" x2="310" y2="130"/><line x1="360" y1="60" x2="410" y2="130"/><line x1="360" y1="60" x2="340" y2="170"/><line x1="360" y1="60" x2="380" y2="170"/><line x1="310" y1="130" x2="410" y2="130"/><line x1="310" y1="130" x2="340" y2="170"/><line x1="310" y1="130" x2="380" y2="170"/><line x1="410" y1="130" x2="340" y2="170"/><line x1="410" y1="130" x2="380" y2="170"/><line x1="340" y1="170" x2="380" y2="170"/></g>
+      </g>
+      <text x="600" y="24" style="font-family:'Inter',sans-serif;font-weight:700;font-size:11px;fill:#3a6a28;text-anchor:middle;">SD-WAN</text>
+      <g style="font-family:ui-monospace,monospace;font-size:7px;">
+        <rect x="565" y="50" width="70" height="18" rx="4" fill="#d8e8d0" stroke="#558840"/><text x="600" y="62" text-anchor="middle">controller</text>
+        <circle cx="560" cy="140" r="12" fill="#fff" stroke="#558840"/><circle cx="600" cy="150" r="12" fill="#fff" stroke="#558840"/><circle cx="640" cy="140" r="12" fill="#fff" stroke="#558840"/>
+        <g stroke="#8ab890" stroke-dasharray="3,2"><line x1="590" y1="68" x2="562" y2="128"/><line x1="600" y1="68" x2="600" y2="138"/><line x1="610" y1="68" x2="638" y2="128"/></g>
+        <g stroke="#c9a"><line x1="560" y1="140" x2="600" y2="150"/><line x1="600" y1="150" x2="640" y2="140"/></g>
+      </g>
+      <text x="360" y="200" style="font-family:'Inter',sans-serif;font-size:9px;fill:#888880;text-anchor:middle;">Centralised &amp; simple → direct &amp; fast (but N² tunnels) → a controller brokers dynamic mesh over any links.</text>
+    </svg>
+  </div>
+
+  <div class="thesis-card">
+    <p>Three shapes, three trade-offs. <strong>Hub-and-spoke</strong> routes every site through a central hub: trivial to add a branch, one place for policy and internet break-out, but branch-to-branch traffic hairpins and the hub is a bottleneck and a single point of failure. <strong>Full mesh</strong> gives every site a direct tunnel to every other: lowest latency, no hairpin, but N sites need N(N-1)/2 tunnels — it collapses under its own config past a handful of sites. <strong>SD-WAN</strong> is the modern answer: a controller brokers a dynamic mesh over <em>any</em> transport (fibre, LTE, Starlink), steers traffic per-application, and fails over sub-second — at the price of a licence, a vendor dependency, and a control plane you don't fully own.</p>
+    <p>The engineering trick is that <a href="cisco-dmvpn.html">DMVPN</a> and <a href="mikrotik-dmvpn.html">WireGuard hub-and-spoke</a> already give you "hub-and-spoke that builds direct spoke-to-spoke on demand" — most of SD-WAN's dynamic-mesh benefit without the subscription. So the real decision is often <em>hub-spoke-with-dynamic-shortcuts vs commercial SD-WAN</em>, not the textbook three. This post picks the shape; the tunnel builds are the VPN posts.</p>
+    <div class="prereqs-label">Reads alongside</div>
+    <ul class="prereqs-list">
+      <li>The builds — <a href="cisco-dmvpn.html">DMVPN</a>, <a href="mikrotik-dmvpn.html">WireGuard hub-spoke</a>, <a href="cisco-site-to-site-vpn.html">site-to-site IPsec</a></li>
+      <li>The multi-WAN edge that feeds them — <a href="cisco-ipsla-failover.html">dual-WAN failover</a></li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Hub-and-Spoke — Simple, Centralised, Bottlenecked</h2>
+  <p class="section-thesis"><em>Every branch tunnels to the hub; the hub holds policy and often the internet break-out. Adding a site is one config. The costs are the hairpin and the hub as a chokepoint.</em></p>
+  <p>This is the right default for a classic HQ-and-branches business: a headquarters with real infrastructure, branches that mostly talk <em>to</em> HQ (files, apps, phones) rather than to each other. Centralising simplifies everything — one place to filter, log, and break out to the internet. The two costs: branch-to-branch traffic detours through the hub (fine if there's little of it), and the hub is a single point of failure (fix with a redundant hub / dual-hub design). When branches genuinely need fast direct paths, don't jump to full mesh — enable <a href="cisco-dmvpn.html">DMVPN Phase 3</a> shortcuts and keep the hub-and-spoke config.</p>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Full Mesh — Fast, and It Doesn't Scale</h2>
+  <p class="section-thesis"><em>Direct tunnels between every pair. Lowest latency and no hairpin — but the tunnel count and config burden grow quadratically. Reserve it for a few tightly-coupled sites.</em></p>
+  <p>Full mesh earns its place when you have a <em>small</em> number of sites that all talk to each other with latency-sensitive traffic — say three data centres, or a handful of production sites running real-time replication. Beyond ~5–6 sites the math turns hostile: adding one site means touching every existing router, and the tunnel/peering count becomes unmanageable and fragile. The honest modern position: pure static full mesh is rarely the right long-term answer — you want the <em>effect</em> of a mesh (direct paths) with the <em>management</em> of hub-and-spoke, which is exactly what dynamic-shortcut overlays and SD-WAN provide.</p>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">SD-WAN — Dynamic Mesh Over Anything</h2>
+  <p class="section-thesis"><em>A controller and edge devices build tunnels automatically over every available link, steer traffic per-application, and fail over on loss/jitter — not just link-down. Powerful, and a dependency.</em></p>
+  <p>SD-WAN's genuine wins: it treats <strong>multiple cheap transports as one</strong> (fibre + LTE + <a href="starlink-mikrotik-failover.html">Starlink</a>), makes per-application decisions (VoIP on the low-latency link, backups on the cheap one — the <a href="cisco-pbr.html">policy-routing</a> idea, automated and dynamic), and fails over on <em>quality</em> degradation, not just a dead link. The honest costs: it's a <strong>subscription</strong>, it introduces a <strong>controller dependency</strong> (often cloud-hosted — your WAN's brain lives at a vendor), and it's a black box compared to protocols you configure yourself. For a distributed retail/branch estate it's often worth it; for three sites, a dynamic-shortcut overlay you own outright usually is not.</p>
+  <div class="callout defender">
+    <span class="callout-label">💡 The Question That Cuts Through the SD-WAN Pitch</span>
+    <p>Before buying SD-WAN, ask: <em>which of its benefits do I actually need, and can I get them without the subscription?</em> Multi-transport failover → <a href="cisco-ipsla-failover.html">IP SLA</a> / recursive routing. Per-app steering → <a href="cisco-pbr.html">PBR</a> / mangle marks. Dynamic direct paths → <a href="cisco-dmvpn.html">DMVPN</a> / WireGuard overlay. Central management of many sites → the real SD-WAN value. If your win is "manage 40 branches from one dashboard with app-aware steering," SD-WAN earns its keep. If it's "fail over to LTE," you already own the tools.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">The Decision <span class="safe-badge">Reference</span></h2>
+  <table class="cheat">
+    <thead><tr><th>If…</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>HQ + branches, mostly branch-to-HQ traffic</td><td><strong>Hub-and-spoke</strong></td></tr>
+      <tr><td>Above, but some heavy branch-to-branch</td><td>Hub-spoke + <strong>dynamic shortcuts</strong> (DMVPN P3 / WG)</td></tr>
+      <tr><td>A few sites, latency-critical any-to-any</td><td><strong>Full mesh</strong> (small N only)</td></tr>
+      <tr><td>Many sites, multi-transport, app-aware, one pane</td><td><strong>SD-WAN</strong></td></tr>
+      <tr><td>"We need SD-WAN" but the goal is LTE failover</td><td>You already own the tools — <strong>skip it</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Pick the WAN shape before the tunnel tech.</strong> The topology decides the trade-offs; the VPN is just how you build it.</li>
+      <li><strong>Hub-and-spoke is the default for HQ+branches</strong> — simple and centralised; the hub is the SPOF and the hairpin the cost.</li>
+      <li><strong>Full mesh is fast but scales quadratically</strong> — reserve it for a few latency-critical sites; prefer dynamic shortcuts otherwise.</li>
+      <li><strong>Dynamic-shortcut overlays (DMVPN P3 / WireGuard) give mesh-like paths with hub-spoke management</strong> — much of SD-WAN's benefit, no subscription.</li>
+      <li><strong>SD-WAN's real value is managing many sites with app-aware steering over any transport</strong> — worth it at scale, overkill for three sites.</li>
+      <li><strong>Decompose the SD-WAN pitch</strong> — buy it for central management of a large estate, not for failover you can already build.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Linking multiple sites and weighing SD-WAN against building it yourself?</h3>
+    <p>NOCTIS designs multi-site WANs across Crete — hub-and-spoke, dynamic-shortcut overlays, or an honest SD-WAN assessment — matched to how your sites actually talk, on transports including Starlink.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

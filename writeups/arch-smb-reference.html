@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Network Architecture: SMB Reference Designs — SP1R4 / NOCTIS</title>
+<meta name="description" content="Proven small-business blueprints — the common skeleton (collapsed-core, dual-WAN, six zones) plus the trade-specific twist for a hotel, a clinic, and a professional office, distilled from real builds.">
+<meta property="og:title" content="Network Architecture: SMB Reference Designs — NOCTIS">
+<meta property="og:description" content="Proven small-business blueprints — the common skeleton (collapsed-core, dual-WAN, six zones) plus the trade-specific twist for a hotel, a clinic, and a professional office, distilled from real builds.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/arch-smb-reference.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/arch-smb-reference.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/arch-smb-reference.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/arch-smb-reference.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Network Architecture: SMB Reference Designs",
+  "description": "Proven small-business blueprints — the common skeleton (collapsed-core, dual-WAN, six zones) plus the trade-specific twist for a hotel, a clinic, and a professional office, distilled from real builds.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/arch-smb-reference.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/arch-smb-reference.png",
+  "keywords": ["architecture"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#arch-smb-reference"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Architecture</span> &nbsp;·&nbsp; Design &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Network Architecture<br>SMB Reference Designs</h1>
+  <p class="post-subtitle">Most small businesses don't need a bespoke network — they need a proven blueprint adapted to their trade. A hotel, a clinic, and a professional office share 80% of the design and differ in the 20% that matters. These are the reference architectures: the segments, the edge, and the trade-specific twist for each, distilled from real builds.</p>
+  <div class="tags">
+    <span class="tag">Architecture</span>
+    <span class="tag">SMB</span>
+    <span class="tag">Reference Design</span>
+    <span class="tag">Hospitality</span>
+    <span class="tag">Healthcare</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>Reference architectures exist so you're not designing from a blank page every time. Almost every small-business network is the same skeleton — a right-sized <a href="arch-campus-topologies.html">collapsed-core</a>, a <a href="arch-multihomed-edge.html">dual-WAN edge</a>, and a <a href="arch-segmentation.html">segmentation</a> plan of half a dozen zones — and the craft is knowing which zones and policies each <em>trade</em> actually needs. A hotel lives or dies on guest Wi-Fi and PMS isolation; a clinic on protecting patient records and medical devices; an office on staff productivity and a couple of published services. Same bones, different emphasis.</p>
+    <p>Below are three blueprints, each as the zone set + the edge + the one thing that trade must get right. They generalise the <a href="cisco-field-hotel.html">hotel build</a> and <a href="field-audit-hotel-group.html">audit</a> field notes into reusable designs — start from the closest blueprint, then adapt, rather than inventing each time.</p>
+    <div class="prereqs-label">Reads alongside</div>
+    <ul class="prereqs-list">
+      <li>The design methods — <a href="arch-segmentation.html">segmentation</a>, <a href="arch-campus-topologies.html">topology</a>, <a href="arch-perimeter-dmz.html">perimeter</a></li>
+      <li>The real builds — <a href="cisco-field-hotel.html">hotel field notes</a>, <a href="field-audit-hotel-group.html">audit</a></li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">The Common Skeleton</h2>
+  <p class="section-thesis"><em>Start every SMB from the same base and adapt. If you can build this cleanly, you can build 90% of small-business networks.</em></p>
+  <table class="cheat">
+    <thead><tr><th>Element</th><th>Baseline</th></tr></thead>
+    <tbody>
+      <tr><td>Topology</td><td><a href="arch-campus-topologies.html">Collapsed-core</a>, redundant L3 pair for anything critical</td></tr>
+      <tr><td>Edge</td><td><a href="cisco-ipsla-failover.html">Dual-WAN</a> (fibre + LTE/<a href="starlink-mikrotik-failover.html">Starlink</a>), path-following NAT</td></tr>
+      <tr><td>Core zones</td><td>Guest · Staff · Servers · CCTV/IoT · VoIP · Management</td></tr>
+      <tr><td>Inter-zone policy</td><td>Default-deny; guest = internet-only; CCTV = no internet</td></tr>
+      <tr><td>Wireless</td><td>VLAN-per-SSID, guest <a href="mikrotik-port-security.html">client-isolation</a>, WPA3</td></tr>
+      <tr><td>Ops baseline</td><td><a href="cisco-backup-restore.html">Backups</a>, <a href="cisco-observability.html">off-box logging</a>, <a href="arch-oob-management.html">OOB</a>, a one-page runbook</td></tr>
+    </tbody>
+  </table>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Blueprint: The Hotel</h2>
+  <p class="section-thesis"><em>Guest experience is the product and the biggest attack surface. The build lives and dies on guest Wi-Fi that's fast, fair, and walled off from the business.</em></p>
+  <p>Zones as the skeleton, with guest as the star: room + lobby <strong>guest</strong> Wi-Fi on a generous subnet with client isolation and <a href="mikrotik-qos.html">per-room fairness</a> so one streamer doesn't starve the rest; a <strong>PMS/POS</strong> zone (card + passport data) that guests must <em>never</em> reach — the headline finding in every hospitality <a href="field-audit-hotel-group.html">audit</a>; <strong>CCTV</strong> recorded on-prem with no internet; <strong>VoIP</strong> at reception, priority-queued. The edge needs real failover because a full house with dead Wi-Fi is a reputation problem — fibre primary, <a href="starlink-mikrotik-failover.html">Starlink/LTE</a> backup. The one thing to get right: <strong>prove, from the guest network, that the PMS and cameras are unreachable</strong> — segmentation you've tested from the wrong side, not assumed.</p>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Blueprint: The Clinic</h2>
+  <p class="section-thesis"><em>Patient data and medical devices dominate. The design is about protecting records (GDPR/regulatory) and isolating devices that can't be patched — with uptime that's clinical, not just commercial.</em></p>
+  <p>The clinic reuses the skeleton but re-weights it around <strong>sensitive data and fragile devices</strong>: a tightly-controlled <strong>records/EMR</strong> zone (regulated data — the <a href="arch-perimeter-dmz.html">perimeter</a> and access controls matter more here, and a screened subnet may be justified); a <strong>medical-device</strong> zone for imaging/lab kit that often runs unpatched, ancient OSes and <em>must</em> be isolated from both the internet and general staff — treat it like hostile IoT; a <strong>staff/clinical</strong> zone; and guest Wi-Fi for the waiting room, fully separated. Uptime carries real weight (booking, records access during clinic hours), so the redundant core and <a href="cisco-ipsla-failover.html">dual-WAN</a> aren't optional. The one thing to get right: <strong>isolate the un-patchable medical devices</strong> — they're the softest target and the highest-consequence pivot.</p>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Blueprint: The Professional Office <span class="safe-badge">Reference</span></h2>
+  <p class="section-thesis"><em>Accounting firm, law office, agency. Fewer exotic zones, more emphasis on staff productivity, secure remote access, and a couple of published services.</em></p>
+  <p>The office is the leanest: <strong>staff</strong> (the bulk), <strong>servers</strong> (file/app), a small <strong>guest/visitor</strong> Wi-Fi, <strong>VoIP</strong>, and management. The distinctive needs are <strong>secure remote access</strong> (hybrid staff — <a href="cisco-remote-access-vpn.html">IKEv2/SSTP road-warrior</a> terminating in a controlled zone, not on the LAN) and often a <strong>published service or two</strong> (a portal, a mail server) that belong in a <a href="arch-perimeter-dmz.html">DMZ</a>, not on the internal network. Data sensitivity is real (client files, legal/financial records) so backups and segmentation still matter, but the topology is simple — a clean collapsed-core, dual-WAN, and disciplined remote access covers it.</p>
+  <table class="cheat">
+    <thead><tr><th>Trade</th><th>The one thing to get right</th></tr></thead>
+    <tbody>
+      <tr><td>Hotel</td><td>Guest Wi-Fi fast &amp; fair, PMS/CCTV proven unreachable from it</td></tr>
+      <tr><td>Clinic</td><td>Isolate un-patchable medical devices; protect regulated records</td></tr>
+      <tr><td>Office</td><td>Secure remote access + a DMZ for anything published</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Don't design SMBs from a blank page</strong> — start from a reference blueprint and adapt the 20% that's trade-specific.</li>
+      <li><strong>The common skeleton</strong> — right-sized collapsed-core, dual-WAN edge, six default-deny zones, VLAN-per-SSID wireless, and an ops baseline — covers 90% of small businesses.</li>
+      <li><strong>Hotel:</strong> guest Wi-Fi is the product and the attack surface; prove PMS/CCTV are unreachable from it.</li>
+      <li><strong>Clinic:</strong> isolate un-patchable medical devices and protect regulated records; uptime is clinical.</li>
+      <li><strong>Office:</strong> lean zones, but nail secure remote access and put published services in a DMZ.</li>
+      <li><strong>Same bones, different emphasis</strong> — knowing which zones and policies each trade needs is the craft.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Building or rebuilding a network for a hotel, clinic, or office in Crete?</h3>
+    <p>NOCTIS designs and deploys right-sized, proven network architectures for small businesses across Crete — segmented, resilient, and documented — adapted from real builds, not invented from scratch on your budget.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

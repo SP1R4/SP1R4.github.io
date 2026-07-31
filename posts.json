@@ -1,5 +1,136 @@
 [
   {
+    "slug": "arch-index",
+    "title": "Network Architecture — Design Guides",
+    "description": "Design-level network architecture — campus topologies, segmentation, WAN and edge, spine-leaf fabrics, perimeter/DMZ, zero trust, out-of-band management, resilience, and SMB reference designs. The why and when above the how.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture"
+    ],
+    "html": "writeups/arch-index.html",
+    "reading_time": 3
+  },
+  {
+    "slug": "arch-campus-topologies",
+    "title": "Network Architecture: Collapsed-Core vs Three-Tier vs Spine-Leaf",
+    "description": "The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "cisco",
+      "mikrotik"
+    ],
+    "html": "writeups/arch-campus-topologies.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-segmentation",
+    "title": "Network Architecture: Designing Segmentation",
+    "description": "How to design segmentation before you configure it — enumerate trust zones by blast-radius, build a default-deny inter-zone matrix, pick the right enforcement per boundary, and address/name it so the design survives.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "security"
+    ],
+    "html": "writeups/arch-segmentation.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-wan-overlays",
+    "title": "Network Architecture: Hub-Spoke vs Mesh vs SD-WAN",
+    "description": "Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "cisco",
+      "mikrotik"
+    ],
+    "html": "writeups/arch-wan-overlays.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-multihomed-edge",
+    "title": "Network Architecture: The Multihomed Edge",
+    "description": "Designing a resilient internet edge — provider-assigned dual-WAN vs provider-independent BGP, active/backup vs active/active, and where NAT/CGNAT belongs (including the double-NAT and Starlink-CGNAT traps).",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "mikrotik"
+    ],
+    "html": "writeups/arch-multihomed-edge.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-spine-leaf-vxlan",
+    "title": "Network Architecture: Spine-Leaf & VXLAN/EVPN",
+    "description": "The modern DC/large-campus fabric demystified — a routed ECMP spine-leaf underlay, a VXLAN overlay floating Layer-2 tenants on Layer-3, and EVPN as the BGP control plane that makes it scale.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "cisco"
+    ],
+    "html": "writeups/arch-spine-leaf-vxlan.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-perimeter-dmz",
+    "title": "Network Architecture: Perimeter & DMZ Design",
+    "description": "Where internet-facing services should live — three-legged vs screened-subnet firewall placement, the load-bearing DMZ-to-LAN deny rule, east-west discipline inside the DMZ, and safe publishing patterns.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "security"
+    ],
+    "html": "writeups/arch-perimeter-dmz.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-zero-trust",
+    "title": "Network Architecture: Zero-Trust Segmentation",
+    "description": "Zero trust minus the marketing — never trust location, least privilege, assume breach — as identity-driven microsegmentation, and how to capture the 80/20 on Cisco/MikroTik you already own instead of a ZTNA platform.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "security"
+    ],
+    "html": "writeups/arch-zero-trust.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-oob-management",
+    "title": "Network Architecture: The Out-of-Band Management Network",
+    "description": "Why you can't fix a down network over the down network — designing an isolated management plane, console-server access to a box with no IP, and an independent recovery uplink, for resilience and security.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture",
+      "security"
+    ],
+    "html": "writeups/arch-oob-management.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-designing-for-failure",
+    "title": "Network Architecture: Designing for Failure",
+    "description": "A systematic SPOF audit across power, links, devices, WAN, protocols and services — matching redundancy to the cost of downtime, testing failover by causing failure, and the single points everyone forgets.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture"
+    ],
+    "html": "writeups/arch-designing-for-failure.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "arch-smb-reference",
+    "title": "Network Architecture: SMB Reference Designs",
+    "description": "Proven small-business blueprints — the common skeleton (collapsed-core, dual-WAN, six zones) plus the trade-specific twist for a hotel, a clinic, and a professional office, distilled from real builds.",
+    "date": "2026-07-31",
+    "tags": [
+      "architecture"
+    ],
+    "html": "writeups/arch-smb-reference.html",
+    "reading_time": 4
+  },
+  {
     "slug": "cisco-wireless-ap",
     "title": "Cisco Wireless: The Lightweight AP Architecture",
     "description": "Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.",
@@ -589,7 +720,7 @@
       "mikrotik"
     ],
     "html": "writeups/mikrotik-index.html",
-    "reading_time": 6
+    "reading_time": 7
   },
   {
     "slug": "cisco-index",
@@ -600,7 +731,7 @@
       "cisco"
     ],
     "html": "writeups/cisco-index.html",
-    "reading_time": 6
+    "reading_time": 7
   },
   {
     "slug": "cisco-first-contact",
