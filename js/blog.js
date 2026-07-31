@@ -10,6 +10,10 @@ let pagefindReady = false;
 let pagefindUrls = null;
 let pagefindReqId = 0;
 
+// Special (non-tag) filter: the N most recent posts by date.
+const RECENT = '__recent__';
+const RECENT_N = 10;
+
 async function initPagefind() {
   try {
     pagefindMod = await import('/pagefind/pagefind.js');
@@ -75,6 +79,12 @@ function renderFilterBar() {
   allBtn.addEventListener('click', () => { activeFilter = null; renderFilterBar(); renderList(); });
   bar.appendChild(allBtn);
 
+  const recentBtn = document.createElement('button');
+  recentBtn.className = 'filter-pill' + (activeFilter === RECENT ? ' active' : '');
+  recentBtn.textContent = t('blog.filter.recent');
+  recentBtn.addEventListener('click', () => { activeFilter = RECENT; renderFilterBar(); renderList(); });
+  bar.appendChild(recentBtn);
+
   tags.forEach(tag => {
     const btn = document.createElement('button');
     btn.className = 'filter-pill' + (activeFilter === tag ? ' active' : '');
@@ -94,8 +104,9 @@ function renderList() {
     return;
   }
   const q = searchQuery.trim().toLowerCase();
-  const sorted = [...posts]
-    .filter(p => !activeFilter || (p.tags && p.tags.includes(activeFilter)))
+  const tagFilter = activeFilter && activeFilter !== RECENT;
+  let sorted = [...posts]
+    .filter(p => !tagFilter || (p.tags && p.tags.includes(activeFilter)))
     .filter(p => {
       if (!q) return true;
       if (pagefindUrls) return pagefindUrls.has(p.html);
@@ -104,8 +115,13 @@ function renderList() {
     })
     .sort((a, b) => b.date.localeCompare(a.date));
 
+  // "Recent" limits to the N newest (after any active search).
+  if (activeFilter === RECENT) sorted = sorted.slice(0, RECENT_N);
+
   const noun = sorted.length === 1 ? t('blog.post') : t('blog.posts');
-  countEl.textContent = `${sorted.length} ${noun}${activeFilter ? ' ' + t('blog.in') + ' "' + activeFilter + '"' : ''}`;
+  const inLabel = activeFilter === RECENT ? ' ' + t('blog.filter.recent').toLowerCase()
+                : tagFilter ? ' ' + t('blog.in') + ' "' + activeFilter + '"' : '';
+  countEl.textContent = `${sorted.length} ${noun}${inLabel}`;
 
   if (sorted.length === 0) {
     list.innerHTML = `<div class="empty-state">${t('blog.emptyCat')}</div>`;
