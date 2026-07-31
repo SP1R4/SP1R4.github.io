@@ -310,8 +310,10 @@
       // Blog page
       'blog.title': 'Blog',
       'blog.subtitle': 'Research & Writeups',
+      'blog.startHere': 'New here? Start here →',
       'blog.filter.all': 'All',
       'blog.filter.recent': 'Recent',
+      'blog.loadMore': 'Load more',
       'blog.empty': 'No posts yet.',
       'blog.emptyCat': 'No posts in this category.',
       'blog.post': 'post',
@@ -629,8 +631,10 @@
       // Blog page
       'blog.title': 'Ιστολόγιο',
       'blog.subtitle': 'Έρευνα & Writeups',
+      'blog.startHere': 'Νέος εδώ; Ξεκίνα εδώ →',
       'blog.filter.all': 'Όλα',
       'blog.filter.recent': 'Πρόσφατα',
+      'blog.loadMore': 'Περισσότερα',
       'blog.empty': 'Δεν υπάρχουν αναρτήσεις ακόμα.',
       'blog.emptyCat': 'Δεν υπάρχουν αναρτήσεις σε αυτή την κατηγορία.',
       'blog.post': 'ανάρτηση',

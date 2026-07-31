@@ -26,6 +26,7 @@ static = [
     ('/consulting.html', '0.9'),
     ('/projects.html', '0.8'),
     ('/blog.html', '0.8'),
+    ('/writeups/start-here.html', '0.7'),
     ('/privacy.html', '0.3'),
 ]
 

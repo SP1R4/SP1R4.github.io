@@ -1,5 +1,31 @@
 [
   {
+    "slug": "detecting-cisco-attacks",
+    "title": "Detecting Attacks on Cisco Gear",
+    "description": "The blue-team companion to the offensive post — the syslog, NetFlow, and config-change signatures that catch Smart Install/SNMP config theft, DTP/VTP Layer-2 abuse, recon/brute force, and post-compromise changes on Cisco gear.",
+    "date": "2026-07-31",
+    "tags": [
+      "cisco",
+      "security",
+      "monitoring"
+    ],
+    "html": "writeups/detecting-cisco-attacks.html",
+    "reading_time": 5
+  },
+  {
+    "slug": "detecting-mikrotik-attacks",
+    "title": "Detecting Attacks on MikroTik Gear",
+    "description": "The defender's half of the RouterOS offensive post — off-box detection via the account log topic, Traffic-Flow, and baseline diffing to catch Winbox exploitation, brute force, config exfil/pivoting, and the persistence an attacker leaves behind.",
+    "date": "2026-07-31",
+    "tags": [
+      "mikrotik",
+      "security",
+      "monitoring"
+    ],
+    "html": "writeups/detecting-mikrotik-attacks.html",
+    "reading_time": 5
+  },
+  {
     "slug": "arch-index",
     "title": "Network Architecture — Design Guides",
     "description": "Design-level network architecture — campus topologies, segmentation, WAN and edge, spine-leaf fabrics, perimeter/DMZ, zero trust, out-of-band management, resilience, and SMB reference designs. The why and when above the how.",
@@ -1098,7 +1124,8 @@
     "description": "Cisco Catalyst (CLI, one-time cost) or Meraki (cloud dashboard, subscription)? An honest, vendor-neutral comparison for SMBs — the licensing trap, when each wins, and what happens if you stop paying.",
     "date": "2026-08-17",
     "tags": [
-      "cisco"
+      "cisco",
+      "guides"
     ],
     "html": "writeups/cisco-catalyst-vs-meraki.html",
     "series": "cisco-ios",
@@ -1112,7 +1139,8 @@
     "description": "A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.",
     "date": "2026-08-19",
     "tags": [
-      "cisco"
+      "cisco",
+      "guides"
     ],
     "html": "writeups/cisco-buying-used.html",
     "series": "cisco-ios",

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:;">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
 <title>Attacking Cisco Gear — A Pentester's Field Guide — SP1R4 / NOCTIS</title>
@@ -188,6 +188,7 @@
     <ul class="prereqs-list">
       <li>The defensive originals: <a href="cisco-hardening.html">Management-Plane Hardening</a>, <a href="cisco-switch-security.html">Switch Security</a></li>
       <li><a href="cisco-observability.html">Observability</a> (SNMP done right) and <a href="cisco-vlans-trunking.html">VLANs &amp; Trunking</a> (what DTP abuses)</li>
+      <li>The blue-team companion: <a href="detecting-cisco-attacks.html">Detecting Attacks on Cisco Gear</a> — catch each of these in the logs</li>
       <li>A lab you own — never point these at production you aren't scoped for</li>
     </ul>
   </div>

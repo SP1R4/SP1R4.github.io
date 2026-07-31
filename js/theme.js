@@ -23,3 +23,18 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
+
+// Cloudflare Web Analytics — privacy-preserving, cookieless, no cross-site
+// tracking. Stays INERT until you paste your token below (one place, all pages).
+// Get it from the Cloudflare dashboard → Web Analytics → add site → the
+// data-cf-beacon token. The CSP already allows the beacon host site-wide.
+const CF_ANALYTICS_TOKEN = ''; // <-- paste Cloudflare Web Analytics token to activate
+if (CF_ANALYTICS_TOKEN && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    s.setAttribute('data-cf-beacon', JSON.stringify({ token: CF_ANALYTICS_TOKEN }));
+    document.head.appendChild(s);
+  });
+}

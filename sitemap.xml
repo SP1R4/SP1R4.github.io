@@ -51,9 +51,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sp1r4.github.io/writeups/start-here.html</loc>
+    <lastmod>2026-07-31</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://sp1r4.github.io/privacy.html</loc>
     <lastmod>2026-07-31</lastmod>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/detecting-cisco-attacks.html</loc>
+    <lastmod>2026-07-31</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sp1r4.github.io/writeups/detecting-mikrotik-attacks.html</loc>
+    <lastmod>2026-07-31</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://sp1r4.github.io/writeups/arch-index.html</loc>

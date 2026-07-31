@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>Detecting Attacks on Cisco Gear — SP1R4 / NOCTIS</title>
+<meta name="description" content="The blue-team companion to the offensive post — the syslog, NetFlow, and config-change signatures that catch Smart Install/SNMP config theft, DTP/VTP Layer-2 abuse, recon/brute force, and post-compromise changes on Cisco gear.">
+<meta property="og:title" content="Detecting Attacks on Cisco Gear — NOCTIS">
+<meta property="og:description" content="The blue-team companion to the offensive post — the syslog, NetFlow, and config-change signatures that catch Smart Install/SNMP config theft, DTP/VTP Layer-2 abuse, recon/brute force, and post-compromise changes on Cisco gear.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/detecting-cisco-attacks.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/detecting-cisco-attacks.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/detecting-cisco-attacks.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/detecting-cisco-attacks.html">
+
+
+
+<link rel="stylesheet" href="../fonts/inter.css">
+<link rel="stylesheet" href="../fonts/display.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root{--bg:#f0efe9;--card:#fff;--code-bg:#e8e6e0;--term-bg:#e8e6e0;--rule:#e0deda;--body:#5e5a52;--mid:#0f0f0f;--head:#0f0f0f;--accent:#c63d1f;--gotcha:#c08020;--defender:#3a5a78;--font-disp:'Barlow Condensed',sans-serif;--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;background:var(--bg);color:var(--body);}
+  body{font-family:var(--font-body);font-weight:400;line-height:1.7;background:var(--bg);min-height:100vh;}
+  a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+  .post-meta{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--body);margin-bottom:.8rem;}
+  .post-meta span{color:var(--accent);font-weight:600;}
+  h1.post-title{font-family:var(--font-disp);font-weight:900;font-size:3rem;line-height:1.05;color:var(--head);text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;}
+  .post-subtitle{font-size:1.05rem;color:var(--mid);font-weight:400;margin-bottom:1.4rem;line-height:1.5;}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2rem;}
+  .tag{font-family:var(--font-body);font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--head);border-radius:999px;padding:.18em .75em;color:var(--mid);}
+  hr.title-rule{border:none;border-top:1px solid var(--rule);margin-bottom:2rem;}
+  .thesis-card{background:var(--card);border-radius:6px;border-left:3px solid var(--accent);padding:1.6rem 1.8rem;margin-bottom:2.6rem;}
+  .thesis-card p{color:var(--mid);font-size:.98rem;line-height:1.7;}
+  .thesis-card p+p{margin-top:.8rem;}
+  .prereqs-label{font-family:var(--font-disp);font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:1.2rem;margin-bottom:.5rem;}
+  .prereqs-list{list-style:none;padding:0;}
+  .prereqs-list li{font-size:.88rem;color:var(--mid);padding:.15rem 0 .15rem 1rem;position:relative;}
+  .prereqs-list li::before{content:"›";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .section-num{font-family:var(--font-disp);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem;margin-top:2.8rem;}
+  h2.section-title{font-family:var(--font-disp);font-weight:800;font-size:1.9rem;color:var(--head);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:.5rem;}
+  .section-thesis{font-style:italic;color:var(--mid);font-size:.95rem;margin-bottom:1.4rem;line-height:1.6;border-bottom:1px solid var(--rule);padding-bottom:.8rem;}
+  h3.sub{font-family:var(--font-disp);font-weight:700;font-size:1.15rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .5rem;}
+  p{margin-bottom:1rem;color:var(--body);font-size:.96rem;}
+  strong{color:var(--mid);font-weight:600;}
+  .term-wrap{background:var(--term-bg);border-radius:5px;border:1px solid var(--rule);margin:1.2rem 0;overflow-x:auto;}
+  .term-label{font-family:var(--font-disp);font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--body);background:var(--rule);padding:.3rem .9rem;display:block;border-bottom:1px solid var(--rule);}
+  pre.term{font-family:var(--font-mono);font-size:.82rem;line-height:1.75;padding:1rem 1.2rem;white-space:pre;color:var(--mid);background:none;border:none;margin:0;}
+  span.pc{color:var(--accent);font-weight:500;}
+  span.out{color:var(--mid);}
+  span.cmt{color:var(--body);font-style:italic;}
+  span.key{color:var(--accent);font-weight:600;font-style:normal;}
+  code{font-family:var(--font-mono);font-size:.82em;background:var(--code-bg);border:1px solid var(--rule);border-radius:3px;padding:.1em .4em;color:var(--mid);}
+  .callout{border-radius:5px;padding:1rem 1.2rem;margin:1.4rem 0;font-size:.9rem;}
+  .callout-label{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.4rem;}
+  .callout p{margin:0;font-size:.9rem;}
+  .callout p+p{margin-top:.5rem;}
+  .gotcha{background:var(--card);border-left:3px solid var(--gotcha);}
+  .gotcha .callout-label{color:var(--gotcha);}
+  .didnt-work{background:var(--code-bg);border-left:3px solid var(--rule);}
+  .didnt-work .callout-label{color:var(--body);}
+  .defender{background:var(--card);border-left:3px solid var(--defender);}
+  .defender .callout-label{color:var(--defender);}
+  .diagram-wrap{margin:1.6rem 0;border-radius:6px;border:1px solid var(--rule);overflow:hidden;background:var(--card);}
+  .diagram-wrap svg{display:block;width:100%;height:auto;}
+  kbd{display:inline-block;font-family:var(--font-mono);font-size:.75em;background:var(--head);color:#eae8e3;border-radius:4px;padding:.1em .5em;margin:0 .1em;font-weight:500;letter-spacing:.02em;}
+  .cheat{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.85rem;}
+  .cheat th{font-family:var(--font-disp);font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--rule);color:var(--mid);padding:.4rem .8rem;text-align:left;}
+  .cheat td{padding:.4rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .cheat tr:nth-child(even) td{background:var(--card);}
+  .cheat td:first-child{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);white-space:nowrap;}
+  .cheat td:last-child{color:var(--body);font-size:.82rem;}
+  .safe-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:#3a5a78;color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .danger-badge{display:inline-block;font-family:var(--font-disp);font-weight:700;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:.1em .5em;margin-left:.4rem;vertical-align:middle;}
+  .takeaways{background:var(--card);border-radius:6px;padding:1.6rem 1.8rem;margin:2.4rem 0;}
+  .takeaways-title{font-family:var(--font-disp);font-weight:800;font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:var(--head);margin-bottom:1rem;}
+  .takeaways ol{padding-left:1.4rem;}
+  .takeaways li{font-size:.92rem;color:var(--mid);margin-bottom:.55rem;line-height:1.55;}
+  .cta-card{background:var(--card);border-radius:6px;border-top:3px solid var(--accent);padding:1.8rem 2rem;margin-top:2.8rem;text-align:center;}
+  .cta-card h3{font-family:var(--font-disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;letter-spacing:.04em;color:var(--head);margin-bottom:.6rem;}
+  .cta-card p{font-size:.93rem;color:var(--mid);max-width:520px;margin:0 auto 1.2rem;}
+  .cta-btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;padding:.65em 1.8em;border-radius:4px;transition:opacity .15s;}
+  .cta-btn:hover{opacity:.88;text-decoration:none;}
+  footer{border-top:1px solid var(--rule);margin-top:4rem;padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--body);letter-spacing:.04em;}
+  footer a{color:var(--body);}footer a:hover{color:var(--accent);}
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Detecting Attacks on Cisco Gear",
+  "description": "The blue-team companion to the offensive post — the syslog, NetFlow, and config-change signatures that catch Smart Install/SNMP config theft, DTP/VTP Layer-2 abuse, recon/brute force, and post-compromise changes on Cisco gear.",
+  "datePublished": "2026-07-30",
+  "dateModified": "2026-07-30",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/detecting-cisco-attacks.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/detecting-cisco-attacks.png",
+  "keywords": ["cisco", "security"],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#detecting-cisco-attacks"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Inter',-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrap">
+  <p class="post-meta"><span>Cisco / Defensive</span> &nbsp;·&nbsp; Detection &nbsp;·&nbsp; July 2026</p>
+  <h1 class="post-title">Detecting Attacks<br>on Cisco Gear</h1>
+  <p class="post-subtitle">The offensive post showed what an attacker does to a Cisco switch or router. This is the other half of the pair: the log lines, flow patterns, and config-change signals that catch each of those techniques while it's happening — so a compromise is an alert, not a surprise you find out about from someone else.</p>
+  <div class="tags">
+    <span class="tag">Cisco IOS</span>
+    <span class="tag">Blue Team</span>
+    <span class="tag">Detection</span>
+    <span class="tag">Syslog</span>
+    <span class="tag">NetFlow</span>
+  </div>
+  <hr class="title-rule">
+
+  <div class="thesis-card">
+    <p>Every technique in <a href="cisco-attacking-ios.html">Attacking Cisco Gear</a> leaves a trace — you just have to be collecting it and looking. This post pairs each attack with its <strong>detection signature</strong>: Smart Install and SNMP config-theft show up as unexpected TFTP flows and config-copy syslog; Layer-2 abuse (DTP/VTP) trips port and protocol logs; the post-compromise moves (new users, config changes) are exactly what config-archive and EEM watch for. Detection turns the offensive post's fix list into an <em>alerting</em> list.</p>
+    <p>The prerequisite is the <a href="cisco-observability.html">observability</a> stack — correct time, remote syslog, NetFlow to a collector, SNMPv3. Without those you have nothing to detect <em>with</em>; with them, most of these signatures are a saved search away. Detection doesn't replace <a href="cisco-hardening.html">hardening</a> — it's the safety net for when hardening is incomplete or a new bug appears.</p>
+    <div class="prereqs-label">Prerequisites</div>
+    <ul class="prereqs-list">
+      <li>The telemetry — <a href="cisco-observability.html">Observability</a> (NTP, syslog, NetFlow, SNMPv3)</li>
+      <li>The attacks being detected — <a href="cisco-attacking-ios.html">Attacking Cisco Gear</a></li>
+      <li>A syslog server / SIEM and a NetFlow collector to search</li>
+    </ul>
+  </div>
+
+  <p class="section-num">01</p>
+  <h2 class="section-title">Detect Config Theft — Smart Install &amp; SNMP</h2>
+  <p class="section-thesis"><em>Both unauthenticated config-exfil paths end the same way: the device sends its running-config to an attacker over TFTP. That outbound TFTP flow to a non-management host is the tell.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Detection — the config-copy signatures</span>
+    <pre class="term"><span class="cmt"># NetFlow: the device SENDING UDP/69 (TFTP) to anything that isn't your
+# provisioning/backup server is the alarm — config is leaving the box.</span>
+<span class="out">  flow: src=&lt;device&gt;  dst=&lt;unknown&gt;  proto=UDP  dstport=69   -&gt; ALERT</span>
+
+<span class="cmt"># Syslog: a config-copy you didn't initiate (SNMP ccCopyTable or SMI):</span>
+<span class="out">  %SYS-5-CONFIG_I: Configured from ... by snmp
+  %SNMP-... copy of running-config to network</span>
+
+<span class="cmt"># Smart Install probes: connections to TCP/4786 from outside management.</span>
+<span class="out">  flow: dst=&lt;device&gt;  dstport=4786  src=&lt;not-mgmt&gt;   -&gt; ALERT</span></pre>
+  </div>
+  <div class="callout defender">
+    <span class="callout-label">◆ The Highest-Value Single Alert</span>
+    <p>If you build one detection from this whole post, make it <strong>"a network device is the <em>source</em> of a TFTP/FTP/SCP flow to a host that isn't your backup server."</strong> Config theft — whether via Smart Install, SNMP-RW, or a logged-in attacker running <code>copy run tftp</code> — nearly always manifests as the device pushing its config outbound. Your switches and routers should almost never <em>initiate</em> file transfers except to known infrastructure; anything else is either a misconfiguration or an exfil, and both are worth a page.</p>
+  </div>
+
+  <p class="section-num">02</p>
+  <h2 class="section-title">Detect Layer-2 Abuse — DTP, VTP, CDP</h2>
+  <p class="section-thesis"><em>Trunk negotiation and VLAN-database changes are loud if you're listening. An access port becoming a trunk, or the VTP config revision jumping, is never normal on a stable network.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">Syslog — the L2-attack signatures</span>
+    <pre class="term"><span class="cmt"># A port unexpectedly negotiating a trunk (DTP / VLAN-hopping attempt):</span>
+<span class="out">  %DTP-5-TRUNKPORTON: Port Gi0/x has become dot1q trunk</span>   <span class="cmt"># on an ACCESS port = alarm</span>
+
+<span class="cmt"># VTP database being rewritten (config revision jump / injected VLANs):</span>
+<span class="out">  %SW_VLAN-4-VTP_...: VTP ... revision N   </span><span class="cmt"># unexpected jumps = VTP attack</span>
+
+<span class="cmt"># Port-security / BPDU-guard firing (rogue device, MAC flood, rogue switch):</span>
+<span class="out">  %PM-4-ERR_DISABLE: ... err-disabled (psecure-violation / bpduguard)</span></pre>
+  </div>
+  <p>These are also <em>prevention</em> signals — if you've hardened per <a href="cisco-switch-security.html">Switch Security</a> (access ports <code>nonegotiate</code>, VTP transparent/password, BPDU guard), the attack is blocked <em>and</em> logs the attempt. Alert on the err-disable and DTP-trunk events and you catch the on-LAN attacker in the act.</p>
+
+  <p class="section-num">03</p>
+  <h2 class="section-title">Detect Recon &amp; Brute Force</h2>
+  <p class="section-thesis"><em>Before the exploit comes the knock: SNMP walks with guessed communities, SSH/Telnet login storms, sweeps of management ports. Rate and failure patterns give them away.</em></p>
+  <table class="cheat">
+    <thead><tr><th>Recon / brute signal</th><th>Where it shows</th></tr></thead>
+    <tbody>
+      <tr><td>SNMP failures / wrong community</td><td><code>%SNMP-3-AUTHFAIL</code> — repeated = community guessing</td></tr>
+      <tr><td>SSH/Telnet auth failures</td><td>AAA/login syslog — a burst from one src = brute force</td></tr>
+      <tr><td>Mgmt-port sweep (22/23/161/4786)</td><td>NetFlow: one src touching many mgmt ports/hosts</td></tr>
+      <tr><td>Login from an unexpected source</td><td>The <code>login on-success</code> log — geo/host anomaly</td></tr>
+    </tbody>
+  </table>
+  <div class="callout defender">
+    <span class="callout-label">💡 Turn On the Login Logging You Already Have</span>
+    <p>IOS has <code>login on-failure log</code> and <code>login on-success log</code> — enable both and every management authentication, good or bad, hits syslog with source and username. That single pair of commands is the difference between "someone brute-forced us for an hour and we never knew" and a threshold alert on failure bursts. Pair it with an ACL/CoPP so those attempts can only come from management in the first place — then any failure log from outside management is doubly suspicious.</p>
+  </div>
+
+  <p class="section-num">04</p>
+  <h2 class="section-title">Detect the Aftermath — Config &amp; User Changes <span class="safe-badge">Safe to Run</span></h2>
+  <p class="section-thesis"><em>An attacker who gets in changes things: a new local user, a modified ACL, an added SNMP community, a config export. The config archive and EEM turn every change into a logged, diff-able event.</em></p>
+  <div class="term-wrap">
+    <span class="term-label">IOS — log and react to config changes automatically</span>
+    <pre class="term"><span class="cmt"># Config-change logging: who changed what, when, from where.</span>
+<span class="pc">R1(config)#</span> <span class="out">archive</span>
+<span class="pc">R1(config-archive)#</span> <span class="out">log config</span>
+<span class="pc">R1(config-archive-log-cfg)#</span> <span class="out">logging enable</span>
+<span class="pc">R1(config-archive-log-cfg)#</span> <span class="out">notify syslog</span>
+
+<span class="cmt"># EEM: page immediately when a config write happens (or when a new
+# 'username' line appears) — the aftermath alarm.</span>
+<span class="pc">R1(config)#</span> <span class="out">event manager applet CONFIG-WATCH</span>
+<span class="pc">R1(config-applet)#</span> <span class="out">event syslog pattern "CONFIG_I"</span>
+<span class="pc">R1(config-applet)#</span> <span class="out">action 1.0 syslog msg "Config changed — verify"</span>
+<span class="cmt"># See the EEM post for reacting on-box; feed CONFIG_I to your SIEM too.</span></pre>
+  </div>
+
+  <div class="takeaways">
+    <p class="takeaways-title">Takeaways</p>
+    <ol>
+      <li><strong>Every attack in the offensive post leaves a trace</strong> — detection pairs each with a log/flow signature, if you're collecting the telemetry.</li>
+      <li><strong>The single best alert:</strong> a network device is the <em>source</em> of a file transfer (TFTP/FTP/SCP) to anything but your backup server — that's config exfil.</li>
+      <li><strong>Layer-2 abuse is loud</strong> — an access port becoming a trunk, VTP revision jumps, and err-disable events catch the on-LAN attacker.</li>
+      <li><strong>Turn on <code>login on-failure/on-success log</code> and SNMP auth-fail</strong> — recon and brute force become threshold alerts.</li>
+      <li><strong>Log config changes with the archive + EEM</strong> — new users, modified ACLs, and exports become diff-able, alertable events.</li>
+      <li><strong>Detection is the safety net for hardening</strong> — it catches what prevention misses and the next bug that isn't public yet.</li>
+    </ol>
+  </div>
+
+  <div class="cta-card">
+    <h3>Would you know if someone was inside your switches right now?</h3>
+    <p>NOCTIS builds detection for Cisco and MikroTik estates across Crete — the log, flow, and config-change alerts that turn a device compromise into a page, not a post-incident discovery.</p>
+    <a class="cta-btn" href="https://sp1r4.github.io/services.html">Book a Discovery Call →</a>
+  </div>
+
+</div>
+<footer>
+  <span>© 2026 NOCTIS — SP1R4</span>
+  <a href="https://sp1r4.github.io/blog.html">← All writeups</a>
+</footer>
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

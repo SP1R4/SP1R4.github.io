@@ -13,6 +13,10 @@ let pagefindReqId = 0;
 // Special (non-tag) filter: the N most recent posts by date.
 const RECENT = '__recent__';
 const RECENT_N = 10;
+// Pagination: render this many cards at a time, "Load more" for the rest.
+const PAGE_SIZE = 24;
+let shownCount = PAGE_SIZE;
+let lastRenderKey = null;
 
 async function initPagefind() {
   try {
@@ -128,7 +132,12 @@ function renderList() {
     return;
   }
 
-  sorted.forEach((post, i) => {
+  // Reset paging when the filter/search changes; keep it when loading more.
+  const key = (activeFilter || '') + '|' + searchQuery;
+  if (key !== lastRenderKey) { shownCount = PAGE_SIZE; lastRenderKey = key; }
+  const visible = sorted.slice(0, shownCount);
+
+  visible.forEach((post, i) => {
     const el = document.createElement('a');
     el.className = 'post-card';
     el.href = post.html;
@@ -167,6 +176,14 @@ function renderList() {
     el.appendChild(meta);
     list.appendChild(el);
   });
+
+  if (sorted.length > visible.length) {
+    const more = document.createElement('button');
+    more.className = 'load-more';
+    more.textContent = `${t('blog.loadMore') || 'Load more'} (${sorted.length - visible.length})`;
+    more.addEventListener('click', () => { shownCount += PAGE_SIZE; renderList(); });
+    list.appendChild(more);
+  }
 }
 
 fetch('posts.json')

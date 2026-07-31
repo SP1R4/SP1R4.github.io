@@ -138,6 +138,7 @@
       <pubDate>Wed, 19 Aug 2026 00:00:00 GMT</pubDate>
       <description>A practical guide to buying refurbished Cisco gear for an SMB — whats safe to buy used, spotting counterfeits, the licensing and support catch, EOL/security-patch risk, and a pre-purchase checklist.</description>
       <category>cisco</category>
+      <category>guides</category>
     </item>
     <item>
       <title>Catalyst vs Meraki for a Small Business — An Honest Take</title>
@@ -146,6 +147,7 @@
       <pubDate>Mon, 17 Aug 2026 00:00:00 GMT</pubDate>
       <description>Cisco Catalyst (CLI, one-time cost) or Meraki (cloud dashboard, subscription)? An honest, vendor-neutral comparison for SMBs — the licensing trap, when each wins, and what happens if you stop paying.</description>
       <category>cisco</category>
+      <category>guides</category>
     </item>
     <item>
       <title>Cisco IOS: Managing a Fleet with Ansible</title>
@@ -217,6 +219,26 @@
       <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
       <description>You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.</description>
       <category>cisco</category>
+      <category>monitoring</category>
+    </item>
+    <item>
+      <title>Detecting Attacks on Cisco Gear</title>
+      <link>https://sp1r4.github.io/blog.html#detecting-cisco-attacks</link>
+      <guid>https://sp1r4.github.io/blog.html#detecting-cisco-attacks</guid>
+      <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
+      <description>The blue-team companion to the offensive post — the syslog, NetFlow, and config-change signatures that catch Smart Install/SNMP config theft, DTP/VTP Layer-2 abuse, recon/brute force, and post-compromise changes on Cisco gear.</description>
+      <category>cisco</category>
+      <category>security</category>
+      <category>monitoring</category>
+    </item>
+    <item>
+      <title>Detecting Attacks on MikroTik Gear</title>
+      <link>https://sp1r4.github.io/blog.html#detecting-mikrotik-attacks</link>
+      <guid>https://sp1r4.github.io/blog.html#detecting-mikrotik-attacks</guid>
+      <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
+      <description>The defender's half of the RouterOS offensive post — off-box detection via the account log topic, Traffic-Flow, and baseline diffing to catch Winbox exploitation, brute force, config exfil/pivoting, and the persistence an attacker leaves behind.</description>
+      <category>mikrotik</category>
+      <category>security</category>
       <category>monitoring</category>
     </item>
     <item>

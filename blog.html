@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://get.geojs.io; worker-src 'self' blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://static.cloudflareinsights.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://get.geojs.io; worker-src 'self' blob:;">
 <title>Blog — NOCTIS</title>
 <meta name="description" content="Cybersecurity research, CTF writeups, and development notes by S. Markakis.">
 <meta property="og:title" content="Blog — NOCTIS">
@@ -108,6 +108,10 @@
     font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400;
     outline: none; transition: border-color 0.15s, background 0.15s;
   }
+  .start-here-link { display: inline-flex; align-items: center; margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; letter-spacing: 0.02em; transition: opacity .15s; }
+  .start-here-link:hover { opacity: 0.8; }
+  .load-more { display: block; margin: 28px auto 0; padding: 10px 28px; background: transparent; border: 0.5px solid var(--card-border); border-radius: 999px; color: var(--text-secondary); font-family: inherit; font-size: 13px; letter-spacing: 0.02em; cursor: pointer; transition: border-color .15s, color .15s; }
+  .load-more:hover { border-color: var(--accent); color: var(--accent); }
   .post-search::placeholder { color: var(--text-muted); }
   .post-search:focus { border-color: var(--text-secondary); }
   .rss-link {
@@ -133,6 +137,7 @@
   <div class="page-header">
     <div class="page-title" data-i18n="blog.title">Blog</div>
     <div class="page-subtitle" data-i18n="blog.subtitle">Research &amp; Writeups</div>
+    <a href="writeups/start-here.html" class="start-here-link" data-i18n="blog.startHere">New here? Start here →</a>
   </div>
   <div class="search-row">
     <input type="search" id="post-search" class="post-search" data-i18n-attr-placeholder="blog.search" placeholder="Search posts…" autocomplete="off">
