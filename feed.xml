@@ -12,6 +12,7 @@
       <guid>https://sp1r4.github.io/blog.html#what-is-a-pentest</guid>
       <pubDate>Wed, 09 Sep 2026 00:00:00 GMT</pubDate>
       <description>A buyer's guide for business owners: what a real pentest involves, why an automated scan report isn't one, what the deliverables are, and the questions (and red flags) before you pay.</description>
+      <category>offensive</category>
       <category>security</category>
     </item>
     <item>
@@ -21,6 +22,7 @@
       <pubDate>Tue, 08 Sep 2026 00:00:00 GMT</pubDate>
       <description>Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.</description>
       <category>mikrotik</category>
+      <category>wireless</category>
     </item>
     <item>
       <title>Why Guest Wi-Fi Needs Its Own Network</title>
@@ -37,6 +39,7 @@
       <pubDate>Sun, 06 Sep 2026 00:00:00 GMT</pubDate>
       <description>A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.</description>
       <category>mikrotik</category>
+      <category>wireless</category>
     </item>
     <item>
       <title>MikroTik RouterOS Fundamentals — A 13-Part Series</title>
@@ -45,6 +48,7 @@
       <pubDate>Sat, 05 Sep 2026 00:00:00 GMT</pubDate>
       <description>A complete, practical RouterOS course in 13 writeups — from terminal habits and backups through VLANs, firewalling, WireGuard, OSPF, and a full hotel-network lab. The MikroTik counterpart to our 27-part Cisco series.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik Lab: The Hotel Network, Start to Finish</title>
@@ -53,6 +57,7 @@
       <pubDate>Fri, 04 Sep 2026 00:00:00 GMT</pubDate>
       <description>A complete hotel network on MikroTik — RB5009 gateway, CRS326 core, VLAN-tagged SSIDs, guest isolation firewall, per-VLAN DHCP, and PCQ fairness — built in order, verified, then failure-drilled. Runs on CHR too.</description>
       <category>mikrotik</category>
+      <category>labs</category>
     </item>
     <item>
       <title>MikroTik: OSPF on RouterOS 7 — and Talking to Cisco</title>
@@ -61,6 +66,7 @@
       <pubDate>Wed, 02 Sep 2026 00:00:00 GMT</pubDate>
       <description>OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: WireGuard VPN</title>
@@ -69,6 +75,7 @@
       <pubDate>Mon, 31 Aug 2026 00:00:00 GMT</pubDate>
       <description>WireGuard on RouterOS 7 from zero — road-warrior access for phone and laptop, a site-to-site tunnel between offices, the allowed-address logic everyone gets wrong, and the keepalive trick for peers behind NAT.</description>
       <category>mikrotik</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>MikroTik: The RouterOS Firewall, Properly</title>
@@ -77,6 +84,7 @@
       <pubDate>Sat, 29 Aug 2026 00:00:00 GMT</pubDate>
       <description>Connection tracking, a default-deny input chain that can't lock you out, a forward chain with FastTrack that doesn't break QoS, and address-list rate-limiting for brute-force — built from first principles.</description>
       <category>mikrotik</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco Lab: The Broken Campus — Eight Faults</title>
@@ -85,6 +93,7 @@
       <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
       <description>A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.</description>
       <category>cisco</category>
+      <category>labs</category>
     </item>
     <item>
       <title>Cisco Lab: HQ + Branches — GRE over IPsec WAN</title>
@@ -93,6 +102,7 @@
       <pubDate>Tue, 25 Aug 2026 00:00:00 GMT</pubDate>
       <description>A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.</description>
       <category>cisco</category>
+      <category>labs</category>
     </item>
     <item>
       <title>Cisco Lab: Multi-Area OSPF</title>
@@ -101,6 +111,7 @@
       <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
       <description>Five routers, three areas — ABRs, the LSA types that matter, stub and totally-stubby areas, default-information originate, and cost tuning with a failure drill. Builds fully in Packet Tracer.</description>
       <category>cisco</category>
+      <category>labs</category>
     </item>
     <item>
       <title>Cisco Lab: The Collapsed-Core Campus</title>
@@ -109,6 +120,7 @@
       <pubDate>Fri, 21 Aug 2026 00:00:00 GMT</pubDate>
       <description>A complete Packet Tracer campus build — two access switches, two L3 cores with HSRP and aligned Rapid-PVST roots, an LACP core interlink, and a NAT edge. Full topology, addressing plan, and failure drills.</description>
       <category>cisco</category>
+      <category>labs</category>
     </item>
     <item>
       <title>Cisco IOS Fundamentals — The Complete 27-Part Series</title>
@@ -117,6 +129,7 @@
       <pubDate>Thu, 20 Aug 2026 00:00:00 GMT</pubDate>
       <description>A complete, practical Cisco IOS course in 27 writeups — from your first console session to firewalls, redundancy, automation, and four full Packet Tracer lab scenarios. Every post cross-mapped to MikroTik.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Buying Used Cisco Switches: Smart or Trap?</title>
@@ -141,6 +154,7 @@
       <pubDate>Sat, 15 Aug 2026 00:00:00 GMT</pubDate>
       <description>Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.</description>
       <category>cisco</category>
+      <category>automation</category>
     </item>
     <item>
       <title>Cisco IOS: IPv6 Fundamentals</title>
@@ -149,6 +163,7 @@
       <pubDate>Thu, 13 Aug 2026 00:00:00 GMT</pubDate>
       <description>IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Cisco IOS: SPAN &amp; RSPAN Port Mirroring</title>
@@ -157,6 +172,7 @@
       <pubDate>Tue, 11 Aug 2026 00:00:00 GMT</pubDate>
       <description>Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.</description>
       <category>cisco</category>
+      <category>monitoring</category>
     </item>
     <item>
       <title>Cisco IOS: Management-Plane Hardening</title>
@@ -165,6 +181,7 @@
       <pubDate>Sun, 09 Aug 2026 00:00:00 GMT</pubDate>
       <description>Audit and lock down any Cisco device in 15 minutes — SSH ciphers, SNMPv3, AAA, VTY access-class, control-plane policing, unused services, and the login-hardening checklist we run on every box.</description>
       <category>cisco</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco IOS: 802.1X Port Authentication</title>
@@ -173,6 +190,7 @@
       <pubDate>Fri, 07 Aug 2026 00:00:00 GMT</pubDate>
       <description>Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.</description>
       <category>cisco</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco IOS: EEM On-Box Automation</title>
@@ -181,6 +199,7 @@
       <pubDate>Wed, 05 Aug 2026 00:00:00 GMT</pubDate>
       <description>Make the router fix itself — Embedded Event Manager applets that react to syslog, timers, and track state: auto-recover err-disabled ports, back up config on change, and alert on events.</description>
       <category>cisco</category>
+      <category>automation</category>
     </item>
     <item>
       <title>Cisco IOS: Upgrading Safely</title>
@@ -189,6 +208,7 @@
       <pubDate>Mon, 03 Aug 2026 00:00:00 GMT</pubDate>
       <description>Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Cisco IOS: Observability (NTP, Syslog, SNMP &amp; NetFlow)</title>
@@ -197,6 +217,7 @@
       <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
       <description>You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.</description>
       <category>cisco</category>
+      <category>monitoring</category>
     </item>
     <item>
       <title>Network Architecture — Design Guides</title>
@@ -212,9 +233,9 @@
       <guid>https://sp1r4.github.io/blog.html#arch-campus-topologies</guid>
       <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
       <description>The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.</description>
-      <category>architecture</category>
       <category>cisco</category>
       <category>mikrotik</category>
+      <category>architecture</category>
     </item>
     <item>
       <title>Network Architecture: Designing Segmentation</title>
@@ -231,9 +252,9 @@
       <guid>https://sp1r4.github.io/blog.html#arch-wan-overlays</guid>
       <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
       <description>Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.</description>
-      <category>architecture</category>
       <category>cisco</category>
       <category>mikrotik</category>
+      <category>architecture</category>
     </item>
     <item>
       <title>Network Architecture: The Multihomed Edge</title>
@@ -241,8 +262,8 @@
       <guid>https://sp1r4.github.io/blog.html#arch-multihomed-edge</guid>
       <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
       <description>Designing a resilient internet edge — provider-assigned dual-WAN vs provider-independent BGP, active/backup vs active/active, and where NAT/CGNAT belongs (including the double-NAT and Starlink-CGNAT traps).</description>
-      <category>architecture</category>
       <category>mikrotik</category>
+      <category>architecture</category>
     </item>
     <item>
       <title>Network Architecture: Spine-Leaf &amp; VXLAN/EVPN</title>
@@ -250,8 +271,8 @@
       <guid>https://sp1r4.github.io/blog.html#arch-spine-leaf-vxlan</guid>
       <pubDate>Fri, 31 Jul 2026 00:00:00 GMT</pubDate>
       <description>The modern DC/large-campus fabric demystified — a routed ECMP spine-leaf underlay, a VXLAN overlay floating Layer-2 tenants on Layer-3, and EVPN as the BGP control plane that makes it scale.</description>
-      <category>architecture</category>
       <category>cisco</category>
+      <category>architecture</category>
     </item>
     <item>
       <title>Network Architecture: Perimeter &amp; DMZ Design</title>
@@ -303,6 +324,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.</description>
       <category>cisco</category>
+      <category>wireless</category>
     </item>
     <item>
       <title>MikroTik: Standalone Wi-Fi (wifiwave2)</title>
@@ -311,6 +333,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.</description>
       <category>mikrotik</category>
+      <category>wireless</category>
     </item>
     <item>
       <title>MikroTik Lab: Multi-Area OSPF</title>
@@ -319,6 +342,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.</description>
       <category>mikrotik</category>
+      <category>labs</category>
     </item>
     <item>
       <title>MikroTik Lab: HQ + Branches — GRE over IPsec WAN</title>
@@ -327,6 +351,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.</description>
       <category>mikrotik</category>
+      <category>labs</category>
     </item>
     <item>
       <title>MikroTik Lab: The Broken Network</title>
@@ -335,6 +360,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Seven realistic RouterOS faults dressed as support tickets — a missing bridge VLAN member, scoped masquerade, OSPF MTU mismatch, DHCP bound to the wrong interface, FastTrack bypassing a rule, per-packet routing-marks splitting flows, and offload killed by a bridge feature — each with the command that finds it.</description>
       <category>mikrotik</category>
+      <category>labs</category>
     </item>
     <item>
       <title>Cisco IOS: DMVPN</title>
@@ -343,6 +369,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.</description>
       <category>cisco</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>MikroTik: Scaling Site-to-Site (Hub-and-Spoke)</title>
@@ -351,6 +378,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>RouterOS has no DMVPN — build the scalable equivalent with a WireGuard hub-and-spoke: one peer per spoke on the hub, OSPF over the overlay, the allowed-address cryptokey-routing trap, and what you trade versus DMVPN's on-demand spoke-to-spoke.</description>
       <category>mikrotik</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>Cisco IOS: Remote-Access VPN (IKEv2)</title>
@@ -359,6 +387,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Road-warrior access on IOS — IKEv2/FlexVPN with an authorization policy pushing the client's address, DNS and split-tunnel routes, a virtual-template per client, the server-certificate trust requirement, and an SSL fallback.</description>
       <category>cisco</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>MikroTik: Remote-Access VPN (IKEv2 &amp; SSTP)</title>
@@ -367,6 +396,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Get laptops and phones securely back to the office on RouterOS — SSTP over TLS/443 for hostile firewalls, IKEv2 with mode-config for native clients, generate-policy and server-cert gotchas, plus the firewall/NAT rules people forget.</description>
       <category>mikrotik</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>Cisco IOS: EIGRP</title>
@@ -375,6 +405,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: Route Redistribution &amp; BFD</title>
@@ -383,6 +414,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: Route Redistribution &amp; BFD</title>
@@ -391,6 +423,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>RouterOS 7 redistribution through the filter-chain model — per-protocol toggle plus a mandatory output chain, tag-and-reject loop prevention, administrative distance, and version-dependent BFD for fast, stable failover.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: BGP &amp; Dual-ISP Multihoming</title>
@@ -399,6 +432,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Run a real multihomed BGP edge on Cisco IOS — two eBGP upstreams, outbound path control with local-preference, inbound with AS-path prepend, mandatory anti-transit filtering, and automatic failover.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: BGP &amp; Dual-ISP Multihoming</title>
@@ -407,6 +441,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: Policy-Based Routing</title>
@@ -415,6 +450,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Route by who sent the packet, not just where it's going — PBR route-maps that steer a subnet or application out a different next-hop, the set-clause differences, and pairing with IP SLA so a dead path never blackholes.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: Policy Routing with Rules &amp; Mangle</title>
@@ -423,6 +459,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>RouterOS's two policy-routing tools — lightweight routing rules and connection-aware mangle routing-marks — when to use which, the connection-mark-then-routing-mark pattern that keeps a flow pinned to one WAN, and per-WAN NAT.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS-XE: Model-Driven Config (NETCONF/RESTCONF)</title>
@@ -431,6 +468,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.</description>
       <category>cisco</category>
+      <category>automation</category>
     </item>
     <item>
       <title>MikroTik: RouterOS 7 Containers</title>
@@ -439,6 +477,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Run OCI/Docker images on the router itself — the device-mode security gate, veth networking on an isolated bridge, pulling and running a container (Pi-hole), persistence with mounts, and the architecture/storage constraints.</description>
       <category>mikrotik</category>
+      <category>automation</category>
     </item>
     <item>
       <title>MikroTik: Metrics with Prometheus &amp; Grafana</title>
@@ -447,6 +486,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Time-series metrics and dashboards for RouterOS — a read-only API user, the mktxp exporter (optionally in a container on the router), a Prometheus scrape job, and Grafana dashboards with alerts on BGP/WAN/CPU/queues.</description>
       <category>mikrotik</category>
+      <category>monitoring</category>
     </item>
     <item>
       <title>Field Notes: Auditing a Small Hotel Group</title>
@@ -454,8 +494,9 @@
       <guid>https://sp1r4.github.io/blog.html#field-audit-hotel-group</guid>
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>An anonymised security audit across three small family hotels — a flat network with guests on the same wire as the booking PC and cameras, an exposed router management plane, and the guest-to-card-data finding that got remediation approved the same afternoon.</description>
-      <category>security</category>
       <category>mikrotik</category>
+      <category>offensive</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco ↔ MikroTik: The Translation Guide</title>
@@ -473,6 +514,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: Securing RouterOS</title>
@@ -490,6 +532,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Hand out addresses and share one public IP — an IP pool, a DHCP server with reservations, masquerade vs src-nat, and the connection-tracking model that makes RouterOS NAT behave the way it does.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: Bridge &amp; Switch Port Security</title>
@@ -499,6 +542,7 @@
       <description>Stop Layer-2 abuse on RouterOS — bridge port isolation with horizon, DHCP snooping and trusted ports, bridge filtering, MAC limits, and why hardware offload changes which of these actually run on the switch chip.</description>
       <category>mikrotik</category>
       <category>security</category>
+      <category>switching</category>
     </item>
     <item>
       <title>MikroTik: STP &amp; Bonding</title>
@@ -507,6 +551,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Loop prevention and link aggregation on RouterOS — RSTP/MSTP bridge modes, root-bridge and port cost, and 802.3ad LACP bonding to double a link between switches without a loop.</description>
       <category>mikrotik</category>
+      <category>switching</category>
     </item>
     <item>
       <title>MikroTik: VRRP First-Hop Redundancy</title>
@@ -515,6 +560,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Two RouterOS boxes, one virtual gateway — VRRP so the LAN keeps its default gateway when a router dies, with priorities, preemption, and the interface-tracking trick that fails over on a dead WAN, not just a dead router.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: Logging, SNMP &amp; Traffic-Flow</title>
@@ -523,6 +569,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Make a RouterOS box tell you what it's doing — remote syslog, SNMPv3 monitoring, NTP so timestamps mean something, and Traffic-Flow (NetFlow/IPFIX) export to see what's actually on the wire.</description>
       <category>mikrotik</category>
+      <category>monitoring</category>
     </item>
     <item>
       <title>MikroTik: Upgrading RouterOS Safely</title>
@@ -531,6 +578,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Update RouterOS without bricking a remote site — release channels, the two-part package-plus-RouterBOARD-firmware upgrade everyone forgets, backups before you touch it, and a clean rollback path.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: 802.1X Port Authentication</title>
@@ -548,6 +596,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>See the actual packets on RouterOS — the switch-chip port mirror for line-rate SPAN, the built-in /tool sniffer with quick-filters, and streaming capture straight into Wireshark over TZSP.</description>
       <category>mikrotik</category>
+      <category>monitoring</category>
     </item>
     <item>
       <title>MikroTik: IPv6 Fundamentals</title>
@@ -556,6 +605,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Turn on IPv6 the right way on RouterOS — enabling the package, addressing and SLAAC, DHCPv6-PD to hand your ISP's prefix to the LAN, router advertisements, and an IPv6 firewall so you don't accidentally expose everything.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: Managing a Fleet</title>
@@ -564,6 +614,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Configure many RouterOS boxes without logging into each one — the RouterOS 7 REST API, the Ansible community.routeros collection, and a scripted config-push pattern that stays idempotent.</description>
       <category>mikrotik</category>
+      <category>automation</category>
     </item>
     <item>
       <title>Attacking MikroTik Gear — A Pentester's Field Guide</title>
@@ -572,6 +623,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>The offensive companion to the RouterOS series: what an attacker actually does to a MikroTik — Winbox discovery and the CVE-2018-14847 credential leak, default-account and API exposure, bandwidth-test abuse, post-exploitation, and the one-line fix for each.</description>
       <category>mikrotik</category>
+      <category>offensive</category>
       <category>security</category>
     </item>
     <item>
@@ -581,6 +633,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>An anonymised field write-up of a real collapsed-core Cisco build for a seaside hotel in Crete: VLAN segmentation for guests / PMS / CCTV / VoIP, dual-WAN failover with fibre primary and Starlink backup, guest isolation, and the three things that actually broke.</description>
       <category>cisco</category>
+      <category>labs</category>
       <category>starlink</category>
     </item>
     <item>
@@ -591,6 +644,7 @@
       <description>Build a working site-to-site IKEv2 IPsec tunnel between a Cisco IOS router and a MikroTik RouterOS box — the exact proposal matching, the route-based-vs-policy-based mismatch that breaks it, and NAT exemption on both ends.</description>
       <category>cisco</category>
       <category>mikrotik</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>Attacking Cisco Gear — A Pentester's Field Guide</title>
@@ -599,6 +653,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>The offensive companion to the IOS series: what an attacker actually does to a Cisco switch or router — CDP/SNMP recon, Smart Install config theft, SNMP-RW config exfil, type-7/5/8/9 password cracking, and DTP/VTP Layer-2 abuse — with the one-line fix for each.</description>
       <category>cisco</category>
+      <category>offensive</category>
       <category>security</category>
     </item>
     <item>
@@ -608,6 +663,7 @@
       <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <description>Connect two offices over the internet securely — an IKEv2 route-based (VTI) IPsec tunnel on Cisco IOS: proposals, keyring, profile, tunnel interface, routing, and the NAT-exemption gotcha.</description>
       <category>cisco</category>
+      <category>vpn</category>
     </item>
     <item>
       <title>Cisco IOS: QoS for VoIP</title>
@@ -616,6 +672,7 @@
       <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
       <description>Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: Zone-Based Firewall</title>
@@ -624,6 +681,7 @@
       <pubDate>Sun, 26 Jul 2026 00:00:00 GMT</pubDate>
       <description>A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.</description>
       <category>cisco</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco IOS: Dual-WAN Failover with IP SLA</title>
@@ -632,6 +690,7 @@
       <pubDate>Fri, 24 Jul 2026 00:00:00 GMT</pubDate>
       <description>Failover that detects a dead ISP even when the link stays up — IP SLA probes, track objects, tracked static routes, and NAT that follows the active WAN.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: First-Hop Redundancy (HSRP &amp; VRRP)</title>
@@ -640,6 +699,7 @@
       <pubDate>Wed, 22 Jul 2026 00:00:00 GMT</pubDate>
       <description>A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: STP &amp; EtherChannel</title>
@@ -648,6 +708,7 @@
       <pubDate>Mon, 20 Jul 2026 00:00:00 GMT</pubDate>
       <description>Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.</description>
       <category>cisco</category>
+      <category>switching</category>
     </item>
     <item>
       <title>Cisco IOS: Static Routing &amp; OSPF</title>
@@ -656,6 +717,7 @@
       <pubDate>Sat, 18 Jul 2026 00:00:00 GMT</pubDate>
       <description>How a Cisco router chooses paths — reading the routing table, static and default routes, floating statics for failover, and single-area OSPF that maintains itself.</description>
       <category>cisco</category>
+      <category>routing</category>
     </item>
     <item>
       <title>Cisco IOS: Switch Security</title>
@@ -664,6 +726,7 @@
       <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
       <description>Hardening Cisco access switches — port security and sticky MACs, err-disabled recovery, DHCP snooping, dynamic ARP inspection, BPDU guard, and unused-port hygiene.</description>
       <category>cisco</category>
+      <category>switching</category>
     </item>
     <item>
       <title>Cisco IOS: Access Control Lists</title>
@@ -672,6 +735,7 @@
       <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
       <description>Filtering traffic on a Cisco router — standard vs extended ACLs, wildcard masks, named ACLs with sequence numbers, where to apply them, and protecting the VTY lines.</description>
       <category>cisco</category>
+      <category>security</category>
     </item>
     <item>
       <title>Cisco IOS: DHCP &amp; NAT/PAT</title>
@@ -680,6 +744,7 @@
       <pubDate>Sun, 12 Jul 2026 00:00:00 GMT</pubDate>
       <description>Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Cisco IOS: Backup &amp; Restore</title>
@@ -688,6 +753,7 @@
       <pubDate>Fri, 10 Jul 2026 00:00:00 GMT</pubDate>
       <description>Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Cisco IOS: VLANs &amp; Trunking</title>
@@ -696,6 +762,7 @@
       <pubDate>Wed, 08 Jul 2026 00:00:00 GMT</pubDate>
       <description>Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).</description>
       <category>cisco</category>
+      <category>switching</category>
     </item>
     <item>
       <title>Cisco IOS: First Contact</title>
@@ -704,6 +771,7 @@
       <pubDate>Mon, 06 Jul 2026 00:00:00 GMT</pubDate>
       <description>Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.</description>
       <category>cisco</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>Starlink + MikroTik Failover</title>
@@ -712,6 +780,7 @@
       <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
       <description>Multi-WAN failover on RouterOS v7 — keep a remote Starlink site online with recursive routing, connection marking, NAT, and netwatch health checks.</description>
       <category>mikrotik</category>
+      <category>routing</category>
       <category>starlink</category>
     </item>
     <item>
@@ -721,6 +790,7 @@
       <pubDate>Wed, 06 May 2026 00:00:00 GMT</pubDate>
       <description>Export vs binary backup on MikroTik RouterOS — when to use which, how to automate both, and the full Netinstall recovery procedure.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: RouterOS Scripting</title>
@@ -729,6 +799,7 @@
       <pubDate>Wed, 06 May 2026 00:00:00 GMT</pubDate>
       <description>RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.</description>
       <category>mikrotik</category>
+      <category>automation</category>
     </item>
     <item>
       <title>MikroTik: VLANs</title>
@@ -737,6 +808,7 @@
       <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
       <description>Configuring VLANs on MikroTik RouterOS — bridge VLAN filtering, tagging, and inter-VLAN routing.</description>
       <category>mikrotik</category>
+      <category>switching</category>
     </item>
     <item>
       <title>MikroTik: QoS</title>
@@ -745,6 +817,7 @@
       <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
       <description>Quality of Service on MikroTik — queue trees, simple queues, and traffic prioritization.</description>
       <category>mikrotik</category>
+      <category>routing</category>
     </item>
     <item>
       <title>MikroTik: Port Forwarding</title>
@@ -753,6 +826,7 @@
       <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
       <description>Setting up dst-nat port forwarding rules on MikroTik RouterOS for inbound services.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: Wake-on-LAN</title>
@@ -761,6 +835,7 @@
       <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
       <description>Triggering Wake-on-LAN through MikroTik RouterOS — scripts, scheduling, and remote magic packets.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>MikroTik: Terminal Tips</title>
@@ -769,6 +844,7 @@
       <pubDate>Mon, 04 May 2026 00:00:00 GMT</pubDate>
       <description>Useful RouterOS terminal commands and shortcuts for day-to-day MikroTik administration.</description>
       <category>mikrotik</category>
+      <category>fundamentals</category>
     </item>
     <item>
       <title>HTB: Authority</title>
@@ -776,7 +852,7 @@
       <guid>https://sp1r4.github.io/blog.html#htb-authority</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Authority machine walkthrough — full writeup with screenshots.</description>
-      <category>hackthebox</category>
+      <category>offensive</category>
     </item>
     <item>
       <title>HTB: Blurry</title>
@@ -784,7 +860,7 @@
       <guid>https://sp1r4.github.io/blog.html#htb-blurry</guid>
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Blurry machine walkthrough — full writeup with screenshots.</description>
-      <category>hackthebox</category>
+      <category>offensive</category>
     </item>
     <item>
       <title>HTB: SolarLab</title>
@@ -792,7 +868,7 @@
       <guid>https://sp1r4.github.io/blog.html#htb-solarlab</guid>
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox SolarLab machine walkthrough — full writeup with screenshots.</description>
-      <category>hackthebox</category>
+      <category>offensive</category>
     </item>
     <item>
       <title>HTB: Freelancer</title>
@@ -800,7 +876,7 @@
       <guid>https://sp1r4.github.io/blog.html#htb-freelancer</guid>
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Freelancer machine walkthrough — full writeup with screenshots.</description>
-      <category>hackthebox</category>
+      <category>offensive</category>
     </item>
     <item>
       <title>HTB: Sandworm</title>
@@ -808,7 +884,7 @@
       <guid>https://sp1r4.github.io/blog.html#htb-sandworm</guid>
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Sandworm machine walkthrough — full writeup with screenshots.</description>
-      <category>hackthebox</category>
+      <category>offensive</category>
     </item>
   </channel>
 </rss>

@@ -16,9 +16,9 @@
     "description": "The campus/DC topology decision — when a collapsed core, a three-tier hierarchy, or a spine-leaf fabric each wins, traded on device count, failure domain, and bandwidth predictability, with a one-table decision guide.",
     "date": "2026-07-31",
     "tags": [
-      "architecture",
       "cisco",
-      "mikrotik"
+      "mikrotik",
+      "architecture"
     ],
     "html": "writeups/arch-campus-topologies.html",
     "reading_time": 5
@@ -41,9 +41,9 @@
     "description": "Choosing the multi-site WAN shape — centralised hub-and-spoke, fast-but-quadratic full mesh, or controller-brokered SD-WAN — and why dynamic-shortcut overlays give much of SD-WAN's benefit without the subscription.",
     "date": "2026-07-31",
     "tags": [
-      "architecture",
       "cisco",
-      "mikrotik"
+      "mikrotik",
+      "architecture"
     ],
     "html": "writeups/arch-wan-overlays.html",
     "reading_time": 5
@@ -54,8 +54,8 @@
     "description": "Designing a resilient internet edge — provider-assigned dual-WAN vs provider-independent BGP, active/backup vs active/active, and where NAT/CGNAT belongs (including the double-NAT and Starlink-CGNAT traps).",
     "date": "2026-07-31",
     "tags": [
-      "architecture",
-      "mikrotik"
+      "mikrotik",
+      "architecture"
     ],
     "html": "writeups/arch-multihomed-edge.html",
     "reading_time": 5
@@ -66,8 +66,8 @@
     "description": "The modern DC/large-campus fabric demystified — a routed ECMP spine-leaf underlay, a VXLAN overlay floating Layer-2 tenants on Layer-3, and EVPN as the BGP control plane that makes it scale.",
     "date": "2026-07-31",
     "tags": [
-      "architecture",
-      "cisco"
+      "cisco",
+      "architecture"
     ],
     "html": "writeups/arch-spine-leaf-vxlan.html",
     "reading_time": 5
@@ -136,7 +136,8 @@
     "description": "Controller-based Cisco wireless — how a lightweight AP discovers and joins a WLC over CAPWAP (DHCP option 43/DNS/broadcast), the Catalyst 9800 tag model for configuring the whole fleet, FlexConnect for branches, and VLAN-per-SSID.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "wireless"
     ],
     "html": "writeups/cisco-wireless-ap.html",
     "reading_time": 7
@@ -147,7 +148,8 @@
     "description": "A single RouterOS AP done right with the wifiwave2 stack — WPA3 transitional security, multiple SSIDs each tagged to its own VLAN, guest client-isolation, and the standalone-vs-CAPsMAN decision that mirrors Cisco autonomous-vs-lightweight.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "wireless"
     ],
     "html": "writeups/mikrotik-ap.html",
     "reading_time": 5
@@ -158,7 +160,8 @@
     "description": "Five RouterOS 7 routers across three areas — ABRs via interface-templates, a stub area, the LSA types that matter proven by inspection, and the every-area-touches-the-backbone and MTU-mismatch traps.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "labs"
     ],
     "html": "writeups/mikrotik-lab-ospf-areas.html",
     "reading_time": 5
@@ -169,7 +172,8 @@
     "description": "An encrypted, dynamically-routed branch WAN on RouterOS 7 — GRE tunnels carrying OSPF, IPsec via the GRE ipsec-secret one-liner, the protocol-47/MTU gotchas, and passive-LAN/ptp-tunnel hygiene.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "labs"
     ],
     "html": "writeups/mikrotik-lab-wan.html",
     "reading_time": 5
@@ -180,7 +184,8 @@
     "description": "Seven realistic RouterOS faults dressed as support tickets — a missing bridge VLAN member, scoped masquerade, OSPF MTU mismatch, DHCP bound to the wrong interface, FastTrack bypassing a rule, per-packet routing-marks splitting flows, and offload killed by a bridge feature — each with the command that finds it.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "labs"
     ],
     "html": "writeups/mikrotik-lab-troubleshooting.html",
     "reading_time": 6
@@ -191,7 +196,8 @@
     "description": "Scale a branch WAN without a full mesh — mGRE + NHRP + IPsec, a hub you configure once, dynamic spoke registration, and Phase-3 direct spoke-to-spoke tunnels, with the NBMA-vs-tunnel and routing gotchas.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "vpn"
     ],
     "html": "writeups/cisco-dmvpn.html",
     "reading_time": 5
@@ -202,7 +208,8 @@
     "description": "RouterOS has no DMVPN — build the scalable equivalent with a WireGuard hub-and-spoke: one peer per spoke on the hub, OSPF over the overlay, the allowed-address cryptokey-routing trap, and what you trade versus DMVPN's on-demand spoke-to-spoke.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "vpn"
     ],
     "html": "writeups/mikrotik-dmvpn.html",
     "reading_time": 6
@@ -213,7 +220,8 @@
     "description": "Road-warrior access on IOS — IKEv2/FlexVPN with an authorization policy pushing the client's address, DNS and split-tunnel routes, a virtual-template per client, the server-certificate trust requirement, and an SSL fallback.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "vpn"
     ],
     "html": "writeups/cisco-remote-access-vpn.html",
     "reading_time": 5
@@ -224,7 +232,8 @@
     "description": "Get laptops and phones securely back to the office on RouterOS — SSTP over TLS/443 for hostile firewalls, IKEv2 with mode-config for native clients, generate-policy and server-cert gotchas, plus the firewall/NAT rules people forget.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "vpn"
     ],
     "html": "writeups/mikrotik-remote-access-vpn.html",
     "reading_time": 6
@@ -235,7 +244,8 @@
     "description": "Cisco's advanced distance-vector protocol — named-mode config, the successor/feasible-successor logic behind sub-second failover, unequal-cost load balancing with variance, summarisation, and why it's effectively Cisco-only.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-eigrp.html",
     "reading_time": 5
@@ -246,7 +256,8 @@
     "description": "Glue OSPF, BGP, EIGRP and static together safely — seed metrics and the subnets/E1-vs-E2 traps, tag-and-deny loop prevention, administrative-distance pitfalls, and BFD for millisecond failure detection.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-redistribution-bfd.html",
     "reading_time": 5
@@ -257,7 +268,8 @@
     "description": "RouterOS 7 redistribution through the filter-chain model — per-protocol toggle plus a mandatory output chain, tag-and-reject loop prevention, administrative distance, and version-dependent BFD for fast, stable failover.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-redistribution-bfd.html",
     "reading_time": 5
@@ -268,7 +280,8 @@
     "description": "Run a real multihomed BGP edge on Cisco IOS — two eBGP upstreams, outbound path control with local-preference, inbound with AS-path prepend, mandatory anti-transit filtering, and automatic failover.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-bgp-dual-isp.html",
     "reading_time": 6
@@ -279,7 +292,8 @@
     "description": "RouterOS 7 rewrote BGP — build a dual-ISP edge the v7 way with /routing bgp connection and /routing filter chains: two upstreams, local-preference and prepend path control, anti-transit filters, and automatic failover.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-bgp-dual-isp.html",
     "reading_time": 6
@@ -290,7 +304,8 @@
     "description": "Route by who sent the packet, not just where it's going — PBR route-maps that steer a subnet or application out a different next-hop, the set-clause differences, and pairing with IP SLA so a dead path never blackholes.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-pbr.html",
     "reading_time": 5
@@ -301,7 +316,8 @@
     "description": "RouterOS's two policy-routing tools — lightweight routing rules and connection-aware mangle routing-marks — when to use which, the connection-mark-then-routing-mark pattern that keeps a flow pinned to one WAN, and per-WAN NAT.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-routing-rules.html",
     "reading_time": 5
@@ -312,7 +328,8 @@
     "description": "Talk to modern IOS-XE like an API — YANG-modelled config over NETCONF and RESTCONF, a curl RESTCONF quick-win, transactional NETCONF edits with a candidate datastore via ncclient, and when this beats CLI/Ansible.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "automation"
     ],
     "html": "writeups/cisco-netconf.html",
     "reading_time": 5
@@ -323,7 +340,8 @@
     "description": "Run OCI/Docker images on the router itself — the device-mode security gate, veth networking on an isolated bridge, pulling and running a container (Pi-hole), persistence with mounts, and the architecture/storage constraints.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "automation"
     ],
     "html": "writeups/mikrotik-containers.html",
     "reading_time": 6
@@ -334,7 +352,8 @@
     "description": "Time-series metrics and dashboards for RouterOS — a read-only API user, the mktxp exporter (optionally in a container on the router), a Prometheus scrape job, and Grafana dashboards with alerts on BGP/WAN/CPU/queues.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "monitoring"
     ],
     "html": "writeups/mikrotik-prometheus.html",
     "reading_time": 5
@@ -345,8 +364,9 @@
     "description": "An anonymised security audit across three small family hotels — a flat network with guests on the same wire as the booking PC and cameras, an exposed router management plane, and the guest-to-card-data finding that got remediation approved the same afternoon.",
     "date": "2026-07-30",
     "tags": [
-      "security",
-      "mikrotik"
+      "mikrotik",
+      "offensive",
+      "security"
     ],
     "html": "writeups/field-audit-hotel-group.html",
     "reading_time": 7
@@ -369,7 +389,8 @@
     "description": "Your first ten minutes with a new RouterOS device — WinBox and MAC-connect, the default configuration and how to read it, identity, users, addressing, and a safe way back if you lock yourself out.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-first-contact.html",
     "reading_time": 6
@@ -392,7 +413,8 @@
     "description": "Hand out addresses and share one public IP — an IP pool, a DHCP server with reservations, masquerade vs src-nat, and the connection-tracking model that makes RouterOS NAT behave the way it does.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-dhcp-nat.html",
     "reading_time": 5
@@ -404,7 +426,8 @@
     "date": "2026-07-30",
     "tags": [
       "mikrotik",
-      "security"
+      "security",
+      "switching"
     ],
     "html": "writeups/mikrotik-port-security.html",
     "reading_time": 4
@@ -415,7 +438,8 @@
     "description": "Loop prevention and link aggregation on RouterOS — RSTP/MSTP bridge modes, root-bridge and port cost, and 802.3ad LACP bonding to double a link between switches without a loop.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "switching"
     ],
     "html": "writeups/mikrotik-stp-bonding.html",
     "reading_time": 5
@@ -426,7 +450,8 @@
     "description": "Two RouterOS boxes, one virtual gateway — VRRP so the LAN keeps its default gateway when a router dies, with priorities, preemption, and the interface-tracking trick that fails over on a dead WAN, not just a dead router.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-vrrp.html",
     "reading_time": 5
@@ -437,7 +462,8 @@
     "description": "Make a RouterOS box tell you what it's doing — remote syslog, SNMPv3 monitoring, NTP so timestamps mean something, and Traffic-Flow (NetFlow/IPFIX) export to see what's actually on the wire.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "monitoring"
     ],
     "html": "writeups/mikrotik-observability.html",
     "reading_time": 5
@@ -448,7 +474,8 @@
     "description": "Update RouterOS without bricking a remote site — release channels, the two-part package-plus-RouterBOARD-firmware upgrade everyone forgets, backups before you touch it, and a clean rollback path.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-upgrades.html",
     "reading_time": 4
@@ -471,7 +498,8 @@
     "description": "See the actual packets on RouterOS — the switch-chip port mirror for line-rate SPAN, the built-in /tool sniffer with quick-filters, and streaming capture straight into Wireshark over TZSP.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "monitoring"
     ],
     "html": "writeups/mikrotik-sniffer-mirror.html",
     "reading_time": 4
@@ -482,7 +510,8 @@
     "description": "Turn on IPv6 the right way on RouterOS — enabling the package, addressing and SLAAC, DHCPv6-PD to hand your ISP's prefix to the LAN, router advertisements, and an IPv6 firewall so you don't accidentally expose everything.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-ipv6.html",
     "reading_time": 4
@@ -493,7 +522,8 @@
     "description": "Configure many RouterOS boxes without logging into each one — the RouterOS 7 REST API, the Ansible community.routeros collection, and a scripted config-push pattern that stays idempotent.",
     "date": "2026-07-30",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "automation"
     ],
     "html": "writeups/mikrotik-fleet.html",
     "reading_time": 5
@@ -505,6 +535,7 @@
     "date": "2026-07-30",
     "tags": [
       "mikrotik",
+      "offensive",
       "security"
     ],
     "html": "writeups/attacking-mikrotik.html",
@@ -517,6 +548,7 @@
     "date": "2026-07-30",
     "tags": [
       "cisco",
+      "labs",
       "starlink"
     ],
     "html": "writeups/cisco-field-hotel.html",
@@ -529,7 +561,8 @@
     "date": "2026-07-30",
     "tags": [
       "cisco",
-      "mikrotik"
+      "mikrotik",
+      "vpn"
     ],
     "html": "writeups/cisco-mikrotik-ipsec.html",
     "reading_time": 9
@@ -541,6 +574,7 @@
     "date": "2026-07-30",
     "tags": [
       "cisco",
+      "offensive",
       "security"
     ],
     "html": "writeups/cisco-attacking-ios.html",
@@ -552,7 +586,8 @@
     "description": "Configuring VLANs on MikroTik RouterOS — bridge VLAN filtering, tagging, and inter-VLAN routing.",
     "date": "2026-05-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "switching"
     ],
     "html": "writeups/mikrotik-vlans.html",
     "reading_time": 26,
@@ -566,7 +601,8 @@
     "description": "Quality of Service on MikroTik — queue trees, simple queues, and traffic prioritization.",
     "date": "2026-05-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-qos.html",
     "reading_time": 18,
@@ -580,7 +616,8 @@
     "description": "Setting up dst-nat port forwarding rules on MikroTik RouterOS for inbound services.",
     "date": "2026-05-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-port-forwarding.html",
     "reading_time": 19,
@@ -594,7 +631,8 @@
     "description": "Triggering Wake-on-LAN through MikroTik RouterOS — scripts, scheduling, and remote magic packets.",
     "date": "2026-05-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-wol.html",
     "reading_time": 18,
@@ -608,7 +646,8 @@
     "description": "Useful RouterOS terminal commands and shortcuts for day-to-day MikroTik administration.",
     "date": "2026-05-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-terminal.html",
     "reading_time": 16,
@@ -622,7 +661,8 @@
     "description": "Export vs binary backup on MikroTik RouterOS — when to use which, how to automate both, and the full Netinstall recovery procedure.",
     "date": "2026-05-06",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-backup.html",
     "series": "mikrotik-routeros",
@@ -636,7 +676,8 @@
     "description": "RouterOS scripting basics — variables, conditionals, loops, functions, and the scheduler, with WoL, Telegram alerts, and auto-backup examples.",
     "date": "2026-05-06",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "automation"
     ],
     "html": "writeups/mikrotik-scripting.html",
     "series": "mikrotik-routeros",
@@ -650,7 +691,7 @@
     "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-19",
     "tags": [
-      "hackthebox"
+      "offensive"
     ],
     "html": "writeups/htb-authority.html",
     "reading_time": 6
@@ -661,7 +702,7 @@
     "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "hackthebox"
+      "offensive"
     ],
     "html": "writeups/htb-blurry.html",
     "reading_time": 5
@@ -672,7 +713,7 @@
     "description": "HackTheBox SolarLab machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "hackthebox"
+      "offensive"
     ],
     "html": "writeups/htb-solarlab.html",
     "reading_time": 6
@@ -683,7 +724,7 @@
     "description": "HackTheBox Freelancer machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "hackthebox"
+      "offensive"
     ],
     "html": "writeups/htb-freelancer.html",
     "reading_time": 6
@@ -694,7 +735,7 @@
     "description": "HackTheBox Sandworm machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "hackthebox"
+      "offensive"
     ],
     "html": "writeups/htb-sandworm.html",
     "reading_time": 6
@@ -706,6 +747,7 @@
     "date": "2026-06-12",
     "tags": [
       "mikrotik",
+      "routing",
       "starlink"
     ],
     "html": "writeups/starlink-mikrotik-failover.html",
@@ -717,7 +759,8 @@
     "description": "A complete, practical RouterOS course in 13 writeups — from terminal habits and backups through VLANs, firewalling, WireGuard, OSPF, and a full hotel-network lab. The MikroTik counterpart to our 27-part Cisco series.",
     "date": "2026-09-05",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "fundamentals"
     ],
     "html": "writeups/mikrotik-index.html",
     "reading_time": 7
@@ -728,7 +771,8 @@
     "description": "A complete, practical Cisco IOS course in 27 writeups — from your first console session to firewalls, redundancy, automation, and four full Packet Tracer lab scenarios. Every post cross-mapped to MikroTik.",
     "date": "2026-08-20",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-index.html",
     "reading_time": 7
@@ -739,7 +783,8 @@
     "description": "Your first hour on a Cisco switch or router — the IOS CLI from scratch: console access, the three command modes, safe show commands, basic setup, and enabling SSH.",
     "date": "2026-07-06",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-first-contact.html",
     "series": "cisco-ios",
@@ -753,7 +798,8 @@
     "description": "Segmenting a Cisco switch network — access ports, 802.1Q trunks, the native VLAN, and inter-VLAN routing with router-on-a-stick and an L3 switch (SVI).",
     "date": "2026-07-08",
     "tags": [
-      "cisco"
+      "cisco",
+      "switching"
     ],
     "html": "writeups/cisco-vlans-trunking.html",
     "series": "cisco-ios",
@@ -767,7 +813,8 @@
     "description": "Protect a Cisco config — save to startup, export to TFTP/SCP, automate with the archive feature and kron, roll back with configure replace, and recover a locked device.",
     "date": "2026-07-10",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-backup-restore.html",
     "series": "cisco-ios",
@@ -781,7 +828,8 @@
     "description": "Hand out addresses and share one public IP on a Cisco router — DHCP pools and exclusions, DHCP relay, NAT concepts, PAT (overload) for the whole LAN, and static NAT for port forwarding.",
     "date": "2026-07-12",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-dhcp-nat.html",
     "series": "cisco-ios",
@@ -795,7 +843,8 @@
     "description": "Filtering traffic on a Cisco router — standard vs extended ACLs, wildcard masks, named ACLs with sequence numbers, where to apply them, and protecting the VTY lines.",
     "date": "2026-07-14",
     "tags": [
-      "cisco"
+      "cisco",
+      "security"
     ],
     "html": "writeups/cisco-acls.html",
     "series": "cisco-ios",
@@ -809,7 +858,8 @@
     "description": "Hardening Cisco access switches — port security and sticky MACs, err-disabled recovery, DHCP snooping, dynamic ARP inspection, BPDU guard, and unused-port hygiene.",
     "date": "2026-07-16",
     "tags": [
-      "cisco"
+      "cisco",
+      "switching"
     ],
     "html": "writeups/cisco-switch-security.html",
     "series": "cisco-ios",
@@ -823,7 +873,8 @@
     "description": "How a Cisco router chooses paths — reading the routing table, static and default routes, floating statics for failover, and single-area OSPF that maintains itself.",
     "date": "2026-07-18",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-routing-ospf.html",
     "series": "cisco-ios",
@@ -837,7 +888,8 @@
     "description": "Why one port is always blocking — spanning tree explained: root bridge election, Rapid PVST+, PortFast, and bundling redundant links into an LACP EtherChannel that uses them all.",
     "date": "2026-07-20",
     "tags": [
-      "cisco"
+      "cisco",
+      "switching"
     ],
     "html": "writeups/cisco-stp-etherchannel.html",
     "series": "cisco-ios",
@@ -851,7 +903,8 @@
     "description": "A redundant gateway that survives a dead router — HSRP and VRRP explained: virtual IP, active/standby election, interface tracking, load sharing, and the preempt gotcha.",
     "date": "2026-07-22",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-hsrp.html",
     "series": "cisco-ios",
@@ -865,7 +918,8 @@
     "description": "Failover that detects a dead ISP even when the link stays up — IP SLA probes, track objects, tracked static routes, and NAT that follows the active WAN.",
     "date": "2026-07-24",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-ipsla-failover.html",
     "series": "cisco-ios",
@@ -879,7 +933,8 @@
     "description": "A real stateful firewall on an IOS router — zones, class-maps, policy-maps, zone-pairs, and stateful inspection. The stateful upgrade from stateless ACLs, built step by step.",
     "date": "2026-07-26",
     "tags": [
-      "cisco"
+      "cisco",
+      "security"
     ],
     "html": "writeups/cisco-zbf.html",
     "series": "cisco-ios",
@@ -893,7 +948,8 @@
     "description": "Make voice calls survive a busy link — DSCP marking, trust boundaries, LLQ priority queuing for RTP, and the class-based policy that keeps phones clear when the WAN is saturated.",
     "date": "2026-07-28",
     "tags": [
-      "cisco"
+      "cisco",
+      "routing"
     ],
     "html": "writeups/cisco-qos-voip.html",
     "series": "cisco-ios",
@@ -907,7 +963,8 @@
     "description": "Connect two offices over the internet securely — an IKEv2 route-based (VTI) IPsec tunnel on Cisco IOS: proposals, keyring, profile, tunnel interface, routing, and the NAT-exemption gotcha.",
     "date": "2026-07-30",
     "tags": [
-      "cisco"
+      "cisco",
+      "vpn"
     ],
     "html": "writeups/cisco-site-to-site-vpn.html",
     "series": "cisco-ios",
@@ -921,7 +978,8 @@
     "description": "You cant troubleshoot what you didnt record — synchronized time with NTP, centralized logs with syslog, monitoring with SNMPv3, and traffic visibility with Flexible NetFlow on Cisco IOS.",
     "date": "2026-08-01",
     "tags": [
-      "cisco"
+      "cisco",
+      "monitoring"
     ],
     "html": "writeups/cisco-observability.html",
     "series": "cisco-ios",
@@ -935,7 +993,8 @@
     "description": "Upgrade a Cisco switch or router without bricking it — check space, verify the image hash, set boot variables, and the difference between classic bundle boot and IOS-XE install mode, with a rollback plan.",
     "date": "2026-08-03",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-ios-upgrade.html",
     "series": "cisco-ios",
@@ -949,7 +1008,8 @@
     "description": "Make the router fix itself — Embedded Event Manager applets that react to syslog, timers, and track state: auto-recover err-disabled ports, back up config on change, and alert on events.",
     "date": "2026-08-05",
     "tags": [
-      "cisco"
+      "cisco",
+      "automation"
     ],
     "html": "writeups/cisco-eem.html",
     "series": "cisco-ios",
@@ -963,7 +1023,8 @@
     "description": "Authenticate devices before they get network access — 802.1X with RADIUS on Cisco switches: supplicant/authenticator/server roles, dot1x config, MAB fallback, dynamic VLANs, and open-mode rollout.",
     "date": "2026-08-07",
     "tags": [
-      "cisco"
+      "cisco",
+      "security"
     ],
     "html": "writeups/cisco-8021x.html",
     "series": "cisco-ios",
@@ -977,7 +1038,8 @@
     "description": "Audit and lock down any Cisco device in 15 minutes — SSH ciphers, SNMPv3, AAA, VTY access-class, control-plane policing, unused services, and the login-hardening checklist we run on every box.",
     "date": "2026-08-09",
     "tags": [
-      "cisco"
+      "cisco",
+      "security"
     ],
     "html": "writeups/cisco-hardening.html",
     "series": "cisco-ios",
@@ -991,7 +1053,8 @@
     "description": "Copy traffic to an analyzer without a tap — local SPAN, remote RSPAN across switches, and ERSPAN over IP on Cisco: sources, destinations, the oversubscription gotcha, and IDS/incident-response use.",
     "date": "2026-08-11",
     "tags": [
-      "cisco"
+      "cisco",
+      "monitoring"
     ],
     "html": "writeups/cisco-span.html",
     "series": "cisco-ios",
@@ -1005,7 +1068,8 @@
     "description": "IPv6 on Cisco without the fear — address types, link-local, SLAAC vs DHCPv6, enabling routing, static routes and OSPFv3, NDP instead of ARP, and why theres no NAT.",
     "date": "2026-08-13",
     "tags": [
-      "cisco"
+      "cisco",
+      "fundamentals"
     ],
     "html": "writeups/cisco-ipv6.html",
     "series": "cisco-ios",
@@ -1019,7 +1083,8 @@
     "description": "Config as code for Cisco — Ansible with the cisco.ios collection: inventory, ios_facts, idempotent ios_config, backups, vaulted secrets, and pushing a change to every switch at once, safely with check mode.",
     "date": "2026-08-15",
     "tags": [
-      "cisco"
+      "cisco",
+      "automation"
     ],
     "html": "writeups/cisco-ansible.html",
     "series": "cisco-ios",
@@ -1061,7 +1126,8 @@
     "description": "A complete Packet Tracer campus build — two access switches, two L3 cores with HSRP and aligned Rapid-PVST roots, an LACP core interlink, and a NAT edge. Full topology, addressing plan, and failure drills.",
     "date": "2026-08-21",
     "tags": [
-      "cisco"
+      "cisco",
+      "labs"
     ],
     "html": "writeups/cisco-lab-campus.html",
     "series": "cisco-ios",
@@ -1075,7 +1141,8 @@
     "description": "Five routers, three areas — ABRs, the LSA types that matter, stub and totally-stubby areas, default-information originate, and cost tuning with a failure drill. Builds fully in Packet Tracer.",
     "date": "2026-08-23",
     "tags": [
-      "cisco"
+      "cisco",
+      "labs"
     ],
     "html": "writeups/cisco-lab-ospf-areas.html",
     "series": "cisco-ios",
@@ -1089,7 +1156,8 @@
     "description": "A hub-and-spoke WAN you can build in Packet Tracer — an ISP cloud that refuses to route your LANs, GRE tunnels that carry them anyway, OSPF over the tunnels, and IPsec encrypting the lot.",
     "date": "2026-08-25",
     "tags": [
-      "cisco"
+      "cisco",
+      "labs"
     ],
     "html": "writeups/cisco-lab-gre-ipsec.html",
     "series": "cisco-ios",
@@ -1103,7 +1171,8 @@
     "description": "A troubleshooting scenario: the part-24 campus with eight planted faults — wrong VLANs, err-disabled ports, a pruned trunk, split-brain HSRP, a missing DHCP relay, a stale NAT ACL. Diagnose each from the symptom, layer by layer.",
     "date": "2026-08-27",
     "tags": [
-      "cisco"
+      "cisco",
+      "labs"
     ],
     "html": "writeups/cisco-lab-troubleshooting.html",
     "series": "cisco-ios",
@@ -1117,7 +1186,8 @@
     "description": "Connection tracking, a default-deny input chain that can't lock you out, a forward chain with FastTrack that doesn't break QoS, and address-list rate-limiting for brute-force — built from first principles.",
     "date": "2026-08-29",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "security"
     ],
     "html": "writeups/mikrotik-firewall.html",
     "series": "mikrotik-routeros",
@@ -1131,7 +1201,8 @@
     "description": "WireGuard on RouterOS 7 from zero — road-warrior access for phone and laptop, a site-to-site tunnel between offices, the allowed-address logic everyone gets wrong, and the keepalive trick for peers behind NAT.",
     "date": "2026-08-31",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "vpn"
     ],
     "html": "writeups/mikrotik-wireguard.html",
     "series": "mikrotik-routeros",
@@ -1145,7 +1216,8 @@
     "description": "OSPF in RouterOS 7's rebuilt routing engine — instance, area, interface-template — on a three-router topology where one router is a Cisco. Mixed-vendor adjacency, costs, default origination, and the ROS6→7 migration traps.",
     "date": "2026-09-02",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "routing"
     ],
     "html": "writeups/mikrotik-ospf.html",
     "series": "mikrotik-routeros",
@@ -1159,7 +1231,8 @@
     "description": "A complete hotel network on MikroTik — RB5009 gateway, CRS326 core, VLAN-tagged SSIDs, guest isolation firewall, per-VLAN DHCP, and PCQ fairness — built in order, verified, then failure-drilled. Runs on CHR too.",
     "date": "2026-09-04",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "labs"
     ],
     "html": "writeups/mikrotik-lab-hotel.html",
     "series": "mikrotik-routeros",
@@ -1173,7 +1246,8 @@
     "description": "A guest Wi-Fi login page done right — the hotspot, a branded terms-acceptance login, voucher codes with User Manager, RADIUS, a walled garden, per-guest bandwidth, and the HTTPS-redirect reality every hotel hits.",
     "date": "2026-09-06",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "wireless"
     ],
     "html": "writeups/mikrotik-hotspot.html",
     "series": "mikrotik-routeros",
@@ -1187,7 +1261,8 @@
     "description": "Manage every access point in a hotel from one place — RouterOS 7 CAPsMAN (WifiWave2): the manager, provisioning CAPs, one config for all radios, VLAN-tagged SSIDs, seamless roaming, and the discovery gotchas.",
     "date": "2026-09-08",
     "tags": [
-      "mikrotik"
+      "mikrotik",
+      "wireless"
     ],
     "html": "writeups/mikrotik-capsman.html",
     "series": "mikrotik-routeros",
@@ -1212,6 +1287,7 @@
     "description": "A buyer's guide for business owners: what a real pentest involves, why an automated scan report isn't one, what the deliverables are, and the questions (and red flags) before you pay.",
     "date": "2026-09-09",
     "tags": [
+      "offensive",
       "security"
     ],
     "html": "writeups/what-is-a-pentest.html",
