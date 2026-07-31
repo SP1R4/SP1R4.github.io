@@ -56,7 +56,10 @@ function formatDate(d) {
 function getAllTags() {
   const tags = new Set();
   posts.forEach(p => (p.tags || []).forEach(t => tags.add(t)));
-  return [...tags].sort();
+  // Platform pills first (in this order), then every topic tag alphabetically.
+  const PLATFORM = ['cisco', 'mikrotik'];
+  const rest = [...tags].filter(t => !PLATFORM.includes(t)).sort();
+  return [...PLATFORM.filter(t => tags.has(t)), ...rest];
 }
 
 function renderFilterBar() {
