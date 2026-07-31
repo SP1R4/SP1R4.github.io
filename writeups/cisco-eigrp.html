@@ -163,7 +163,6 @@
 <span class="pc">R1(config-router)#</span> <span class="out">address-family ipv4 unicast autonomous-system 100</span>
 <span class="pc">R1(config-router-af)#</span> <span class="out">network 10.0.0.0 0.0.0.255</span>      <span class="cmt"># which interfaces run EIGRP</span>
 <span class="pc">R1(config-router-af)#</span> <span class="out">network 10.1.0.0 0.0.255.255</span>
-<span class="pc">R1(config-router-af-topology)#</span> <span class="out">exit-af-topology</span>
 <span class="cmt"># Neighbours on those interfaces adjacency up automatically (same AS + K-values).</span>
 <span class="pc">R1#</span> <span class="out">show ip eigrp neighbors</span></pre>
   </div>
