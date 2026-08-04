@@ -139,7 +139,7 @@ function renderList() {
 
   visible.forEach((post, i) => {
     const el = document.createElement('a');
-    el.className = 'post-card';
+    el.className = 'post-card' + (post.tags && post.tags.includes('htb') ? ' post-card-htb' : '');
     el.href = post.html;
     el.style.setProperty('--i', i);
 
@@ -165,7 +165,7 @@ function renderList() {
     if (post.tags) {
       post.tags.forEach(t => {
         const tag = document.createElement('span');
-        tag.className = 'post-tag';
+        tag.className = 'post-tag post-tag-' + t;
         tag.textContent = t;
         meta.appendChild(tag);
       });

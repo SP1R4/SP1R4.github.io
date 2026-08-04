@@ -51,6 +51,15 @@
   .post-card:visited .post-title { color: var(--text-muted); }
   .post-card:visited:hover .post-title { color: var(--bg); }
 
+  /* HTB category — HackTheBox's own green accent so writeups read as their own strand in the feed. */
+  .post-card-htb { border-left: 2.5px solid #9fef00; }
+  .post-tag-htb {
+    background: rgba(159,239,0,0.14); color: #5a8400;
+    border: 0.5px solid rgba(159,239,0,0.35);
+  }
+  body.dark .post-tag-htb { background: rgba(159,239,0,0.12); color: #9fef00; border-color: rgba(159,239,0,0.3); }
+  .post-tag-htb:hover { background: #9fef00 !important; color: #0f0f0f !important; }
+
   .post-title {
     font-size: 15px; font-weight: 600; color: var(--text-primary);
     margin-bottom: 6px; transition: color 0.18s;
