@@ -5,7 +5,8 @@
     "description": "HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.",
     "date": "2026-08-04",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-abducted.html",
     "reading_time": 7
@@ -728,7 +729,8 @@
     "description": "HackTheBox Authority machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-19",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-authority.html",
     "reading_time": 6
@@ -739,7 +741,8 @@
     "description": "HackTheBox Blurry machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-blurry.html",
     "reading_time": 5
@@ -750,7 +753,8 @@
     "description": "HackTheBox SolarLab machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-solarlab.html",
     "reading_time": 6
@@ -761,7 +765,8 @@
     "description": "HackTheBox Freelancer machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-freelancer.html",
     "reading_time": 6
@@ -772,7 +777,8 @@
     "description": "HackTheBox Sandworm machine walkthrough — full writeup with screenshots.",
     "date": "2026-04-11",
     "tags": [
-      "offensive"
+      "offensive",
+      "htb"
     ],
     "html": "writeups/htb-sandworm.html",
     "reading_time": 6
