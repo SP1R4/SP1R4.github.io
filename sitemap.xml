@@ -61,6 +61,11 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://sp1r4.github.io/writeups/htb-nexus.html</loc>
+    <lastmod>2026-08-04</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://sp1r4.github.io/writeups/htb-abducted.html</loc>
     <lastmod>2026-08-04</lastmod>
     <priority>0.6</priority>

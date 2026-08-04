@@ -204,12 +204,22 @@
       <category>automation</category>
     </item>
     <item>
+      <title>HTB: Nexus</title>
+      <link>https://sp1r4.github.io/blog.html#htb-nexus</link>
+      <guid>https://sp1r4.github.io/blog.html#htb-nexus</guid>
+      <pubDate>Tue, 04 Aug 2026 00:00:00 GMT</pubDate>
+      <description>HackTheBox Nexus machine walkthrough — leaked Gitea commit credentials into an authenticated Krayin CRM file-upload RCE, a leaked .env password reused over SSH, and an automated exploit for a Gitea template-sync path traversal that plants a root SSH key.</description>
+      <category>offensive</category>
+      <category>htb</category>
+    </item>
+    <item>
       <title>HTB: Abducted</title>
       <link>https://sp1r4.github.io/blog.html#htb-abducted</link>
       <guid>https://sp1r4.github.io/blog.html#htb-abducted</guid>
       <pubDate>Tue, 04 Aug 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
     <item>
       <title>Cisco IOS: Upgrading Safely</title>
@@ -883,6 +893,7 @@
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Authority machine walkthrough — full writeup with screenshots.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
     <item>
       <title>HTB: Blurry</title>
@@ -891,6 +902,7 @@
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Blurry machine walkthrough — full writeup with screenshots.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
     <item>
       <title>HTB: SolarLab</title>
@@ -899,6 +911,7 @@
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox SolarLab machine walkthrough — full writeup with screenshots.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
     <item>
       <title>HTB: Freelancer</title>
@@ -907,6 +920,7 @@
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Freelancer machine walkthrough — full writeup with screenshots.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
     <item>
       <title>HTB: Sandworm</title>
@@ -915,6 +929,7 @@
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
       <description>HackTheBox Sandworm machine walkthrough — full writeup with screenshots.</description>
       <category>offensive</category>
+      <category>htb</category>
     </item>
   </channel>
 </rss>

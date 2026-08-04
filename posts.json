@@ -1,5 +1,17 @@
 [
   {
+    "slug": "htb-nexus",
+    "title": "HTB: Nexus",
+    "description": "HackTheBox Nexus machine walkthrough — leaked Gitea commit credentials into an authenticated Krayin CRM file-upload RCE, a leaked .env password reused over SSH, and an automated exploit for a Gitea template-sync path traversal that plants a root SSH key.",
+    "date": "2026-08-04",
+    "tags": [
+      "offensive",
+      "htb"
+    ],
+    "html": "writeups/htb-nexus.html",
+    "reading_time": 8
+  },
+  {
     "slug": "htb-abducted",
     "title": "HTB: Abducted",
     "description": "HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.",
