@@ -20,6 +20,7 @@
 
 
 
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
@@ -318,6 +319,17 @@
     h1 { font-size: 2.4rem; }
   }
 </style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --bg-code:#161616; --bg-term:#161616; --border:#2a2a2a;
+    --text:#959086; --text-dark:#f4f3ef; --text-mid:#d4d2cc;
+    --tag-bg:#1e1e1e; --tag-text:#999690; --accent:#f4f3ef;
+    --t-user:#6a9c79; --t-host:#7a8eaa; --t-path:#9a8060; --t-cmd:#f4f3ef;
+    --t-out:#a6a69c; --t-yellow:#aa9050; --t-red:#aa5050; --t-green:#5a8a68;
+    --t-comment:#7a7870; --t-blue:#5a7a9a;
+  }
+</style>
 <script id="noctis-jsonld" type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -339,7 +351,7 @@
   "url": "https://sp1r4.github.io/writeups/htb-solarlab.html",
   "image": "https://sp1r4.github.io/writeups/assets/og/htb-solarlab.png",
   "keywords": [
-    "hackthebox"
+    "offensive"
   ],
   "mainEntityOfPage": {
     "@type": "WebPage",
@@ -348,17 +360,6 @@
   "timeRequired": "PT6M"
 }
 </script>
-<script src="../js/theme.js"></script>
-<style>
-  body.dark {
-    --bg:#0f0f0f; --bg-code:#161616; --bg-term:#161616; --border:#2a2a2a;
-    --text:#959086; --text-dark:#f4f3ef; --text-mid:#d4d2cc;
-    --tag-bg:#1e1e1e; --tag-text:#999690; --accent:#f4f3ef;
-    --t-user:#6a9c79; --t-host:#7a8eaa; --t-path:#9a8060; --t-cmd:#f4f3ef;
-    --t-out:#a6a69c; --t-yellow:#aa9050; --t-red:#aa5050; --t-green:#5a8a68;
-    --t-comment:#7a7870; --t-blue:#5a7a9a;
-  }
-</style>
 </head>
 <body class="has-nav">
 <nav id="site-nav"></nav>

@@ -19,6 +19,7 @@
 
 
 
+
 <link rel="stylesheet" href="../fonts/inter.css">
 <link rel="stylesheet" href="../fonts/display.css">
 <link rel="stylesheet" href="../style.css">
@@ -299,6 +300,14 @@
   footer a { color: var(--body); }
   footer a:hover { color: var(--accent); }
 </style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
+    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
+    --gotcha:#d9a441; --defender:#6f9fc9;
+  }
+</style>
 <script id="noctis-jsonld" type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -321,6 +330,7 @@
   "image": "https://sp1r4.github.io/writeups/assets/og/starlink-mikrotik-failover.png",
   "keywords": [
     "mikrotik",
+    "routing",
     "starlink"
   ],
   "mainEntityOfPage": {
@@ -330,14 +340,6 @@
   "timeRequired": "PT8M"
 }
 </script>
-<script src="../js/theme.js"></script>
-<style>
-  body.dark {
-    --bg:#0f0f0f; --card:#1a1a1a; --code-bg:#161616; --term-bg:#161616; --rule:#2a2a2a;
-    --body:#959086; --mid:#f4f3ef; --head:#f4f3ef; --accent:#c63d1f;
-    --gotcha:#d9a441; --defender:#6f9fc9;
-  }
-</style>
 </head>
 <body class="has-nav">
 <nav id="site-nav"></nav>

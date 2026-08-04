@@ -204,6 +204,14 @@
       <category>automation</category>
     </item>
     <item>
+      <title>HTB: Abducted</title>
+      <link>https://sp1r4.github.io/blog.html#htb-abducted</link>
+      <guid>https://sp1r4.github.io/blog.html#htb-abducted</guid>
+      <pubDate>Tue, 04 Aug 2026 00:00:00 GMT</pubDate>
+      <description>HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.</description>
+      <category>offensive</category>
+    </item>
+    <item>
       <title>Cisco IOS: Upgrading Safely</title>
       <link>https://sp1r4.github.io/blog.html#cisco-ios-upgrade</link>
       <guid>https://sp1r4.github.io/blog.html#cisco-ios-upgrade</guid>

